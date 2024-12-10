@@ -5,8 +5,10 @@ import * as fs from 'fs/promises';
 @Injectable()
 export class ScraperService implements OnModuleInit {
   private readonly logger = new Logger(ScraperService.name);
+  private readonly testLinksFilePath = 'test-links.json';
   private readonly linksFilePath = 'links.json';
   private readonly filePath = 'products.json';
+  private readonly allContentFilePath = 'all-products-content.json';
 
   async onModuleInit() {
     this.logger.log('Starting scraper service...');
@@ -89,7 +91,6 @@ export class ScraperService implements OnModuleInit {
         // Simulate async operation with await
         console.log(`Processed item ${productLinks[i].href}`);
 
-        const productTitle = productLinks[i].text;
         const url = productLinks[i].href;
 
         await page.goto(url, { waitUntil: 'load', timeout: 0 });
@@ -256,5 +257,109 @@ export class ScraperService implements OnModuleInit {
 
     // Convert the map back to an array
     return Array.from(productMap.values());
+  }
+
+  async startScrapingAllContent() {
+    try {
+      const linksFileData = await fs.readFile(this.testLinksFilePath, 'utf-8');
+
+      const productLinks = JSON.parse(linksFileData);
+      const scrapedData = [];
+
+      for (let i = 0; i < productLinks.length; i++) {
+        this.logger.log('Launching Puppeteer...');
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+
+        try {
+          const url = productLinks[i].href;
+          console.log(`Processing URL: ${url}`);
+
+          const possibleSelectors = ['#fw-content', '#fw-c-content'];
+
+          // Navigate to the URL
+          await page.goto(url, { waitUntil: 'networkidle2', timeout: 50000 });
+
+          let foundSelector = null;
+
+          for (const selector of possibleSelectors) {
+            try {
+              // Wait for the selector if it exists on the page
+              await page.waitForSelector(selector, { timeout: 50000 });
+              foundSelector = selector;
+              break;
+            } catch (error) {
+              console.log(error || 'Class not found.');
+            }
+          }
+
+          console.log(`ClassName : ${foundSelector}`);
+
+          if (foundSelector) {
+            // Extract content from the first matching container
+            const content = await page.evaluate((className) => {
+              const container = document.querySelector(className);
+              return container ? container.innerText : '';
+            }, foundSelector);
+
+            const config = {
+              title: productLinks[i].text,
+              link: url,
+              content: content,
+            };
+
+            scrapedData.push(config);
+          } else {
+            console.error('No matching container class found on the page.');
+          }
+
+          // Prepare the scraped data
+        } catch (error) {
+          console.error(
+            `Error scraping ${productLinks[i]?.href}:`,
+            error.message,
+          );
+        } finally {
+          await browser.close();
+          this.logger.log('Browser closed');
+        }
+      }
+
+      // Read and parse existing data
+      let existingProductsData = [];
+      try {
+        const existingData = await fs.readFile(
+          this.allContentFilePath,
+          'utf-8',
+        );
+        existingProductsData = JSON.parse(existingData || '[]');
+      } catch (error) {
+        console.log(
+          error ||
+            'File is empty or invalid JSON. Initializing with an empty array.',
+        );
+        existingProductsData = [];
+      }
+
+      // Merge and remove duplicates
+      const updatedData = [
+        ...existingProductsData,
+        ...scrapedData.filter(
+          (item) => !existingProductsData.some((e) => e.link === item.link),
+        ),
+      ];
+
+      // Write to the file
+      await fs.writeFile(
+        this.allContentFilePath,
+        JSON.stringify(updatedData, null, 2),
+      );
+
+      console.log('Scraping completed successfully.');
+    } catch (error) {
+      this.logger.error('Error during scraping:', error.message);
+    } finally {
+      this.logger.log('Browser closed');
+    }
   }
 }
