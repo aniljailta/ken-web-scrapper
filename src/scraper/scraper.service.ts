@@ -1,9 +1,22 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import * as fs from 'fs/promises';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ScraperData } from './entities/scraper_data.entity';
+import {
+  buildVocabulary,
+  cosineSimilarity,
+  flattenAndConcatenate,
+  vectorize,
+} from './utils';
+import OpenAI from 'openai';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ScraperService implements OnModuleInit {
+  private openai: OpenAI;
+
   private readonly logger = new Logger(ScraperService.name);
   // private readonly testLinksFilePath = 'test-links.json';
   // private readonly linksFilePath = 'links.json';
@@ -11,9 +24,25 @@ export class ScraperService implements OnModuleInit {
   // private readonly allContentFilePath = 'all-products-content.json';
   private readonly failedProductPath = 'failed_list_product.json';
 
+  constructor(
+    @InjectRepository(ScraperData)
+    private scrapperDataRepository: Repository<ScraperData>,
+    private readonly configService: ConfigService,
+  ) {
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+
+    if (!apiKey) {
+      throw new Error(
+        'OPENAI_API_KEY is not defined in the environment variables.',
+      );
+    }
+
+    this.openai = new OpenAI({ apiKey });
+  }
+
   async onModuleInit() {
     this.logger.log('Starting scraper service...');
-    await this.startScraping();
+    // await this.startScraping();
 
     // this.logger.log('Retrying failed products...');
     // await this.retryFailedLinks();
@@ -67,7 +96,7 @@ export class ScraperService implements OnModuleInit {
           continue; // Skip saving if data is incomplete
         }
 
-        await this.saveProductData(productData);
+        await this.saveScraperData(productData);
 
         // Remove the link from failed products if it was in retry mode
         if (isRetry) {
@@ -555,7 +584,8 @@ export class ScraperService implements OnModuleInit {
             continue; // Skip saving if data is incomplete
           }
 
-          await this.saveProductData(productData);
+          // await this.saveProductData(productData);
+          await this.saveScraperData(productData);
 
           await this.removeFailedProduct(url);
           this.logger.log(
@@ -635,6 +665,77 @@ export class ScraperService implements OnModuleInit {
       console.warn('No Data Sheet link found on the page.');
       return null;
     }
+  }
+
+  public async saveScraperData(
+    productData: Record<string, any>,
+  ): Promise<ScraperData> {
+    try {
+      // Step 1: Flatten and prepare text
+      const textContent = await flattenAndConcatenate(productData);
+
+      // Step 2: Build vocabulary (static or dynamic per use case)
+      const vocabulary = buildVocabulary([textContent]); // You can save and reuse this for consistency
+
+      // Step 3: Generate vector
+      const vector = vectorize(textContent, vocabulary);
+
+      // Step 4: Save data to database
+      const scraperData = this.scrapperDataRepository.create({
+        url: productData.productUrl,
+        content: textContent,
+        vector,
+      });
+      return await this.scrapperDataRepository.save(scraperData);
+    } catch (error) {
+      this.logger.warn('Error saving scraper data:', error?.message);
+      throw error;
+    }
+  }
+
+  async getResponse(query: string): Promise<string> {
+    // Step 1: Get query embedding
+    const embeddingResponse = await this.openai.embeddings.create({
+      model: 'text-embedding-ada-002',
+      input: query,
+    });
+    const queryVector = embeddingResponse.data[0].embedding;
+
+    // Step 2: Fetch data from the database
+    const data = await this.scrapperDataRepository.find();
+
+    // Step 3: Compute similarity for each row
+    const scores = data.map((item) => ({
+      content: item.content,
+      similarity: cosineSimilarity(queryVector, item.vector),
+    }));
+
+    // Step 4: Sort results by similarity
+    const topResults = scores
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, 5)
+      .map((item) => item.content)
+      .join('\n');
+
+    console.log({ query });
+
+    // Step 5: Use OpenAI to generate a response
+    const completionResponse = await this.openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are an assistant that answers questions based on a database.',
+        },
+        {
+          role: 'user',
+          content: `Based on the following content, answer the query: "${query}".\n\nContent:\n${topResults}`,
+        },
+      ],
+    });
+
+    return completionResponse.choices[0].message.content.trim();
   }
 
   // async startScrapingAllContent() {

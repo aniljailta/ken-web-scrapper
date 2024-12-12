@@ -1,0 +1,157 @@
+[
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/8000-series-routers/index.html",
+    "productName": "8000 Series Routers",
+    "error": "Cannot read properties of undefined (reading 'tokenize')"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/4000-series-integrated-services-routers-isr/index.html",
+    "productName": "4000 Series Integrated Services Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/1000-series-integrated-services-routers-isr/index.html",
+    "productName": "1000 Series Integrated Services Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/asr-5000-series/index.html",
+    "productName": "ASR 5000 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/ata-190-series-analog-telephone-adapters/index.html",
+    "productName": "ATA 190 Series Analog Telephone Adapters",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/ata-180-series-analog-telephone-adaptors/index.html",
+    "productName": "ATA 180 Series Analog Telephone Adaptors",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/aironet-access-point-modules/index.html",
+    "productName": "Access Point Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/adaptive-wireless-ips-software/index.html",
+    "productName": "Adaptive Wireless IPS Software",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/application-centric-infrastructure-simulator/index.html",
+    "productName": "Application Centric Infrastructure Simulator",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/asr-9000-series-aggregation-services-routers/index.html",
+    "productName": "ASR 9000 Series Aggregation Services Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/asr-1000-series-aggregation-services-routers/index.html",
+    "productName": "ASR 1000 Series Aggregation Services Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/asr-920-series-aggregation-services-router/index.html",
+    "productName": "ASR 920 Series Aggregation Services Router",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/application-centric-infrastructure-virtual-edge/index.html",
+    "productName": "Application Centric Infrastructure Virtual Edge",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/application-centric-infrastructure-virtual-pod/index.html",
+    "productName": "Application Centric Infrastructure Virtual Pod",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/application-networking-services-modules/index.html",
+    "productName": "Application Networking Services Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/application-policy-infrastructure-controller-apic/index.html",
+    "productName": "Application Policy Infrastructure Controller (APIC)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/webex-board/index.html",
+    "productName": "Board Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/broadcloud/index.html",
+    "productName": "BroadCloud",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/broadworks/index.html",
+    "productName": "BroadWorks",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/broadband-configurator/index.html",
+    "productName": "Broadband Configurator",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/broadband-processing-engines/index.html",
+    "productName": "Broadband Processing Engines",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/business-350-series-managed-switches/index.html",
+    "productName": "Business 350 Series Managed Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/business-250-series-smart-switches/index.html",
+    "productName": "Business 250 Series Smart Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/business-220-series-smart-switches/index.html",
+    "productName": "Business 220 Series Smart Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/business-200-series-access-points/index.html",
+    "productName": "Business 200 Series Access Points",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/business-110-series-unmanaged-switches/index.html",
+    "productName": "Business 110 Series Unmanaged Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/business-100-series-access-points/index.html",
+    "productName": "Business 100 Series Access Points",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/business-100-series-mesh-extenders/index.html",
+    "productName": "Business 100 Series Mesh Extenders",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/business-edition-7000/index.html",
+    "productName": "Business Edition 7000",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/business-edition-6000/index.html",
+    "productName": "Business Edition 6000",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/c800-series/index.html",
+    "productName": "C800 Series",
+    "error": "Missing required fields"
+  }
+]
