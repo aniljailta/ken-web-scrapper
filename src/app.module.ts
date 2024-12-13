@@ -3,23 +3,23 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ScraperModule } from './scraper/scraper.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'ken-web-scrapper',
-      entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-      synchronize: true, // Use only for development
-    }),
     ConfigModule.forRoot({
       isGlobal: true, // Makes ConfigModule available globally
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        url: configService.get<string>('DATABASE_URL'), // Use DATABASE_URL directly
+        entities: [join(__dirname, '**', '*.entity.{ts,js}')],
+        synchronize: true, // Use only for development
+      }),
     }),
     ScraperModule,
   ],
