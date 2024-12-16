@@ -10,6 +10,9 @@ export class ScraperData {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  productName: string;
+
   @Column({ unique: true })
   url: string;
 
@@ -18,6 +21,9 @@ export class ScraperData {
 
   @Column('float', { array: true })
   vector: number[];
+
+  @Column('jsonb')
+  jsonData: any;
 
   @CreateDateColumn()
   createdAt: Date;

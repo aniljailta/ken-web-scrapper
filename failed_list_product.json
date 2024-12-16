@@ -1,0 +1,2157 @@
+[
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/8000-series-routers/index.html",
+    "productName": "8000 Series Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/7600-wireless-security-gateway/index.html",
+    "productName": "7600 Wireless Security Gateway",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/6300-series-embedded-services-access-points/index.html",
+    "productName": "6300 Series Embedded Services Access Points",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/5000-series-enterprise-network-compute-system/index.html",
+    "productName": "5000 Series Enterprise Network Compute System",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/4000-series-integrated-services-routers-isr/index.html",
+    "productName": "4000 Series Integrated Services Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/industrial-security-appliance-isa/index.html",
+    "productName": "3000 Series Industrial Security Appliances (ISA)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/1000-series-integrated-services-routers-isr/index.html",
+    "productName": "1000 Series Integrated Services Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/500-series-wpan-industrial-routers/index.html",
+    "productName": "500 Series WPAN Industrial Routers",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/asa-firepower-services/index.html",
+    "productName": "ASA 5500-X with FirePOWER Services",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/asr-9000-series-aggregation-services-routers/index.html",
+    "productName": "ASR 9000 Series Aggregation Services Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/asr-5000-series/index.html",
+    "productName": "ASR 5000 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/asr-5000-session-control-manager/index.html",
+    "productName": "ASR 5000 Session Control Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/asr-5000-small-cell-gateway/index.html",
+    "productName": "ASR 5000 Small Cell Gateway",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/asr-1000-series-aggregation-services-routers/index.html",
+    "productName": "ASR 1000 Series Aggregation Services Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/asr-920-series-aggregation-services-router/index.html",
+    "productName": "ASR 920 Series Aggregation Services Router",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/asr-903-series-aggregation-services-routers/index.html",
+    "productName": "ASR 900 Series Aggregation Services Routers",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/ata-190-series-analog-telephone-adapters/index.html",
+    "productName": "ATA 190 Series Analog Telephone Adapters",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/ata-180-series-analog-telephone-adaptors/index.html",
+    "productName": "ATA 180 Series Analog Telephone Adaptors",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/aironet-access-point-modules/index.html",
+    "productName": "Access Point Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/adaptive-wireless-ips-software/index.html",
+    "productName": "Adaptive Wireless IPS Software",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/application-centric-infrastructure-simulator/index.html",
+    "productName": "Application Centric Infrastructure Simulator",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/application-centric-infrastructure-virtual-edge/index.html",
+    "productName": "Application Centric Infrastructure Virtual Edge",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/application-centric-infrastructure-virtual-pod/index.html",
+    "productName": "Application Centric Infrastructure Virtual Pod",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/application-networking-services-modules/index.html",
+    "productName": "Application Networking Services Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/application-policy-infrastructure-controller-apic/index.html",
+    "productName": "Application Policy Infrastructure Controller (APIC)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/secure-cloud-insights/index.html",
+    "productName": "Attack Surface Management",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/webex-board/index.html",
+    "productName": "Board Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/broadcloud/index.html",
+    "productName": "BroadCloud",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/broadworks/index.html",
+    "productName": "BroadWorks",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/broadband-configurator/index.html",
+    "productName": "Broadband Configurator",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/broadband-processing-engines/index.html",
+    "productName": "Broadband Processing Engines",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/business-350-series-managed-switches/index.html",
+    "productName": "Business 350 Series Managed Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/business-250-series-smart-switches/index.html",
+    "productName": "Business 250 Series Smart Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/business-220-series-smart-switches/index.html",
+    "productName": "Business 220 Series Smart Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/business-200-series-access-points/index.html",
+    "productName": "Business 200 Series Access Points",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/business-110-series-unmanaged-switches/index.html",
+    "productName": "Business 110 Series Unmanaged Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/business-100-series-access-points/index.html",
+    "productName": "Business 100 Series Access Points",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/business-100-series-mesh-extenders/index.html",
+    "productName": "Business 100 Series Mesh Extenders",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/business-edition-7000/index.html",
+    "productName": "Business Edition 7000",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/business-edition-6000/index.html",
+    "productName": "Business Edition 6000",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/c800-series/index.html",
+    "productName": "C800 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/catalyst-9800-series-wireless-controllers/index.html",
+    "productName": "Catalyst 9800 Series Wireless Controllers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-9600-series-switches/index.html",
+    "productName": "Catalyst 9600 Series Switches",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-9500-series-switches/index.html",
+    "productName": "Catalyst 9500 Series Switches",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-9400-series-switches/index.html",
+    "productName": "Catalyst 9400 Series Switches",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-9300-series-switches/index.html",
+    "productName": "Catalyst 9300 Series Switches",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-9200-series-switches/index.html",
+    "productName": "Catalyst 9200 Series Switches",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/catalyst-9120ax-series-access-points/index.html",
+    "productName": "Catalyst 9120AX Series Access Points",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/catalyst-9100ax-access-points/index.html",
+    "productName": "Catalyst 9100 Access Points",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/catalyst-8500-series-edge-platforms/index.html",
+    "productName": "Catalyst 8500 Series Edge Platforms",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/catalyst-8300-series-edge-platforms/index.html",
+    "productName": "Catalyst 8300 Series Edge Platforms",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/catalyst-8300-series-edge-ucpe/index.html",
+    "productName": "Catalyst 8300 Series Edge uCPE",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/catalyst-8200-series-edge-platforms/index.html",
+    "productName": "Catalyst 8200 Series Edge Platforms",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/catalyst-8200-series-edge-ucpe/index.html",
+    "productName": "Catalyst 8200 Series Edge uCPE",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/catalyst-8000v-edge-software/index.html",
+    "productName": "Catalyst 8000V Edge Software",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-1300-series-switches/index.html",
+    "productName": "Catalyst 1300 Series Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-1200-series-switches/index.html",
+    "productName": "Catalyst 1200 Series Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-1000-series-switches/index.html",
+    "productName": "Catalyst 1000 Series Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/catalyst-cellular-gateways/index.html",
+    "productName": "Catalyst Cellular Gateways",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/dna-center/index.html",
+    "productName": "Catalyst Center",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-digital-building-series-switches/index.html",
+    "productName": "Catalyst Digital Building Series Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-ess9300-embedded-series/index.html",
+    "productName": "Catalyst ESS9300 Embedded Series Switch",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-ie9300-rugged-series/index.html",
+    "productName": "Catalyst IE9300 Rugged Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-ie3400-heavy-duty-series/index.html",
+    "productName": "Catalyst IE3400 Heavy Duty Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-ie3400-rugged-series/index.html",
+    "productName": "Catalyst IE3400 Rugged Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-ie3300-rugged-series/index.html",
+    "productName": "Catalyst IE3300 Rugged Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-ie3200-rugged-series/index.html",
+    "productName": "Catalyst IE3200 Rugged Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-ie3100-rugged-series/index.html",
+    "productName": "Catalyst IE3100 Rugged Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/catalyst-ir8300-rugged-series-router/index.html",
+    "productName": "Catalyst IR8300 Rugged Series Router",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/catalyst-ir8100-heavy-duty-series-routers/index.html",
+    "productName": "Catalyst IR8100 Heavy Duty Series Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/catalyst-ir1800-rugged-series-routers/index.html",
+    "productName": "Catalyst IR1800 Rugged Series Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/1100-series-industrial-integrated-services-routers/index.html",
+    "productName": "Catalyst IR1100 Rugged Series Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/catalyst-iw9167-series/index.html",
+    "productName": "Catalyst IW9167 Heavy Duty Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/catalyst-iw9165-heavy-duty-series/index.html",
+    "productName": "Catalyst IW9165 Heavy Duty Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/catalyst-iw9165-rugged-series/index.html",
+    "productName": "Catalyst IW9165 Rugged Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/industrial-wireless-6300-series/index.html",
+    "productName": "Catalyst IW6300 Heavy Duty Series Access Points",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/catalyst-micro-switches/index.html",
+    "productName": "Catalyst Micro Switches",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/catalyst-wireless-gateway-cg110-series/index.html",
+    "productName": "Catalyst Wireless Gateway",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/business-dashboard/index.html",
+    "productName": "Cisco Business Dashboard",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/container-platform/index.html",
+    "productName": "Cisco Container Platform",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/software/dna-subscription-wan/index.html",
+    "productName": "Cisco DNA for Routing",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/software/dna-subscription-switching/index.html",
+    "productName": "Cisco DNA for Switching",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/software/dna-subscription-wireless/index.html",
+    "productName": "Cisco DNA for Wireless",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/telemetry-broker/index.html",
+    "productName": "Cisco Telemetry Broker",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/cloud-application-security/index.html",
+    "productName": "Cloud Application Security",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/cloud-native-broadband-network-gateway-bng/index.html",
+    "productName": "Cloud Native Broadband Network Gateway (BNG)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/cloud-native-broadband-router/index.html",
+    "productName": "Cloud Native Broadband Router",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/cloudlock/index.html",
+    "productName": "Cloudlock",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/collaboration-flex-plan/index.html",
+    "productName": "Collaboration Flex Plan",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/conferencing/collaboration-meeting-rooms-cmr/index.html",
+    "productName": "Collaboration Meeting Rooms (CMR)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-communications-system/index.html",
+    "productName": "Collaboration Systems Release",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/compact-nodes/index.html",
+    "productName": "Compact Nodes",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/hyperconverged-infrastructure/compute-hyperconverged/index.html",
+    "productName": "Compute Hyperconverged with Nutanix",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/configuration-assistant-cca/index.html",
+    "productName": "Configuration Assistant (CCA)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/configuration-engine/index.html",
+    "productName": "Configuration Engine",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/configuration-professional-catalyst/index.html",
+    "productName": "Configuration Professional for Catalyst",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/cam-for-iot-intelligence/index.html",
+    "productName": "Connected Asset Manager for IoT Intelligence",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/connected-grid-modules/index.html",
+    "productName": "Connected Grid Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/connectivity/index.html",
+    "productName": "Connectivity",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/converged-services-platform/index.html",
+    "productName": "Converged Services Platform",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/crosswork-cloud/index.html",
+    "productName": "Crosswork Cloud",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/crosswork-network-automation/index.html",
+    "productName": "Crosswork Network Automation",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/network-services-orchestrator/index.html",
+    "productName": "Crosswork Network Services Orchestrator",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/crosswork-workflow-manager/index.html",
+    "productName": "Crosswork Workflow Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/cyber-vision/index.html",
+    "productName": "Cyber Vision",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/cbr-series-converged-broadband-routers/index.html",
+    "productName": "cBR Series Converged Broadband Routers",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/software/data-center-networking-subscription/index.html",
+    "productName": "Data Center Networking Software Subscriptions",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/defense-orchestrator/index.html",
+    "productName": "Defense Orchestrator",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/webex-desk-series/index.html",
+    "productName": "Desk Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/differentiated-services/index.html",
+    "productName": "Differentiated Services",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/digital-media-encoders/index.html",
+    "productName": "Digital Media Encoders",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/digital-media-manager/index.html",
+    "productName": "Digital Media Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/duo/index.html",
+    "productName": "Duo",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/dynamic-fabric-automation/index.html",
+    "productName": "Dynamic Fabric Automation",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/edge-qam-modulators/index.html",
+    "productName": "Edge QAM Modulators",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/elastic-services-controller-esc/index.html",
+    "productName": "Elastic Services Controller",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/email-encryption/index.html",
+    "productName": "Email Encryption",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/embedded-service-3300-series-switches/index.html",
+    "productName": "Embedded Services 3300 Series Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/emergency-responder/index.html",
+    "productName": "Emergency Responder",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/enhanced-charging-service/index.html",
+    "productName": "Enhanced Charging Service",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/enterprise-class-teleworker-ect-solution/index.html",
+    "productName": "Enterprise Class Teleworker (ECT) Solution",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/enterprise-nfv-infrastructure-software/index.html",
+    "productName": "Enterprise NFV Infrastructure Software",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/ethernet-switching-network-modules/index.html",
+    "productName": "Ethernet Switching Network Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/evolved-programmable-network-epn-manager/index.html",
+    "productName": "Evolved Programmable Network Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/expressway-series/index.html",
+    "productName": "Expressway Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/extensible-provisioning-operations-manager/index.html",
+    "productName": "Extensible Provisioning and Operations Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/epdg-evolved-packet-data-gateway/index.html",
+    "productName": "ePDG Evolved Packet Data Gateway",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/fabric-manager/index.html",
+    "productName": "Fabric Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/fiber-management/index.html",
+    "productName": "Fiber Management",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/findit-network-management/index.html",
+    "productName": "FindIT Network Management",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/contact-center/finesse/index.html",
+    "productName": "Finesse",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/firepower-9000-series/index.html",
+    "productName": "Firepower 9300 Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/firepower-2100-series/index.html",
+    "productName": "Firepower 2100 Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/firepower-1000-series/index.html",
+    "productName": "Firepower 1000 Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/fog-director/index.html",
+    "productName": "Fog Director",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/ggsn-gateway-gprs-support-node/index.html",
+    "productName": "GGSN Gateway GPRS Support Node",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/gs7000-node/index.html",
+    "productName": "GS7000 Nodes",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/gs7000-node/models-comparison.html",
+    "productName": "GS7000 Nodes",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/gs7000-optical-hub-hub-node/index.html",
+    "productName": "GS7000 Optical Hub and Hub-Node",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/gatekeeper-multimedia-conference-manager/index.html",
+    "productName": "Gatekeeper/Multimedia Conference Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/group-encrypted-transport-vpn/index.html",
+    "productName": "Group Encrypted Transport VPN",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/headset-700-series/index.html",
+    "productName": "Headset 700 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/headset-500-series/index.html",
+    "productName": "Headset 500 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/high-density-voice-fax-network-modules/index.html",
+    "productName": "High Density Voice/Fax Network Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/high-speed-wan-interface-cards/index.html",
+    "productName": "High-Speed WAN Interface Cards",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/hosted-collaboration-solution-hcs/index.html",
+    "productName": "Hosted Collaboration Solution (HCS)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/hosted-unified-communications-services/index.html",
+    "productName": "Hosted Unified Communications Services",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/hybrid-cloud-platform-google-cloud/index.html",
+    "productName": "Hybrid Cloud Platform for Google Cloud",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/hybrid-solution-kubernetes-on-aws/index.html",
+    "productName": "Hybrid Solution for Kubernetes on AWS",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/iad2400-series-integrated-access-devices/index.html",
+    "productName": "IAD2400 Series Integrated Access Devices",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/ios-15-0s/index.html",
+    "productName": "IOS 15.0S",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/ios-embedded-event-manager-eem/index.html",
+    "productName": "IOS Embedded Event Manager (EEM)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/ios-embedded-packet-capture/index.html",
+    "productName": "IOS Embedded Packet Capture",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/ios-gateways-session-initiation-protocol-sip/index.html",
+    "productName": "IOS Gateways with Session Initiation Protocol (SIP)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/ios-ip-service-level-agreements-slas/index.html",
+    "productName": "IOS IP Service Level Agreements (SLAs)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/ios-ipsec/index.html",
+    "productName": "IOS IPsec",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/ios-netflow/index.html",
+    "productName": "IOS NetFlow",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/ios-packaging/index.html",
+    "productName": "IOS Packaging",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/ios-xr-software/index.html",
+    "productName": "IOS XR Software",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/ios-xrd/index.html",
+    "productName": "IOS XRd",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/iox/index.html",
+    "productName": "IOx",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/ip-communications-voice-fax-network-modules/index.html",
+    "productName": "IP Communications Voice/Fax Network Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/ip-dect-6800-series-multiplatform-firmware/index.html",
+    "productName": "IP DECT 6800 Series with Multiplatform Firmware",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/unified-ip-phone-8800-series/index.html",
+    "productName": "IP Phone 8800 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/ip-phone-8800-series-multiplatform-firmware/index.html",
+    "productName": "IP Phone 8800 Series with Multiplatform Firmware",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/unified-ip-phone-7800-series/index.html",
+    "productName": "IP Phone 7800 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/ip-phone-7800-series-multiplatform-firmware/index.html",
+    "productName": "IP Phone 7800 Series with Multiplatform Firmware",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/ip-phone-6800-series/index.html",
+    "productName": "IP Phone 6800 Series with Multiplatform Firmware",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/ip-routing/index.html",
+    "productName": "IP Routing",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/ip-services/index.html",
+    "productName": "IP Services",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/ipv6-first-hop-security-fhs/index.html",
+    "productName": "IPv6 First Hop Security (FHS)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/ise-passive-identity-connector/index.html",
+    "productName": "ISE Passive Identity Connector",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/identity-services-engine/index.html",
+    "productName": "Identity Services Engine",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/in-service-software-upgrade-issu/index.html",
+    "productName": "In-Service Software Upgrade (ISSU)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/industrial-ethernet-4010-series-switches/index.html",
+    "productName": "Industrial Ethernet 4010 Series Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/industrial-ethernet-2000u-series-switches/index.html",
+    "productName": "Industrial Ethernet 2000U Series Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/industrial-ethernet-1000-series-switches/index.html",
+    "productName": "Industrial Ethernet 1000 Series Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/industrial-wireless-3700-series/index.html",
+    "productName": "Industrial Wireless 3700 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-c-series-integrated-management-controller/index.html",
+    "productName": "Integrated Management Controller",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/integrated-management-controller-imc-supervisor/index.html",
+    "productName": "Integrated Management Controller (IMC) Supervisor",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/integrated-services/index.html",
+    "productName": "Integrated Services",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/interface-cards/index.html",
+    "productName": "Interface Cards",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/interface-processors/index.html",
+    "productName": "Interface Processors",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/intersight/index.html",
+    "productName": "Intersight",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/iot-field-network-director/index.html",
+    "productName": "IoT Field Network Director",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/iot-gateways/index.html",
+    "productName": "IoT Gateways",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/iot-operations-dashboard/index.html",
+    "productName": "IoT Operations Dashboard",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/jabber/index.html",
+    "productName": "Jabber",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/jabber-extensible-communications-platform-xcp/index.html",
+    "productName": "Jabber Extensible Communications Platform (XCP)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/jabber-guest/index.html",
+    "productName": "Jabber Guest",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/jabber-softphone-for-vdi/index.html",
+    "productName": "Jabber Softphone for VDI",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/jabber-software-development-kit/index.html",
+    "productName": "Jabber Software Development Kit",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/jabber-android/index.html",
+    "productName": "Jabber for Android",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/jabber-mac/index.html",
+    "productName": "Jabber for Mac",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/jabber-windows/index.html",
+    "productName": "Jabber for Windows",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/jabber-iphone-ipad/index.html",
+    "productName": "Jabber for iPhone and iPad",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/layer-3-vpns-l3vpn/index.html",
+    "productName": "Layer 3 VPNs (L3VPN)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/layer-2-vpns/index.html",
+    "productName": "Layer 2 VPNs",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/legacy-system-amplifiers-line-extenders/index.html",
+    "productName": "Legacy System Amplifiers and Line Extenders",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/line-cards/index.html",
+    "productName": "Line cards",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/lumin-optical-transmission-platform/index.html",
+    "productName": "Lumin Optical Transmission Platform",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/storage-networking/mds-9700-series-multilayer-directors/index.html",
+    "productName": "MDS 9700 Series Multilayer Directors",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/storage-networking/mds-9300-series-multilayer-fabric-switches/index.html",
+    "productName": "MDS 9300 Series Multilayer Fabric Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/storage-networking/mds-9200-series-multiservice-switches/index.html",
+    "productName": "MDS 9200 Series Multiservice Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/storage-networking/mds-9100-series-multilayer-fabric-switches/index.html",
+    "productName": "MDS 9100 Series Multilayer Fabric Switches",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/storage-networking/mds-9000-nx-os-san-os-software/index.html",
+    "productName": "MDS 9000 NX-OS and SAN-OS Software",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/storage-networking/mds-9000-san-management/index.html",
+    "productName": "MDS 9000 SAN Management",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/storage-networking/mds-9000-series-multilayer-switches/index.html",
+    "productName": "MDS 9000 Series Multilayer Switches",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/media-gateway-controller-node-manager/index.html",
+    "productName": "Media Gateway Controller Node Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/media-gateway-controller-software/index.html",
+    "productName": "Media Gateway Controller Software",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/conferencing/meeting-server/index.html",
+    "productName": "Meeting Server",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/meraki-cloud-managed-mdm/index.html",
+    "productName": "Meraki Cloud Managed MDM",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/meraki-cloud-managed-security-appliances/index.html",
+    "productName": "Meraki Cloud Managed Security Appliances",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/meraki-cloud-managed-switches/index.html",
+    "productName": "Meraki Cloud Managed Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/telepresence-microphones/index.html",
+    "productName": "Microphones",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/mobile-ad-hoc-networking/index.html",
+    "productName": "Mobile Ad Hoc Networking",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/mobile-office-net-software/index.html",
+    "productName": "Mobile Office Net Software",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/mobile-vpn/index.html",
+    "productName": "Mobile VPN",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/mobility-unified-reporting-system/index.html",
+    "productName": "Mobility Unified Reporting System",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/multicast-label-distribution-protocol-mldp/index.html",
+    "productName": "Multicast Label Distribution Protocol (MLDP)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/multicloud-defense/index.html",
+    "productName": "Multicloud Defense",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/multiprocessor-wan-application-modules/index.html",
+    "productName": "Multiprocessor WAN Application Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/multiprotocol-label-switching-archive/index.html",
+    "productName": "Multiprotocol Label Switching Archive",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/network-based-application-recognition-nbar/index.html",
+    "productName": "Network Based Application Recognition (NBAR)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/network-convergence-system-6000-series-routers/index.html",
+    "productName": "Network Convergence System 6000 Series Routers",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/network-convergence-system-5700-series/index.html",
+    "productName": "Network Convergence System 5700 Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/network-convergence-system-5500-series/index.html",
+    "productName": "Network Convergence System 5500 Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/network-convergence-system-5000-series/index.html",
+    "productName": "Network Convergence System 5000 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/optical-networking/network-convergence-system-4200-series/index.html",
+    "productName": "Network Convergence System 4200 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/optical-networking/network-convergence-system-4000-series/index.html",
+    "productName": "Network Convergence System 4000 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/optical-networking/network-convergence-system-2000-series/index.html",
+    "productName": "Network Convergence System 2000 Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/optical-networking/network-convergence-system-1000-series/index.html",
+    "productName": "Network Convergence System 1000 Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/network-convergence-system-560-series-routers/index.html",
+    "productName": "Network Convergence System 560 Series Routers",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/network-convergence-system-540-series-routers/index.html",
+    "productName": "Network Convergence System 540 Series Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/network-convergence-system-500-series-routers/index.html",
+    "productName": "Network Convergence System 500 Series Routers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/network-modules/index.html",
+    "productName": "Network Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/network-processing-engines/index.html",
+    "productName": "Network Processing Engines",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/network-processor-modules/index.html",
+    "productName": "Network Processor Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/network-registrar/index.html",
+    "productName": "Network Registrar",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/network-route-director/index.html",
+    "productName": "Network Route Director",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/network-services-manager/index.html",
+    "productName": "Network Services Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/nexus-9000-series-switches/index.html",
+    "productName": "Nexus 9000 Series Switches",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/nexus-7000-series-switches/index.html",
+    "productName": "Nexus 7000 Series Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/nexus-3550-series/index.html",
+    "productName": "Nexus 3550 Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/nexus-3000-series-switches/index.html",
+    "productName": "Nexus 3000 Series Switches",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/data-center-analytics/nexus-dashboard/index.html",
+    "productName": "Nexus Dashboard",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/nexus-data-broker/index.html",
+    "productName": "Nexus Dashboard Data Broker",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/prime-data-center-network-manager/data-center-network-manager.html",
+    "productName": "Nexus Dashboard Fabric Controller",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/prime-data-center-network-manager/index.html",
+    "productName": "Nexus Dashboard Fabric Controller",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/data-center-analytics/nexus-insights/index.html",
+    "productName": "Nexus Dashboard Insights",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/multi-site-orchestrator/index.html",
+    "productName": "Nexus Dashboard Orchestrator",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/software/nexus-firmware-development-kit-fdk/index.html",
+    "productName": "Nexus FDK",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/data-center-networking/nexus-hyperfabric/index.html",
+    "productName": "Nexus HyperFabric",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/nexus-smartnic/index.html",
+    "productName": "Nexus SmartNIC",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/software/one-advanced-security/index.html",
+    "productName": "ONE for Advanced Security",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/software/one-data-center/index.html",
+    "productName": "ONE for Data Center",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/optical-networking/ons-15600-series/index.html",
+    "productName": "ONS 15600 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/optical-networking/ons-15454-series-multiservice-provisioning-platforms/index.html",
+    "productName": "ONS 15454 Series Multiservice Provisioning Platforms",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/optical-networking/ons-15454-series-multiservice-transport-platforms/index.html",
+    "productName": "ONS 15454 Series Multiservice Transport Platforms",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/optical-networking/ons-15200-series-dwdm-systems/index.html",
+    "productName": "ONS 15200 Series DWDM Systems",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/office-manager/index.html",
+    "productName": "Office Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/optical-passive-components/index.html",
+    "productName": "Optical Passive Components",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/optical-services-modules/index.html",
+    "productName": "Optical Services Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/optical-transponders/index.html",
+    "productName": "Optical Transponders",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/other-optoelectronic/index.html",
+    "productName": "Other Optoelectronic Products",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/pgw-packet-data-network-gateway/index.html",
+    "productName": "PGW Packet Data Network Gateway",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/contact-center/packaged-contact-center-enterprise/index.html",
+    "productName": "Packaged Contact Center Enterprise",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/paging-server/index.html",
+    "productName": "Paging Server",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/physical-security-modules-routers/index.html",
+    "productName": "Physical Security Modules for Routers",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/policy-suite-mobile/index.html",
+    "productName": "Policy Suite for Mobile",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/port-adapters/index.html",
+    "productName": "Port Adapters",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/power-supply/index.html",
+    "productName": "Power Supply",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/prime-cable-provisioning/index.html",
+    "productName": "Prime Cable Provisioning",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/prime-collaboration/index.html",
+    "productName": "Prime Collaboration",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/prime-network/index.html",
+    "productName": "Prime Network",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/prime-network-control-system-series-appliances/index.html",
+    "productName": "Prime Network Control System Series Appliances",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/prime-network-registrar/index.html",
+    "productName": "Prime Network Registrar",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/prime-provisioning/index.html",
+    "productName": "Prime Provisioning",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/prime-virtual-network-analysis-module-vnam/index.html",
+    "productName": "Prime Virtual Network Analysis Module (vNAM)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/prisma-d-pon/index.html",
+    "productName": "Prisma D-PON",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/prisma-high-density-receiver/index.html",
+    "productName": "Prisma High Density Receiver Products",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/prisma-ii/index.html",
+    "productName": "Prisma II Products",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/prisma-strand-mounted-optical-amplifier/index.html",
+    "productName": "Prisma Strand-Mounted Optical Amplifier Products",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/private-5g/index.html",
+    "productName": "Private 5G",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/accedian-skylight/index.html",
+    "productName": "Provider Connectivity Assurance (formerly Accedian Skylight)",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/provider-connectivity-assurance-sensors/index.html",
+    "productName": "Provider Connectivity Assurance Sensors",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/ios-nx-os-software/provisioning-monitoring-management/index.html",
+    "productName": "Provisioning, Monitoring, and Management",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/rf-gateway-series/index.html",
+    "productName": "RF Gateway Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/video/rf-signal-management/index.html",
+    "productName": "RF Signal Management",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/rsvp-agent/index.html",
+    "productName": "RSVP Agent",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/registered-envelope-service/index.html",
+    "productName": "Registered Envelope Service",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/webex-room-navigator/index.html",
+    "productName": "Room Navigator",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/webex-room-phone/index.html",
+    "productName": "Room Phone",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/route-processors-route-switch-processors/index.html",
+    "productName": "Route Processors and Route Switch Processors",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/optical-networking/routed-optical-networking/index.html",
+    "productName": "Routed Optical Networking",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/router-security/index.html",
+    "productName": "Router Security",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/router-web-setup-tool/index.html",
+    "productName": "Router Web SetUp Tool",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/switches/sfs-solution-dell/index.html",
+    "productName": "SFS Solution for Dell",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/sgsn-serving-gprs-support-node/index.html",
+    "productName": "SGSN Serving GPRS Support Node",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/sgw-serving-gateway/index.html",
+    "productName": "SGW Serving Gateway",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/sip-ip-phone-software/index.html",
+    "productName": "SIP IP Phone Software",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/secure-access/index.html",
+    "productName": "Secure Access",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/software/secure-choice-enterprise-agreement/index.html",
+    "productName": "Secure Choice Enterprise Agreement",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/anyconnect-secure-mobility-client/index.html",
+    "productName": "Secure Client (including AnyConnect)",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/secure-ddos-protection/index.html",
+    "productName": "Secure DDoS Protection",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/content-security-management-appliance/index.html",
+    "productName": "Secure Email and Web Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/amp-for-endpoints/index.html",
+    "productName": "Secure Endpoint",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/fireamp-private-cloud-virtual-appliance/index.html",
+    "productName": "Secure Endpoint Private Cloud",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/secure-equipment-access/index.html",
+    "productName": "Secure Equipment Access",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/secure-firewall-4200-series/index.html",
+    "productName": "Secure Firewall 4200 Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/secure-firewall-3100-series/index.html",
+    "productName": "Secure Firewall 3100 Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/secure-firewall-1200-series/index.html",
+    "productName": "Secure Firewall 1200 Series",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/adaptive-security-appliance-asa-software/index.html",
+    "productName": "Secure Firewall ASA",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/adaptive-security-device-manager/index.html",
+    "productName": "Secure Firewall ASDM",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/firepower-management-center/index.html",
+    "productName": "Secure Firewall Management Center",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/secure-firewall-migration-tool/index.html",
+    "productName": "Secure Firewall Migration Tool",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/threat-grid/index.html",
+    "productName": "Secure Malware Analytics Appliances",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/stealthwatch/index.html",
+    "productName": "Secure Network Analytics",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/secure-sign-on/index.html",
+    "productName": "Secure Sign-On",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/web-security-appliance/index.html",
+    "productName": "Secure Web Appliance",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/secure-web-application-firewall/index.html",
+    "productName": "Secure Web Application Firewall",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/tetration/index.html",
+    "productName": "Secure Workload",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/securex/index.html",
+    "productName": "SecureX",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/security-analytics-logging/index.html",
+    "productName": "Security Analytics and Logging",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/security-cloud/index.html",
+    "productName": "Security Cloud",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/security-connector/index.html",
+    "productName": "Security Connector",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/security-manager/index.html",
+    "productName": "Security Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/security-modules-physical-security-appliances/index.html",
+    "productName": "Security Modules for Physical Security Appliances",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/security-modules-routers-switches/index.html",
+    "productName": "Security Modules for Routers and Switches",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/security-modules-security-appliances/index.html",
+    "productName": "Security Modules for Security Appliances",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/security-packet-analyzer/index.html",
+    "productName": "Security Packet Analyzer",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/service-adapters/index.html",
+    "productName": "Service Adapters",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/services-modules/index.html",
+    "productName": "Services Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/services-ready-engine-sre-modules/index.html",
+    "productName": "Services-Ready Engine (SRE) Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/small-business-500-series-wireless-access-points/index.html",
+    "productName": "Small Business 500 Series Wireless Access Points",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/small-business-300-series-wireless-access-points/index.html",
+    "productName": "Small Business 300 Series Wireless Access Points",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/small-business-100-series-wireless-access-points/index.html",
+    "productName": "Small Business 100 Series Wireless Access Points",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/small-business-network-accessories/index.html",
+    "productName": "Small Business Network Accessories",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/small-business-spa500-series-ip-phones/index.html",
+    "productName": "Small Business SPA500 Series IP Phones",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/small-business-spa300-series-ip-phones/index.html",
+    "productName": "Small Business SPA300 Series IP Phones",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/small-business-voice-accessories/index.html",
+    "productName": "Small Business Voice Accessories",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/small-business-voice-gateways-ata/index.html",
+    "productName": "Small Business Voice Gateways and ATAs",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/storage-networking-modules/index.html",
+    "productName": "Storage Networking Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/tdm-gateways/index.html",
+    "productName": "TDM Gateways",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/telepresence-isdn-link/index.html",
+    "productName": "TelePresence ISDN Link",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/conferencing/telepresence-mcu-conference-director/index.html",
+    "productName": "TelePresence MCU Conference Director",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/conferencing/telepresence-management-suite-tms/index.html",
+    "productName": "TelePresence Management Suite (TMS)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/telepresence-precision-cameras/index.html",
+    "productName": "TelePresence Precision Cameras",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/terminal-services-gateways/index.html",
+    "productName": "Terminal Services Gateways",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/thousandeyes-end-user-monitoring/index.html",
+    "productName": "ThousandEyes End User Monitoring",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/thousandeyes-internet-insights/index.html",
+    "productName": "ThousandEyes Internet Insights",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/thousandeyes-network-application-synthetics/index.html",
+    "productName": "ThousandEyes Network and Application Synthetics",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/transceiver-modules/index.html",
+    "productName": "Transceiver Modules",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/uc-integration-tm-microsoft-lync/index.html",
+    "productName": "UC Integration(TM) for Microsoft Lync",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/uc-one/index.html",
+    "productName": "UC-One",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-6300-series-fabric-interconnects/index.html",
+    "productName": "UCS 6300 Series Fabric Interconnects",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-5100-series-blade-server-chassis/index.html",
+    "productName": "UCS 5100 Series Blade Server Chassis",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-b-series-blade-servers/index.html",
+    "productName": "UCS B-Series Blade Servers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-c4200-series-rack-server-chassis/index.html",
+    "productName": "UCS C4200 Series Rack Server Chassis",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-c-series-rack-servers/index.html",
+    "productName": "UCS C-Series Rack Servers",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-central-software/index.html",
+    "productName": "UCS Central Software",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-director/index.html",
+    "productName": "UCS Director",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-e-series-servers/index.html",
+    "productName": "UCS E-Series Servers",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-express/index.html",
+    "productName": "UCS Express",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-manager/index.html",
+    "productName": "UCS Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-mini/index.html",
+    "productName": "UCS Mini",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-s-series-storage-servers/index.html",
+    "productName": "UCS S-Series Storage Servers",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-x-series-direct/index.html",
+    "productName": "UCS X-Series Direct",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-x-series-modular-system/index.html",
+    "productName": "UCS X-Series Modular System",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/ultra-services-proxy/index.html",
+    "productName": "Ultra Services Proxy",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/ultra-traffic-optimization/index.html",
+    "productName": "Ultra Traffic Optimization",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/ultra-reliable-wireless-backhaul/index.html",
+    "productName": "Ultra-Reliable Wireless Backhaul",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/umbrella/index.html",
+    "productName": "Umbrella",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-attendant-consoles/index.html",
+    "productName": "Unified Attendant Consoles",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-border-element/index.html",
+    "productName": "Unified Border Element",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-callconnectors/index.html",
+    "productName": "Unified CallConnectors",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-communications-licensing/index.html",
+    "productName": "Unified Communications Licensing",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-communications-manager-callmanager/index.html",
+    "productName": "Unified Communications Manager (CallManager)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-communications-manager-assistant/index.html",
+    "productName": "Unified Communications Manager Assistant",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-communications-manager-express/index.html",
+    "productName": "Unified Communications Manager Express",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-presence/index.html",
+    "productName": "Unified Communications Manager IM & Presence Service",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-communications-manager-session-management-edition/index.html",
+    "productName": "Unified Communications Manager Session Management Edition",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-communications-widgets/index.html",
+    "productName": "Unified Communications Widgets",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/unified-computing-system-adapters/index.html",
+    "productName": "Unified Computing System Adapters",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/contact-center/unified-contact-center-enterprise/index.html",
+    "productName": "Unified Contact Center Enterprise",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/contact-center/unified-contact-center-express/index.html",
+    "productName": "Unified Contact Center Express",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/contact-center/unified-customer-voice-portal/index.html",
+    "productName": "Unified Customer Voice Portal",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/contact-center/unified-ip-interactive-voice-response-ivr/index.html",
+    "productName": "Unified IP Interactive Voice Response (IVR)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/unified-ip-phone-7900-series/index.html",
+    "productName": "Unified IP Phone 7900 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/unified-ip-phone-6900-series/index.html",
+    "productName": "Unified IP Phone 6900 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/contact-center/unified-intelligence-center/index.html",
+    "productName": "Unified Intelligence Center",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/contact-center/unified-intelligent-contact-management-enterprise/index.html",
+    "productName": "Unified Intelligent Contact Management Enterprise",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-mobility/index.html",
+    "productName": "Unified Mobility",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-quick-connect/index.html",
+    "productName": "Unified Quick Connect",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/unified-sip-phone-3900-series/index.html",
+    "productName": "Unified SIP Phone 3900 Series",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unified-survivable-remote-site-telephony/index.html",
+    "productName": "Unified Survivable Remote Site Telephony",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/unity-connection/index.html",
+    "productName": "Unity Connection",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/universal-broadband-router-line-cards/index.html",
+    "productName": "Universal Broadband Router Line Card",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/universal-serial-bus-usb-cards/index.html",
+    "productName": "Universal Serial Bus (USB) Cards",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/vg-series-gateways/index.html",
+    "productName": "VG Series Gateways",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/versatile-interface-processors/index.html",
+    "productName": "Versatile Interface Processors",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/virtual-topology-system/index.html",
+    "productName": "Virtual Topology System",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/virtualized-infrastructure-manager/index.html",
+    "productName": "Virtualized Infrastructure Manager",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/voice-modules-interface-cards/index.html",
+    "productName": "Voice Modules and Interface Cards",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/voice-provisioning-tool/index.html",
+    "productName": "Voice Provisioning Tool",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/cloud-systems-management/voice-services-provisioning-tool/index.html",
+    "productName": "Voice Services Provisioning Tool",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/vulnerability-management/index.html",
+    "productName": "Vulnerability Management",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/wan-automation-engine/index.html",
+    "productName": "WAN Automation Engine (WAE)",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/wan-interface-cards/index.html",
+    "productName": "WAN Interface Cards",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/wan-switching-modules/index.html",
+    "productName": "WAN Switching Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/interfaces-modules/wdm-transmission-modules/index.html",
+    "productName": "WDM Transmission Modules",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/webattendant/index.html",
+    "productName": "WebAttendant",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/conferencing/webex-meetings/index.html",
+    "productName": "WebEx Meetings",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/webex-messenger/index.html",
+    "productName": "WebEx Messenger",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/webex-calling/index.html",
+    "productName": "Webex Calling",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/conferencing/webex-cloud-connected-audio/index.html",
+    "productName": "Webex Cloud Connected Audio",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/webex-cloud-connected-uc/index.html",
+    "productName": "Webex Cloud-Connected UC",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/contact-center/webex-contact-center/index.html",
+    "productName": "Webex Contact Center",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/conferencing/webex-edge/index.html",
+    "productName": "Webex Edge",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/webex-hardware-as-a-service/index.html",
+    "productName": "Webex Hardware as a Service",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/conferencing/webex-legislate/index.html",
+    "productName": "Webex Legislate",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/conferencing/webex-support/index.html",
+    "productName": "Webex Support",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/conferencing/webex-training/index.html",
+    "productName": "Webex Training",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/conferencing/webex-webcasting/index.html",
+    "productName": "Webex Webcasting",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/webex-work/index.html",
+    "productName": "Webex Work",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/unified-communications/webex-broadworks/index.html",
+    "productName": "Webex for  Cisco BroadWorks",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/wireless-control-system-navigator/index.html",
+    "productName": "Wireless Control System Navigator",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/routers/wireless-gateway-lorawan/index.html",
+    "productName": "Wireless Gateway for LoRaWAN",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/wireless/wireless-location-appliance/index.html",
+    "productName": "Wireless Location Appliance",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/collaboration-endpoints/webex-wireless-phone/index.html",
+    "productName": "Wireless Phone",
+    "error": "Missing required fields"
+  },
+  {
+    "productUrl": "https://www.cisco.com/c/en/us/products/security/xdr/index.html",
+    "productName": "XDR",
+    "error": "duplicate key value violates unique constraint \"UQ_23ce99fbe57ef9b37066cb05f73\""
+  }
+]

@@ -17,6 +17,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   ALL_PRODUCT_LIST_URL,
   initialScraperConfig,
+  retryForCompactScraperConfig,
   retryScraperConfig,
 } from './constant';
 
@@ -49,23 +50,34 @@ export class ScraperService implements OnModuleInit {
 
   async onModuleInit() {
     this.logger.log('Starting scraper service...');
-    // await this.startScraping();
+    await this.startScraping();
 
-    // this.logger.log('Retrying failed products...');
-    // await this.retryFailedLinks();
+    this.logger.log('Retrying failed products...');
+    await this.retryFailedLinks();
 
-    // this.logger.log('Retrying failed products for all content');
-    // await this.retryFailedLinksForAllContent();
+    this.logger.log('Retrying failed products for all compact text');
+    await this.retryFailedLinksForCompactText();
+
+    this.logger.log('Retrying failed products for all content');
+    await this.retryFailedLinksForAllContent();
+
+    this.logger.log('Retrying failed products for all body');
+    await this.retryFailedLinksForBody();
 
     // await this.startScrapingAllContent();
   }
 
-  async processLinks(
-    page: puppeteer.Page,
-    links: { productName: string; productUrl: string }[],
-    config: Record<string, any>,
-    isRetry: boolean = false,
-  ): Promise<void> {
+  async processLinks({
+    page,
+    links,
+    config,
+    isRetry = false,
+  }: {
+    page: puppeteer.Page;
+    links: { productName: string; productUrl: string }[];
+    config: Record<string, any>;
+    isRetry: boolean;
+  }): Promise<void> {
     for (const [index, link] of links.entries()) {
       const { productUrl: url, productName } = link;
 
@@ -103,7 +115,7 @@ export class ScraperService implements OnModuleInit {
           continue; // Skip saving if data is incomplete
         }
 
-        await this.saveProductData(productData);
+        await this.saveScraperData(productData);
 
         // Remove the link from failed products if it was in retry mode
         if (isRetry) {
@@ -151,7 +163,12 @@ export class ScraperService implements OnModuleInit {
 
       this.logger.log(`Found ${links.length} links on the page.`);
 
-      await this.processLinks(page, links, initialScraperConfig);
+      await this.processLinks({
+        page,
+        links,
+        config: initialScraperConfig,
+        isRetry: false,
+      });
     } catch (error) {
       this.logger.error(`Error during scraping: ${error.message}`);
     } finally {
@@ -175,7 +192,41 @@ export class ScraperService implements OnModuleInit {
       const browser = await puppeteer.launch();
       const page = await browser.newPage();
 
-      await this.processLinks(page, failedLinks, retryScraperConfig, true);
+      await this.processLinks({
+        page,
+        links: failedLinks,
+        config: retryScraperConfig,
+        isRetry: true,
+      });
+
+      await browser.close();
+      this.logger.log('Retry process completed.');
+    } catch (error) {
+      this.logger.error(`Error during retry process: ${error.message}`);
+    }
+  }
+
+  async retryFailedLinksForCompactText() {
+    const failedFilePath = this.failedProductPath;
+
+    try {
+      const fileData = await fs.readFile(failedFilePath, 'utf-8');
+      const failedLinks = JSON.parse(fileData) || [];
+
+      if (failedLinks.length === 0) {
+        this.logger.log('No failed links to retry.');
+        return;
+      }
+
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+
+      await this.processLinks({
+        page,
+        links: failedLinks,
+        config: retryForCompactScraperConfig,
+        isRetry: true,
+      });
 
       await browser.close();
       this.logger.log('Retry process completed.');
@@ -286,13 +337,13 @@ export class ScraperService implements OnModuleInit {
   async retryFailedLinksForAllContent() {
     try {
       const linksFileData = await fs.readFile(this.failedProductPath, 'utf-8');
-
       const productLinks = JSON.parse(linksFileData);
 
-      if (productLinks?.length === 0) {
+      if (!productLinks || productLinks.length === 0) {
         this.logger.log('No failed links to retry.');
         return;
       }
+
       const browser = await puppeteer.launch();
       const page = await browser.newPage();
 
@@ -300,38 +351,25 @@ export class ScraperService implements OnModuleInit {
         const { productUrl: url, productName } = link;
 
         this.logger.log(
-          `Processing ${index + 1}/${productLinks.length}: ${url} `,
+          `Processing ${index + 1}/${productLinks.length}: ${url}`,
         );
-        const possibleSelectors = ['#fw-content', '#fw-c-content'];
+
         try {
           await page.goto(url, { waitUntil: 'networkidle2', timeout: 5000 });
 
-          let foundSelector = null;
           let content = null;
 
-          // Attempt to find content using possible selectors
-          for (const selector of possibleSelectors) {
-            try {
-              await page.waitForSelector(selector, { timeout: 5000 });
-              foundSelector = selector;
-              break;
-            } catch (error) {
-              this.logger.warn(
-                `Selector ${selector} not found. ` || error.message,
-              );
-            }
-          }
-
-          if (foundSelector) {
-            // Extract content from the found selector
-            content = await page.evaluate((className) => {
-              const container = document.querySelector(className);
+          // Check for #fw-content specifically
+          try {
+            await page.waitForSelector('#fw-content', { timeout: 5000 });
+            content = await page.evaluate(() => {
+              const container: any = document.querySelector('#fw-content');
               return container ? container.innerText : '';
-            }, foundSelector);
-          } else {
-            // Fall back to scraping the entire body if no selector is found
+            });
+          } catch {
+            // If #fw-content is not found, fall back to scraping the entire body
             this.logger.warn(
-              `No matching selector found. Falling back to full page body.`,
+              `Selector #fw-content not found. Falling back to full page body.`,
             );
             content = await page.evaluate(() => document.body.innerText);
           }
@@ -356,10 +394,10 @@ export class ScraperService implements OnModuleInit {
             continue; // Skip saving if data is incomplete
           }
 
-          // await this.saveProductData(productData);
-          await this.saveProductData(productData);
-
+          // Save valid product data
+          await this.saveScraperData(productData);
           await this.removeFailedProduct(url);
+
           this.logger.log(
             `Saved product ${index + 1}/${productLinks.length}: ${
               productData.productName || url
@@ -369,7 +407,6 @@ export class ScraperService implements OnModuleInit {
           this.logger.error(
             `Error processing product at ${url}: ${error.message}`,
           );
-
           await this.saveFailedProductLineByLine({
             productUrl: url,
             productName,
@@ -377,7 +414,82 @@ export class ScraperService implements OnModuleInit {
           });
         }
       }
-      this.logger.log('All content Scraping completed successfully');
+
+      this.logger.log('All content scraping completed successfully');
+    } catch (error) {
+      this.logger.error('Error during scraping:', error.message);
+    } finally {
+      this.logger.log('Browser closed');
+    }
+  }
+
+  async retryFailedLinksForBody() {
+    try {
+      const linksFileData = await fs.readFile(this.failedProductPath, 'utf-8');
+      const productLinks = JSON.parse(linksFileData);
+
+      if (!productLinks || productLinks.length === 0) {
+        this.logger.log('No failed links to retry.');
+        return;
+      }
+
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+
+      for (const [index, link] of productLinks.entries()) {
+        const { productUrl: url, productName } = link;
+
+        this.logger.log(
+          `Processing ${index + 1}/${productLinks.length}: ${url}`,
+        );
+
+        try {
+          await page.goto(url, { waitUntil: 'load', timeout: 0 });
+
+          const content = await page.evaluate(() => document.body.innerText);
+
+          const productData = {
+            productName: productName,
+            productUrl: url,
+            content: content,
+            linkText: productName,
+          };
+
+          if (!content) {
+            this.logger.warn(
+              `Incomplete data for product: ${productName || url}. Marking as failed.`,
+            );
+
+            await this.saveFailedProductLineByLine({
+              productUrl: url,
+              productName,
+              error: 'Missing required fields',
+            });
+            continue; // Skip saving if data is incomplete
+          }
+
+          // Save valid product data
+          await this.saveScraperData(productData);
+          await this.removeFailedProduct(url);
+
+          this.logger.log(
+            `Saved product ${index + 1}/${productLinks.length}: ${
+              productData.productName || url
+            }`,
+          );
+        } catch (error) {
+          this.logger.error(
+            `Error processing product at ${url}: ${error.message}`,
+          );
+          await this.saveFailedProductLineByLine({
+            productUrl: url,
+            productName,
+            error: error.message,
+          });
+        }
+      }
+
+      this.logger.log('All body scraping completed successfully');
     } catch (error) {
       this.logger.error('Error during scraping:', error.message);
     } finally {
@@ -403,6 +515,8 @@ export class ScraperService implements OnModuleInit {
         url: productData.productUrl,
         content: textContent,
         vector,
+        jsonData: productData,
+        productName: productData?.linkText || '',
       });
       return await this.scrapperDataRepository.save(scraperData);
     } catch (error) {
@@ -454,6 +568,22 @@ export class ScraperService implements OnModuleInit {
     });
 
     return completionResponse.choices[0].message.content.trim();
+  }
+
+  public async getScraperRecordByUrl(url: string): Promise<ScraperData | null> {
+    try {
+      // Use findOneBy for a direct condition
+      const record = await this.scrapperDataRepository.findOneBy({ url });
+
+      if (!record) {
+        return null;
+      } else {
+        return record;
+      }
+    } catch (error) {
+      this.logger.warn(`Error fetching scraper record: ${error.message}`);
+      return null;
+    }
   }
 
   // async startScrapingAllContent() {

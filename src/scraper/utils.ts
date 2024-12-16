@@ -305,6 +305,42 @@ export async function extractProductData(
         }
       }
 
+      if (config.listing) {
+        const resourceElements = document.querySelectorAll(
+          config.listing.container,
+        );
+
+        if (resourceElements?.length === 0) {
+          console.warn(
+            `No resource elements found for: ${config.listing.container}`,
+          );
+        } else {
+          // Map over each resource element to extract titles and URLs
+          data.listing = Array.from(resourceElements).flatMap((resource) => {
+            // Find all links inside this specific resource
+            const links = resource.querySelectorAll(config.listing.fields.url);
+
+            // Return an array of objects for each link
+            return Array.from(links).map((link: any) => ({
+              title: link?.textContent.trim() || '',
+              url: (() => {
+                const href = link.getAttribute('href') || '';
+
+                // Prepend base URL if the link is relative
+                if (
+                  href &&
+                  !href.startsWith('http://') &&
+                  !href.startsWith('https://')
+                ) {
+                  return `https://www.cisco.com${href}`;
+                }
+                return href;
+              })(),
+            }));
+          });
+        }
+      }
+
       return data;
     },
     config,

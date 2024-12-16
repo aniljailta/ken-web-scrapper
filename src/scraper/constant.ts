@@ -79,3 +79,48 @@ export const retryScraperConfig = {
     },
   },
 };
+
+export const retryForCompactScraperConfig = {
+  preTitle: '#fw-pagetitle',
+  title: '#fw-pagetitle',
+  subtitle: '.info-description',
+  description: '.dmc-text',
+  benefits: {
+    container: '#benefits',
+    fields: {
+      title: '',
+      description: 'p',
+    },
+  },
+  dataModal: {
+    modal: '#models',
+    fields: {
+      title: 'h3',
+      content: 'li',
+    },
+  },
+  features: {
+    container: '#features', // The container for individual feature elements
+    fields: {
+      title: 'h3', // Selector for feature title
+      description: 'p', // Selector for feature description
+    },
+  },
+  resources: {
+    container: '#resources',
+    fields: {
+      title: 'li a',
+      url: 'li a[href]',
+    },
+  },
+
+  listing: {
+    container: '.combination-listing',
+    fields: {
+      title: '.contentLink',
+      url: '.contentLink[href]',
+    },
+  },
+  otherDescription: '.mlb-pilot p',
+  tableContent: '.table-columns p',
+};
