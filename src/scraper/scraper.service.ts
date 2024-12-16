@@ -58,8 +58,6 @@ export class ScraperService implements OnModuleInit {
 
     this.logger.log('Retrying failed products for all body');
     await this.retryFailedLinksForBody();
-
-    // await this.startScrapingAllContent();
   }
 
   async processLinks({
