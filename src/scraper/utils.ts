@@ -75,8 +75,14 @@ export async function extractProductData(
       // Extract single fields as strings
       for (const [key, selector] of Object.entries(config)) {
         if (typeof selector === 'string') {
-          const elements = extractText(selector);
-          data[key] = elements.length === 1 ? elements[0] : elements.join(' '); // Always a string
+          const elements = extractText(selector)
+            .map((item) => item.trim()) // Trim each item
+            .filter((item) => item !== ''); // Remove empty strings
+
+          // Join elements, then remove excessive whitespace (e.g., newlines, tabs) using a regex
+          const cleanedData = elements.join(' ').replace(/\s+/g, ' ');
+
+          data[key] = cleanedData;
         }
       }
 

@@ -9,6 +9,7 @@ import {
   cosineSimilarity,
   extractProductData,
   flattenAndConcatenate,
+  mergeAndDeduplicate,
   vectorize,
 } from './utils';
 import OpenAI from 'openai';
@@ -26,6 +27,7 @@ export class ScraperService implements OnModuleInit {
 
   private readonly logger = new Logger(ScraperService.name);
   private readonly failedProductPath = 'failed_list_product.json';
+  private readonly filePath = 'products.json';
 
   constructor(
     @InjectRepository(ScraperData)
@@ -44,20 +46,16 @@ export class ScraperService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    this.logger.log('Starting scraper service...');
-    await this.startScraping();
-
-    this.logger.log('Retrying failed products...');
-    await this.retryFailedLinks();
-
-    this.logger.log('Retrying failed products for all compact text');
-    await this.retryFailedLinksForCompactText();
-
-    this.logger.log('Retrying failed products for all content');
-    await this.retryFailedLinksForAllContent();
-
-    this.logger.log('Retrying failed products for all body');
-    await this.retryFailedLinksForBody();
+    // this.logger.log('Starting scraper service...');
+    // await this.startScraping();
+    // this.logger.log('Retrying failed products...');
+    // await this.retryFailedLinks();
+    // this.logger.log('Retrying failed products for all compact text');
+    // await this.retryFailedLinksForCompactText();
+    // this.logger.log('Retrying failed products for all content');
+    // await this.retryFailedLinksForAllContent();
+    // this.logger.log('Retrying failed products for all body');
+    // await this.retryFailedLinksForBody();
   }
 
   async processLinks({
@@ -74,6 +72,9 @@ export class ScraperService implements OnModuleInit {
     for (const [index, link] of links.entries()) {
       const { productUrl: url, productName } = link;
 
+      // const ifRecordExist = await this.getScraperRecordByUrl(url);
+
+      // if (!ifRecordExist) {
       this.logger.log(
         `Processing ${index + 1}/${links.length}: ${url} ${
           isRetry ? '(Retry Mode)' : ''
@@ -108,7 +109,7 @@ export class ScraperService implements OnModuleInit {
           continue; // Skip saving if data is incomplete
         }
 
-        await this.saveScraperData(productData);
+        await this.saveProductData(productData);
 
         // Remove the link from failed products if it was in retry mode
         if (isRetry) {
@@ -132,6 +133,7 @@ export class ScraperService implements OnModuleInit {
         });
       }
     }
+    // }
   }
 
   async startScraping() {
@@ -281,27 +283,27 @@ export class ScraperService implements OnModuleInit {
     }
   }
 
-  // private async saveProductData(
-  //   productData: Record<string, any>,
-  // ): Promise<Record<string, any>[]> {
-  //   try {
-  //     let existingProducts: Record<string, any>[] = [];
-  //     try {
-  //       const fileData = await fs.readFile(this.filePath, 'utf-8');
-  //       existingProducts = JSON.parse(fileData);
-  //     } catch {
-  //       this.logger.warn('No existing JSON file found, starting fresh.');
-  //     }
+  private async saveProductData(
+    productData: Record<string, any>,
+  ): Promise<Record<string, any>[]> {
+    try {
+      let existingProducts: Record<string, any>[] = [];
+      try {
+        const fileData = await fs.readFile(this.filePath, 'utf-8');
+        existingProducts = JSON.parse(fileData);
+      } catch {
+        this.logger.warn('No existing JSON file found, starting fresh.');
+      }
 
-  //     const allProducts = mergeAndDeduplicate(existingProducts, [productData]);
+      const allProducts = mergeAndDeduplicate(existingProducts, [productData]);
 
-  //     await fs.writeFile(this.filePath, JSON.stringify(allProducts, null, 2));
-  //     return allProducts;
-  //   } catch (error) {
-  //     this.logger.error('Error saving product data:', error.message);
-  //     throw error;
-  //   }
-  // }
+      await fs.writeFile(this.filePath, JSON.stringify(allProducts, null, 2));
+      return allProducts;
+    } catch (error) {
+      this.logger.error('Error saving product data:', error.message);
+      throw error;
+    }
+  }
 
   private async removeFailedProduct(url: string): Promise<void> {
     const failedFilePath = this.failedProductPath;
@@ -318,7 +320,6 @@ export class ScraperService implements OnModuleInit {
         failedFilePath,
         JSON.stringify(updatedFailedLinks, null, 2),
       );
-      this.logger.log(`Removed successfully processed product: ${url}`);
     } catch (error) {
       this.logger.error(
         `Error removing failed product (${url}):`,
@@ -346,7 +347,8 @@ export class ScraperService implements OnModuleInit {
         this.logger.log(
           `Processing ${index + 1}/${productLinks.length}: ${url}`,
         );
-
+        // const ifRecordExist = await this.getScraperRecordByUrl(url);
+        // if (!ifRecordExist) {
         try {
           await page.goto(url, { waitUntil: 'networkidle2', timeout: 5000 });
 
@@ -388,7 +390,7 @@ export class ScraperService implements OnModuleInit {
           }
 
           // Save valid product data
-          await this.saveScraperData(productData);
+          await this.saveProductData(productData);
           await this.removeFailedProduct(url);
 
           this.logger.log(
@@ -406,6 +408,7 @@ export class ScraperService implements OnModuleInit {
             error: error.message,
           });
         }
+        // }
       }
 
       this.logger.log('All content scraping completed successfully');
@@ -435,7 +438,9 @@ export class ScraperService implements OnModuleInit {
         this.logger.log(
           `Processing ${index + 1}/${productLinks.length}: ${url}`,
         );
+        // const ifRecordExist = await this.getScraperRecordByUrl(url);
 
+        // if (!ifRecordExist) {
         try {
           await page.goto(url, { waitUntil: 'load', timeout: 0 });
 
@@ -462,7 +467,7 @@ export class ScraperService implements OnModuleInit {
           }
 
           // Save valid product data
-          await this.saveScraperData(productData);
+          await this.saveProductData(productData);
           await this.removeFailedProduct(url);
 
           this.logger.log(
@@ -480,6 +485,7 @@ export class ScraperService implements OnModuleInit {
             error: error.message,
           });
         }
+        // }
       }
 
       this.logger.log('All body scraping completed successfully');
@@ -576,6 +582,36 @@ export class ScraperService implements OnModuleInit {
     } catch (error) {
       this.logger.warn(`Error fetching scraper record: ${error.message}`);
       return null;
+    }
+  }
+
+  public async scapeToDataBase(): Promise<boolean> {
+    try {
+      const fileData = await fs.readFile(this.filePath, 'utf-8');
+      const jsonData = JSON.parse(fileData);
+
+      for (const [index, productData] of jsonData.entries()) {
+        const { productUrl } = productData;
+        this.logger.log(
+          `Processing ${index + 1}/${jsonData.length} to database`,
+        );
+
+        const ifRecordExist = await this.getScraperRecordByUrl(productUrl);
+
+        if (!ifRecordExist) {
+          await this.saveScraperData(productData);
+          this.logger.log(`Saved successfully to database`);
+        } else {
+          this.logger.log(`Record already exists`);
+        }
+      }
+
+      this.logger.log(`Saved all data to database`);
+
+      return true;
+    } catch {
+      this.logger.warn('No existing JSON file found, starting fresh.');
+      return false;
     }
   }
 }

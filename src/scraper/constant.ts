@@ -43,6 +43,10 @@ export const initialScraperConfig = {
       description: '.cmp-teaser__description p',
     },
   },
+  otherFeature: '.features-accordion',
+  licensing: '.licensingtable',
+  integrationsCards: '.cds-c-integrations__cards-wrap',
+  spotLight: '.cds-c-spotlight',
 };
 
 export const retryScraperConfig = {
@@ -78,6 +82,9 @@ export const retryScraperConfig = {
       url: 'li a[href]',
     },
   },
+  licensing: '.licensingtable',
+  integrations: '.cds-c-integrations__cards-wrap',
+  spotLight: '.cds-c-spotlight',
 };
 
 export const retryForCompactScraperConfig = {
@@ -123,4 +130,7 @@ export const retryForCompactScraperConfig = {
   },
   otherDescription: '.mlb-pilot p',
   tableContent: '.table-columns p',
+  licensing: '.licensingtable',
+  integrations: '.cds-c-integrations__cards-wrap',
+  spotLight: '.cds-c-spotlight',
 };
