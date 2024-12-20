@@ -1,0 +1,657 @@
+[
+  {
+    "name": "1000",
+    "link": "https://www.cisco.com/c/en/us/support/switches/catalyst-1000-series-switches/series.html",
+    "internalLinks": [
+      {
+        "name": "Cisco Catalyst 1000 Series Switches At-a-Glance",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1000-series-switches/nb-06-cat1k-ser-switch-aag-cte-en.html"
+      },
+      {
+        "name": "Cisco Catalyst 1000 Series Switches Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1000-series-switches/nb-06-cat1k-ser-switch-ds-cte-en.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 1000 Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1000-series-switches/catalyst-1000-series-switches-eol.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the  Cisco Catalyst 1000 Series Switches (Select Models)",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1000-series-switches/catalyst-1000-ser-switches-eol.html"
+      },
+      {
+        "name": "Cisco Catalyst 1000 Series Switches FAQ",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1000-series-switches/nb-06-cat1k-ser-switch-faq-cte-en.html"
+      },
+      {
+        "name": "Field Notice: FN - 72250 - Cisco SUDI Certificate Expires When Registered to a PKI and Used to Configure Certain Functionalities on Some Catalyst Switching Platforms - Workaround Provided",
+        "link": "https://www.cisco.com/c/en/us/support/docs/field-notices/722/fn72250.html"
+      },
+      {
+        "name": "Release Notes for Cisco Catalyst 1000 Series Switches, Cisco IOS Release 15.2(7)Ex",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst1000/software/releases/15_2_7_e/release_notes/ol_15_2_7_e_c1000.html"
+      },
+      {
+        "name": "Consolidated Platform Command Reference, Cisco IOS Release 15.2(7)Ex (Catalyst 1000 Switches)",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst1000/software/releases/15_2_7_e/command_reference/b_1527e_1000_cr.html"
+      },
+      {
+        "name": "Hardware Installation Guide for the Cisco 1000 Series Integrated Services Router",
+        "link": "https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.html"
+      },
+      {
+        "name": "Cisco Catalyst 1000 Series 24-Port and 48-Port Switch Hardware Installation Guide",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst1000/hardware/installation/24_48_port_hig/b_c1000_24_48_hig.html"
+      },
+      {
+        "name": "Regulatory Compliance and Safety Information—Cisco Catalyst 1000 Series Switches",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/lan/catalyst1000/hardware/regulatory/RCSI-0428-book.pdf"
+      },
+      {
+        "name": "Cisco Catalyst 1000 Series 8-Port and 16-Port Switch Hardware Installation Guide",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst1000/hardware/installation/8_16_port_hig/b_c1000_8_16_hig.html"
+      },
+      {
+        "name": "Upgrade IOS on Catalyst 1000 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/switches/catalyst-1000-series-switches/217008-upgrade-catalyst-1000-switches.html"
+      },
+      {
+        "name": "Software Configuration Guide, Cisco IOS Release 15.2(7)Ex (Catalyst 1000 Switches)",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst1000/software/releases/15_2_7_e/configuration_guides/b_1527e_consolidated_c1000_cg.html"
+      },
+      {
+        "name": "System Message Guide for Cisco Catalyst Series Switches, Cisco IOS Release 15.2(7)Ex/XE 3.11Ex",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/lan/sys_messages/15-2e/system_error_messages_15_2_7Ex.xlsx"
+      },
+      {
+        "name": "Migration Guide from Cisco Catalyst 2960-L and 2960-Plus Series Switches to the Cisco Catalyst 1000 Series",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1000-series-switches/guide-c07-743764.html"
+      },
+      {
+        "name": "Cisco Catalyst 1000 Series Switches White Paper",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1000-series-switches/white-paper-c11-743809.html"
+      },
+      {
+        "name": "Benefits of Upgrading to Cisco Catalyst 1000 Series Switches Feature Comparison",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1000-series-switches/nb-06-upgrading-cat1k-fc-cte-en.html"
+      },
+      {
+        "name": "Ordering Guide for Cisco Catalyst 1000 Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1000-series-switches/nb-06-cat1k-og-cte-en.html"
+      }
+    ]
+  },
+  {
+    "name": "1200",
+    "link": "https://www.cisco.com/c/en/us/support/switches/catalyst-1200-series-switches/series.html",
+    "internalLinks": [
+      {
+        "name": "Cisco Catalyst 1200 and 1300 Series Switches At-a-Glance",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1200-series-switches/nb-06-cat1200-1300-ser-aag-cte-en.html"
+      },
+      {
+        "name": "Cisco Catalyst 1200 Series Switches Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1200-series-switches/nb-06-cat1200-ser-data-sheet-cte-en.html"
+      },
+      {
+        "name": "Open Source Used In Cisco Catalyst C1200 and 1300 Series Switches 4.1.x",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/osd/C1200and1300SeriesSwitches-41x-1699862243.pdf"
+      },
+      {
+        "name": "Release Note for Cisco Catalyst 1200 and 1300 Series Switches Firmware Version 4.0.0.91 - 4.1.3.36",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/release-notes/rn_cat-1200-1300.pdf"
+      },
+      {
+        "name": "Open Source Used In Cisco Catalyst C1200 and 1300 Series Switches 4.0.x",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/osd/C1200and1300SeriesSwitches-40x-1690421898.pdf"
+      },
+      {
+        "name": "Regulatory Compliance and Safety Information - Catalyst 1200 and 1300 Series Switches\n      Information sur la réglementation de la conformité et de sécurité-Catalyst 1200 and 1300 Series Switches",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/RCSI/rcsi-0232-book.pdf"
+      },
+      {
+        "name": "Upgrade Firmware on a Catalyst 1200 or 1300 Series Switch",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3621-upgrade-firmware-catalyst1200-1300.html"
+      },
+      {
+        "name": "Day Zero Setup of Catalyst 1200 and 1300 Switches Using the CLI",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3582-day-zero-setup-catalyst-1200-1300-switches-using-cli.html"
+      },
+      {
+        "name": "Day Zero Setup of Catalyst 1200 and 1300 Switches Using the Web User Interface",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3581-day-zero-setup-catalyst-1200-1300-switches-using-web-user-interface.html"
+      },
+      {
+        "name": "Intermediate Certificates and Certificate Chain in Catalyst 1200 and 1300 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3699-intermediate-certificates-catalyst-switches.html"
+      },
+      {
+        "name": "Onboard Packet Capture in Catalyst 1200 and 1300 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3698-onboard-packet-capture-catalyst-switches.html"
+      },
+      {
+        "name": "Auto Surveillance VLAN in Catalyst 1200 and 1300 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3629-auto-surveillance-vlan-catalyst-1200-1300-switches.html"
+      },
+      {
+        "name": "Configure Dying Gasp on Catalyst 1300 Switches using the Web User Interface",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3603-configure-dying-gasp-catalyst-1300-switches-using-web-user-interface.html"
+      },
+      {
+        "name": "Configure Bluetooth Settings in  Catalyst 1200 and 1300 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3602-bluetooth-settings-in-catalyst-1200-1300-switches.html"
+      },
+      {
+        "name": "Configure Dying Gasp on Catalyst 1300 Switches using CLI",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3619-configure-dying-gasp-catalyst-1300-switches-using-cli.html"
+      },
+      {
+        "name": "Catalyst 1200 Admin Guide",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/Admin-Guide/catalyst-1200-admin-guide.html"
+      },
+      {
+        "name": "Cisco Catalyst 1200 Series CLI Guide",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/cli/C1200-cli.html"
+      },
+      {
+        "name": "Reboot or Factory Reset a Catalyst 1200 or 1300 Switch",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3620-reboot-factory-reset-catalyst-1200-1300-switches.html"
+      },
+      {
+        "name": "Overview of Common CLI Commands in Catalyst 1200 and 1300 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3622-overview-common-cli-commands-catalyst-1200-1300-switches.html"
+      }
+    ]
+  },
+  {
+    "name": "1300",
+    "link": "https://www.cisco.com/c/en/us/support/switches/catalyst-1300-series-switches/series.html",
+    "internalLinks": [
+      {
+        "name": "Cisco Catalyst 1200 and 1300 Series Switches At-a-Glance",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1200-series-switches/nb-06-cat1200-1300-ser-aag-cte-en.html"
+      },
+      {
+        "name": "Cisco Catalyst 1300 Series Switches Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1300-series-switches/nb-06-cat1300-ser-data-sheet-cte-en.html"
+      },
+      {
+        "name": "Open Source Used In Cisco Catalyst C1200 and 1300 Series Switches 4.1.x",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/osd/C1200and1300SeriesSwitches-41x-1699862243.pdf"
+      },
+      {
+        "name": "Release Note for Cisco Catalyst 1200 and 1300 Series Switches Firmware Version 4.0.0.91 - 4.1.3.36",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/release-notes/rn_cat-1200-1300.pdf"
+      },
+      {
+        "name": "Open Source Used In Cisco Catalyst C1200 and 1300 Series Switches 4.0.x",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/osd/C1200and1300SeriesSwitches-40x-1690421898.pdf"
+      },
+      {
+        "name": "Regulatory Compliance and Safety Information - Catalyst 1200 and 1300 Series Switches\n      Information sur la réglementation de la conformité et de sécurité-Catalyst 1200 and 1300 Series Switches",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/RCSI/rcsi-0232-book.pdf"
+      },
+      {
+        "name": "Upgrade Firmware on a Catalyst 1200 or 1300 Series Switch",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3621-upgrade-firmware-catalyst1200-1300.html"
+      },
+      {
+        "name": "Day Zero Setup of Catalyst 1200 and 1300 Switches Using the CLI",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3582-day-zero-setup-catalyst-1200-1300-switches-using-cli.html"
+      },
+      {
+        "name": "Day Zero Setup of Catalyst 1200 and 1300 Switches Using the Web User Interface",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3581-day-zero-setup-catalyst-1200-1300-switches-using-web-user-interface.html"
+      },
+      {
+        "name": "TACACS+ Server Configuration on the Catalyst 1300 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3733-tacacs-server-configuration-on-the-catalyst-1300-switches.html"
+      },
+      {
+        "name": "Configuration of Change of Authorization in Catalyst 1300 Switch using CLI",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3720-basic-config-change-of-authorization-catalyst-1300-switch-cli.html"
+      },
+      {
+        "name": "Intermediate Certificates and Certificate Chain in Catalyst 1200 and 1300 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3699-intermediate-certificates-catalyst-switches.html"
+      },
+      {
+        "name": "Onboard Packet Capture in Catalyst 1200 and 1300 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3698-onboard-packet-capture-catalyst-switches.html"
+      },
+      {
+        "name": "Auto Surveillance VLAN in Catalyst 1200 and 1300 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3629-auto-surveillance-vlan-catalyst-1200-1300-switches.html"
+      },
+      {
+        "name": "Configure Dying Gasp on Catalyst 1300 Switches using the Web User Interface",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3603-configure-dying-gasp-catalyst-1300-switches-using-web-user-interface.html"
+      },
+      {
+        "name": "Configure Bluetooth Settings in  Catalyst 1200 and 1300 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3602-bluetooth-settings-in-catalyst-1200-1300-switches.html"
+      },
+      {
+        "name": "Configure Dying Gasp on Catalyst 1300 Switches using CLI",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3619-configure-dying-gasp-catalyst-1300-switches-using-cli.html"
+      },
+      {
+        "name": "Cisco Catalyst 1300 Switches Series CLI Guide",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/cli/C1300-cli.html"
+      },
+      {
+        "name": "Catalyst 1300 Admin Guide",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/Admin-Guide/catalyst-1300-admin-guide.html"
+      },
+      {
+        "name": "Reboot or Factory Reset a Catalyst 1200 or 1300 Switch",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3620-reboot-factory-reset-catalyst-1200-1300-switches.html"
+      },
+      {
+        "name": "Overview of Common CLI Commands in Catalyst 1200 and 1300 Switches",
+        "link": "https://www.cisco.com/c/en/us/support/docs/smb/switches/Catalyst-switches/kmgmt3622-overview-common-cli-commands-catalyst-1200-1300-switches.html"
+      }
+    ]
+  },
+  {
+    "name": "2960",
+    "link": "https://www.cisco.com/c/en/us/support/switches/catalyst-2960-series-switches/series.html",
+    "internalLinks": [
+      {
+        "name": "Cisco Catalyst 2960-S and 2960 Series Switches with LAN Lite Software Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-series-switches/product_data_sheet0900aecd806b0bd8.html"
+      },
+      {
+        "name": "Cisco Catalyst 2960-S and 2960 Series Switches with LAN Base Software Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-series-switches/product_data_sheet0900aecd80322c0c.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco IOS Software and DWP dot1x Licenses for Catalyst 2960 Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-series-switches/ios-software-dwp-dot1x-licenses-catalyst-2960-series-switches-eol.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco ONE DNA Essential and IOS Software Licenses for Catalyst 2960-X Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-x-series-switches/one-dna-essential-ios-software-licenses-catalyst-2960-x-series-switches-eol.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco ONE C2960XR DNA Essential Ongoing Innovation Licenses",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-xr-series-switches/one-c2960xr-dna-essential-ongoing-innovation-licenses-eol.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 2960 and 3750 Series Switches Accessories",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-series-switches/eos-eol-notice-c51-738149.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 2960 Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-series-switches/eos-eol-notice-c51-730121.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 2960G 24 and 48-Port Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-series-switches/end_of_life_c51-674040.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 2960 and 3560 8-Port and 12-Port Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-series-switches/eol__C51-726504.html"
+      }
+    ]
+  },
+  {
+    "name": "2960-C",
+    "link": "https://www.cisco.com/c/en/us/support/switches/catalyst-2960-c-series-switches/series.html",
+    "internalLinks": [
+      {
+        "name": "Cisco Catalyst 2960-C and 3560-C Series Compact Switches Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-c-series-switches/data_sheet_c78-639705.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco IOS Software Licenses for Catalyst 2960-C Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-c-series-switches/ios-software-licenses-catalyst-2960-c-series-switches-eol.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst C2960C switches",
+        "link": "https://www.cisco.com/c/en/us/products/switches/catalyst-2960-c-series-switches/eos-eol-notice-c51-743071.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 2960C",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-c-series-switches/eos-eol-notice-c51-744343.html"
+      },
+      {
+        "name": "Release Notes for Catalyst 2960-C and 2960-Plus Switches, Cisco IOS Release 15.2(7)Ex",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/software/releasenotes/ol_15_2_7_ex_c2960c_p.html"
+      },
+      {
+        "name": "Release Notes for the Catalyst 2960-C and 2960-Plus Switches, Cisco IOS Release 15.2(4)E",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/software/release/15-2_4_e/releasenotes/rn-1524e-2960-c-plus.html"
+      },
+      {
+        "name": "Release Notes for the Catalyst 2960, 2960-S, 2960-SF, 2960-C, 2960-Plus, and 3560-C Switches, Cisco IOS Release 15.2(2)E",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/software/release/15-2_2_e/release/notes/OL_32525_01.html"
+      },
+      {
+        "name": "Release Notes for Catalyst 2960-C and 2960-Plus Switches, Cisco IOS Release 15.2(6)E",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/software/release/15-2_6_e/releasenotes/rn-1526e-2960-c-plus.html"
+      },
+      {
+        "name": "Release Notes for the Catalyst 3750, 3560, 3560-C, 2960, 2960-S, 2960-C, and 2960-Plus Switches, Cisco IOS Release 15.0(2)SE and Later",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3750/software/release/15-0_2_se/release/notes/OL25301.html"
+      },
+      {
+        "name": "Release Notes for Catalyst 2960-C and 2960-Plus Switches, Cisco IOS Release 15.2(5)E",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/software/release/15-2_5_E/releasenotes/rn-1525e-2960-c-plus.html"
+      },
+      {
+        "name": "Release Notes for the Catalyst 2960-S, 2960-C, 2960-Plus, and 3560-C Switches, Cisco IOS Release 15.2(1)E and Later",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/software/release/15-2_1_e/release/notes/OL29710.html"
+      },
+      {
+        "name": "Release Notes for the Catalyst 2960-C and 2960-Plus Switches, Cisco IOS Release 15.2(3)E and Later",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/software/release/15-2_3_e/release/notes/rn-1523e-2960plus.html"
+      },
+      {
+        "name": "Release Notes for the Catalyst 2960-C Switch, Cisco IOS Release 12.2(55)EX1 and Later",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960c_3560c/software/release/12-2_55_ex/release/notes/ol23942.html"
+      },
+      {
+        "name": "Documentation Roadmap, Cisco IOS Release 15.2(3)E (Cisco Catalyst Switches 2960-Plus, 2960-C, 3750-X and 3560-X",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/software/release/15-2_3_e/doc_roadmap/1523e-2k3k-roadmap.html"
+      },
+      {
+        "name": "Documentation Roadmap, Cisco IOS Release 15.2(2)E (Cisco Catalyst Switches 2960, 2960-S, 2960-SF, 2960-Plus, 2960-C, 3560-C, 3750-X, and 3560-X; Cisco Industrial Ethernet Switches 2000, 3000, and 3010)",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/software/release/15-2_2_e/doc_roadmap/1522e-2k3k-roadmap.html"
+      },
+      {
+        "name": "Catalyst 3560-C and 2960-C Getting Started Guide (English)",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/quick/guide/all_languages/2960c_3560c_gsg_eng.pdf"
+      },
+      {
+        "name": "Catalyst 3560-C and 2960-C Switch Hardware Installation Guide",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/installation/guide/2960c_3560c_hig.html"
+      },
+      {
+        "name": "Regulatory Compliance and Safety Information for the Catalyst 3560-C and 2960-C Switches",
+        "link": "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/regulatory/compliance/2960c_3560Crcsi.html"
+      },
+      {
+        "name": "Catalyst 3560-C and 2960-C Getting Started Guide (French)",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/quick/guide/all_languages/2960c_3560c_gsg_fr.pdf"
+      },
+      {
+        "name": "Guide dÆinstallation matΘrielle des commutateurs Catalyst 3560-C et 2960-C (French version)",
+        "link": "http://www.cisco.com/en/US/docs/switches/lan/catalyst2960c_3560c/hardware/installation/guide/French_files/3560c_2960c_hig_FR.pdf"
+      },
+      {
+        "name": "Informations relatives α la conformitΘ et α la sΘcuritΘ des commutateurs Catalyst 3560-C et 2960-C (French version)",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/regulatory/compliance/French_files/2960c_3560Crcsi_fr.pdf"
+      },
+      {
+        "name": "Catalyst 3560-C and 2960-C Getting Started Guide (German)",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/quick/guide/all_languages/2960c_3560c_gsg_de.pdf"
+      },
+      {
+        "name": "Catalyst 3560-C and 2960-C Getting Started Guide (Italian)",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/quick/guide/all_languages/2960c_3560c_gsg_it.pdf"
+      },
+      {
+        "name": "Catalyst 3560-C and 2960-C Getting Started Guide (Japanese)",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/quick/guide/all_languages/2960c_3560c_gsg_jp.pdf"
+      },
+      {
+        "name": "Catalyst 3560-C and 2960-C Getting Started Guide (Spanish)",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/quick/guide/all_languages/2960c_3560c_gsg_es.pdf"
+      },
+      {
+        "name": "Catalyst 3560-C and 2960-C Getting Started Guide (simplified Chinese)",
+        "link": "https://www.cisco.com/c/dam/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/quick/guide/all_languages/2960c_3560c_gsg_zh.pdf"
+      }
+    ]
+  },
+
+  {
+    "name": "3560",
+    "link": "https://www.cisco.com/c/en/us/support/switches/catalyst-3560-series-switches/series.html",
+    "internalLinks": [
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3750G, 3560G, 3750-E, and 3560-E Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/eol_c51-696372.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3560V2 and 3750V2 Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/eos-eol-notice-c51-730227.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3750 24- and 48-Port 10/100, 3560 24- and 48-Port 10/100 Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/end_of_life_notice_c51-574778.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3560 IOS Advanced IP Services Feature Set",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3560-series-switches/eol_c51_519208.html"
+      }
+    ]
+  },
+  {
+    "name": "3560-C",
+    "link": "https://www.cisco.com/c/en/us/support/switches/catalyst-3560-c-series-switches/series.html",
+    "internalLinks": [
+      {
+        "name": "Cisco Catalyst 2960-C and 3560-C Series Compact Switches Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-c-series-switches/data_sheet_c78-639705.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Software for Catalyst 3560-C Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3560-c-series-switches/software-catalyst-3560-c-series-switches-eol.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3560-C Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3560-c-series-switches/eos-eol-notice-c51-736180.html"
+      }
+    ]
+  },
+
+  {
+    "name": "3750",
+    "link": "https://www.cisco.com/c/en/us/support/switches/catalyst-3750-series-switches/series.html",
+    "internalLinks": [
+      {
+        "name": "Cisco Catalyst 3750 Series Switches Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/product_data_sheet0900aecd80371991.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3750-X Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-x-series-switches/catalyst-3750-x-series-switches-eol.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3750 Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/catalyst-3750-series-switches-eol.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3750G, 3560G, 3750-E, and 3560-E Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/eol_c51-696372.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco IOS Software Release 15.0(2)SE for Cisco Catalyst 3750-X, 3560-X, 3750-E, 3560-E, 3750G, 3560G, 3750V2, 3560V2, 2960, 2960-S, 3560-C, and 2960-C Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/eos-eol-notice-c51-736302.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3560V2 and 3750V2 Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/eos-eol-notice-c51-730227.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco IOS Software Release 12.2(55)SE for Cisco Catalyst 3750-X, 3750, 3750-E, 3750G, 3750V2, 3560-X, 3560, 3560-E, 3560-C, 3560G, 3560V2, 2960-S, 2960-C, and 2960 Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/eos-eol-notice-c51-731425.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3750G-24TS 1.5 Rack-Unit Stackable Switch",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/eol_c51_489759.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco IOS Software Release 12.2(50)SE for Cisco Catalyst 3750, 3560, 2960, and ME 3400 Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/eol_C51-723166.html"
+      },
+      {
+        "name": "Relocation content for EOL7415",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/eol_c51-646639.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco IOS Software Releases 12.2(18)SE, 12.2(20)SE, and 12.2(25)SEA through 12.2(25)SEG for Cisco Catalyst 3750, 3560, 2960, 2970, ME-2400, ME-3400, ME-3750, CGESM & Express 500 Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/eol_c51-692952.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3750-24FS Switch",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/end_of_life_c51-687707.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3750 24- and 48-Port 10/100, 3560 24- and 48-Port 10/100 Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/end_of_life_notice_c51-574778.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Wireless LAN Controller Software Versions 3.0, 3.1, 3.2, 4.0, 4.1, 5.0, and 5.1",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/end_of_life_notice_c51-624769.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3750 IOS Advanced IP Services Feature Set",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/eol_c51_519635.html"
+      },
+      {
+        "name": "End-of-Sale Notice Cisco Catalyst 3750G-16TD Switch",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-series-switches/prod_end-of-life_notice0900aecd806228c3.html"
+      },
+      {
+        "name": "EOS/EOS for Cisco 1000BASE-CWDM Line of CWDM Passive Devices",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-4500-series-switches/prod_end-of-life_notice0900aecd8016fb77.html"
+      }
+    ]
+  },
+  {
+    "name": "3750-X",
+    "link": "https://www.cisco.com/c/en/us/support/switches/catalyst-3750-x-series-switches/series.html",
+    "internalLinks": [
+      {
+        "name": "Cisco Catalyst 3750-X and 3560-X Series Switches Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3560-x-series-switches/data_sheet_c78-584733.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3560-X and 3750-X Power Supplies, Cables, and Other Accessories",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3750-x-series-switches/eos-eol-notice-c51-737191.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst 3560-X and 3750-X Series Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-3560-x-series-switches/eos-eol-notice-c51-736139.html"
+      },
+      {
+        "name": "Retracted: Change in Product Part Number Announcement for the Cisco Catalyst 3560-X and 3750-X Power Supplies and Cables",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-6500-series-switches/end_of_life_notice_c51-729195.html"
+      }
+    ]
+  },
+
+  {
+    "name": "ME 3400E Ethernet Access",
+    "link": "https://www.cisco.com/c/en/us/support/switches/me-3400e-series-ethernet-access-switches/series.html",
+    "internalLinks": [
+      {
+        "name": "Cisco ME 3400E Series Ethernet Access Switches Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/me-3400e-series-ethernet-access-switches/data_sheet_c78-495220.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco IOS Release 12.2(60) for Cisco ME 3400E Series Ethernet Access Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/me-3400e-series-ethernet-access-switches/eos-eol-notice-c51-741025.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco ME 3400E Series Ethernet Access Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/me-3400e-series-ethernet-access-switches/eos-eol-notice-c51-739759.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco IOS Releases 12.2(44) - 12.2(58) for Cisco ME 3400E Series Ethernet Access Switches",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/me-3400e-series-ethernet-access-switches/eos-eol-notice-c51-739760.html"
+      }
+    ]
+  },
+  {
+    "name": "ME 4600 Multiservice Optical Access Platform",
+    "link": "https://www.cisco.com/c/en/us/support/switches/me-4600-series-multiservice-optical-access-platform/series.html",
+    "internalLinks": [
+      {
+        "name": "Cisco ME 4600 Series Optical Network Terminal Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/me-4600-series-multiservice-optical-access-platform/datasheet-c78-730446.html"
+      },
+      {
+        "name": "Cisco ME 4600 Series Optical Line Terminal Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/me-4600-series-multiservice-optical-access-platform/datasheet-c78-730445.html"
+      },
+      {
+        "name": "Cisco ME 4600 Series Agora-NG Network Management Solution Data Sheet",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/me-4600-series-multiservice-optical-access-platform/datasheet-c78-730444.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Cisco ME 4600 Series Agora NG Express Edition - Resource & Service Managers",
+        "link": "https://www.cisco.com/c/en/us/products/switches/me-4600-series-multiservice-optical-access-platform/eos-eol-notice-c51-739596.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco ME 4600 Series Multiservice Optical Access Platform",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/me-4600-series-multiservice-optical-access-platform/eos-eol-notice-c51-739514.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco ME 4600 Series Multiservice Optical Access Platform GPON Components",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/me-4600-series-multiservice-optical-access-platform/eos-eol-notice-c51-738203.html"
+      }
+    ]
+  },
+  {
+    "name": "Blade SFS Solution for Dell",
+    "link": "https://www.cisco.com/c/en/us/support/switches/sfs-solution-dell/series.html",
+    "internalLinks": [
+      {
+        "name": "Cisco M SFS7000E Installation Note: InfiniBand Blade Switch for the Dell Modular Server Chassis",
+        "link": "https://www.cisco.com/c/en/us/td/docs/server_nw_virtual/m_sfs7000e/installation/note/sfs7000e.html"
+      },
+      {
+        "name": "Dell M1000E Software Supplementary Note for the Cisco M SFS7000E InfiniBand Switch",
+        "link": "https://www.cisco.com/c/en/us/td/docs/server_nw_virtual/m_sfs7000e/software/supplementary/note/7000e_sw.html"
+      },
+      {
+        "name": "Regulatory Compliance and Safety Information for the Cisco M SFS7000E InfiniBand Blade Switch for the Dell Modular Server Chassis",
+        "link": "https://www.cisco.com/c/en/us/td/docs/server_nw_virtual/m_sfs7000e/regulatory/compliance/dellrcsi.html"
+      },
+      {
+        "name": "Dell M1000E Host Driver Software Entitlement for the Cisco M SFS7000E Primary Switch",
+        "link": "https://www.cisco.com/c/en/us/td/docs/server_nw_virtual/m_sfs7000e/software/installation/note/7000eist.html"
+      }
+    ]
+  },
+  {
+    "name": "Blade SFS Solution for IBM BladeCenter-H",
+    "link": "https://www.cisco.com/c/en/us/support/switches/sfs-solution-ibm-bladecenter-h/series.html",
+    "internalLinks": [
+      {
+        "name": "Release Notes for TopspinOS Release 2.6.0",
+        "link": "https://www.cisco.com/c/en/us/td/docs/server_nw_virtual/2-6-0_release/rnote2_6.html"
+      },
+      {
+        "name": "Cisco 4x InfiniBand HCA Expansion Card for IBM BladeCenter User Guide",
+        "link": "https://www.cisco.com/c/en/us/td/docs/server_nw_virtual/blade_center_2/infiniband_hca/ib_hca.html"
+      },
+      {
+        "name": "Cisco 4x InfiniBand Switch Module for IBM Blade Center User Guide",
+        "link": "https://www.cisco.com/c/en/us/td/docs/server_nw_virtual/blade_center_2/infiniband_switch/ibswitch.html"
+      }
+    ]
+  },
+  {
+    "name": "Blade Switches for HP",
+    "link": "https://www.cisco.com/c/en/us/support/switches/blade-switches-hp/series.html",
+    "internalLinks": [
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst Blade Switch 3120 for HP",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/blade-switches-hp/eos-eol-notice-c51-733651.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Cisco Catalyst Blade Switch 3020 for HP",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/blade-switches-hp/eol_C51-728247.html"
+      },
+      {
+        "name": "End-of-Sale and End-of-Life Announcement for the Advanced IP Services Software License for CBS3120",
+        "link": "https://www.cisco.com/c/en/us/products/collateral/switches/blade-switches-hp/eol_c51_522961.html"
+      }
+    ]
+  }
+]
