@@ -4,6 +4,7 @@ import * as puppeteer from 'puppeteer';
 import * as pdf from 'pdf-parse';
 import axios from 'axios';
 
+// Tokenize the input text into an array of words
 function tokenize(text: string): string[] {
   return text
     .toLowerCase()
@@ -12,6 +13,7 @@ function tokenize(text: string): string[] {
     .filter(Boolean); // Remove empty strings
 }
 
+// Build a vocabulary of unique words from an array of texts
 export function buildVocabulary(texts: string[]): string[] {
   const uniqueWords = new Set<string>();
   texts.forEach((text) => {
@@ -21,6 +23,7 @@ export function buildVocabulary(texts: string[]): string[] {
   return Array.from(uniqueWords);
 }
 
+// Flatten a JSON object and concatenate its values into a single string
 export async function flattenAndConcatenate(
   json: Record<string, any>,
 ): Promise<string> {
@@ -35,6 +38,7 @@ export async function flattenAndConcatenate(
   return flatten(json).join(' ');
 }
 
+// Vectorize a text based on a given vocabulary
 export function vectorize(text: string, vocabulary: string[]): number[] {
   const tokens = tokenize(text);
   const wordCounts = tokens.reduce(
@@ -47,7 +51,7 @@ export function vectorize(text: string, vocabulary: string[]): number[] {
   return vocabulary.map((word) => wordCounts[word] || 0);
 }
 
-// Calculate cosine similarity
+// Calculate cosine similarity between two vectors
 export function cosineSimilarity(a: number[], b: number[]): number {
   const dotProduct = a.reduce((sum, ai, i) => sum + ai * b[i], 0);
   const magnitudeA = Math.sqrt(a.reduce((sum, ai) => sum + ai ** 2, 0));
@@ -55,6 +59,7 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   return dotProduct / (magnitudeA * magnitudeB);
 }
 
+// Extract product data from a web page using Puppeteer
 export async function extractProductData(
   page: puppeteer.Page,
   url: string,
@@ -371,6 +376,7 @@ export async function extractProductData(
   return productData;
 }
 
+// Extract content from a data sheet link on a web page
 export async function extractDataSheetContent(page) {
   // Static configurations
   const linkSelector = 'a'; // Selector to identify links
@@ -449,13 +455,14 @@ export function mergeAndDeduplicate(
   return Array.from(productMap.values());
 }
 
+// Scrape content from a Word section link
 export async function scrapeWordSectionContent(
   link: string,
   selectors: string[],
 ): Promise<string | null> {
+  console.log(`Processing link: ${link}`);
   if (link.endsWith('.pdf')) {
     // Handle PDF links
-    console.log(`PDF detected: ${link}`);
     return await extractPdfContent(link);
   } else if (link.endsWith('.html')) {
     let browser;
@@ -476,19 +483,29 @@ export async function scrapeWordSectionContent(
           }, selector);
 
           if (content) {
-            console.log(`Content found with selector: ${selector}`);
             return htmlToText(content, {
               wordwrap: 130,
               preserveNewlines: true,
             });
           }
         } catch {
-          console.warn(`Selector not found or content empty: ${selector}`);
+          // console.warn(`Selector not found or content empty: ${selector}`);
         }
       }
 
-      // If no content is found
-      console.warn(`No content found for link: ${link}`);
+      const pageLink = await page.evaluate(() => {
+        const container = document.querySelector(
+          '.downloadOptions li .pdfIcon',
+        );
+        return container ? container.getAttribute('href') : null;
+      });
+
+      if (pageLink && pageLink.endsWith('.pdf')) {
+        const link = 'https://www.cisco.com' + pageLink;
+        // Handle PDF links
+        const contentData = await extractPdfContent(link);
+        return contentData || null;
+      }
       return null;
     } catch (error) {
       console.error(`Error scraping content for link: ${link}`, error);
@@ -501,6 +518,7 @@ export async function scrapeWordSectionContent(
   }
 }
 
+// Extract content from a PDF link
 async function extractPdfContent(pdfUrl: string): Promise<string | null> {
   try {
     // Download the PDF
@@ -511,20 +529,21 @@ async function extractPdfContent(pdfUrl: string): Promise<string | null> {
     // Parse PDF content
     const data = await pdf(response.data);
 
-    // Get the text content
-    const content = data.text;
+    // Post-process text content to add spaces
+    const processedContent = data.text.replace(/([a-zA-Z])([A-Z])/g, '$1 $2');
 
-    if (!content || content.trim().length === 0) {
+    if (!processedContent || processedContent.trim().length === 0) {
       return null;
     }
 
-    return content.trim();
+    return processedContent.trim();
   } catch (error) {
     console.error('Error extracting PDF content:', error);
     return null;
   }
 }
 
+// Merge all products from a file and write the merged result to another file
 export async function mergeAllProducts({
   readFile,
   writeFile,

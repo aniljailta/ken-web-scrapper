@@ -855,7 +855,7 @@ export class ScraperService implements OnModuleInit {
     selector: string,
   ): Promise<any[]> {
     let browser;
-    console.log({ productLink });
+    // console.log({ productLink });
     try {
       browser = await this.initBrowser();
       const page = await browser.newPage();
@@ -981,8 +981,8 @@ export class ScraperService implements OnModuleInit {
 
   // Service to process products and store scraped data
   async scrapeProductsContent() {
-    // const jsonFilePath = this.mergeAdditionalProductListFile;
-    const jsonFilePath = this.tempListFile;
+    const jsonFilePath = this.mergeAdditionalProductListFile;
+    // const jsonFilePath = this.tempListFile;
     const outputFilePath = this.mergeAdditionalProductListFileWithContent;
     const selectors = ['.WordSection1', '#eot-doc-wrapper'];
     const rawData = await fs.readFile(jsonFilePath, 'utf-8');
@@ -992,10 +992,10 @@ export class ScraperService implements OnModuleInit {
       for (const internalLink of product.internalLinks) {
         const { link } = internalLink;
 
-        console.log(`Processing link: ${link}`);
-        const content = await scrapeWordSectionContent(link, selectors);
-
-        internalLink.content = content || null; // Store plain text content
+        if (link) {
+          const content = await scrapeWordSectionContent(link, selectors);
+          internalLink.content = content || null;
+        }
       }
 
       await fs.writeFile(outputFilePath, JSON.stringify(products, null, 2));

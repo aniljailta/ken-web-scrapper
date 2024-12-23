@@ -43,7 +43,7 @@ export class ScraperController {
   // To scrape the internal links data from file additional-products-list
   @Get('scrape-products-content')
   async scrapeProductsContent() {
-    await this.scraperService.scrapeProductsContent();
+    this.scraperService.scrapeProductsContent();
     return { message: 'content scrapping started' };
   }
 }
