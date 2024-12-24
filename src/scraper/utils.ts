@@ -1,8 +1,11 @@
-import { htmlToText } from 'html-to-text';
+// import { htmlToText } from 'html-to-text';
 import * as fs from 'fs/promises';
 import * as puppeteer from 'puppeteer';
 import * as pdf from 'pdf-parse';
 import axios from 'axios';
+import * as sanitizeHtml from 'sanitize-html';
+
+import * as iconv from 'iconv-lite';
 
 // Tokenize the input text into an array of words
 function tokenize(text: string): string[] {
@@ -483,10 +486,12 @@ export async function scrapeWordSectionContent(
           }, selector);
 
           if (content) {
-            return htmlToText(content, {
-              wordwrap: 130,
-              preserveNewlines: true,
-            });
+            return cleanHtml(content);
+
+            // return htmlToText(content, {
+            //   wordwrap: 130,
+            //   preserveNewlines: true,
+            // });
           }
         } catch {
           // console.warn(`Selector not found or content empty: ${selector}`);
@@ -536,7 +541,7 @@ async function extractPdfContent(pdfUrl: string): Promise<string | null> {
       return null;
     }
 
-    return processedContent.trim();
+    return cleanHtml(processedContent.trim());
   } catch (error) {
     console.error('Error extracting PDF content:', error);
     return null;
@@ -598,4 +603,20 @@ export async function mergeAllProducts({
 
   // Convert merged object back to array
   return Object.values(mergedProducts);
+}
+
+function cleanHtml(input) {
+  if (typeof input !== 'string') {
+    throw new Error('Input must be a string');
+  }
+  // 1. Convert to valid UTF-8
+  const validUtf8 = iconv.decode(iconv.encode(input, 'utf-8'), 'utf-8');
+  // 2. Remove null bytes and control characters
+  const cleanedString = validUtf8.replace(/[\x00-\x1F\x7F]/g, '').trim();
+  // 3. Sanitize the HTML
+  const sanitizedHtml = sanitizeHtml(cleanedString, {
+    allowedTags: [],
+    allowedAttributes: {},
+  });
+  return sanitizedHtml;
 }

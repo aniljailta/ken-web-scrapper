@@ -22,6 +22,7 @@ import {
   retryForCompactScraperConfig,
   retryScraperConfig,
 } from './constant';
+import { AdditionalData } from './entities/additional_data.entity';
 
 @Injectable()
 export class ScraperService implements OnModuleInit {
@@ -45,6 +46,9 @@ export class ScraperService implements OnModuleInit {
   constructor(
     @InjectRepository(ScraperData)
     private scrapperDataRepository: Repository<ScraperData>,
+
+    @InjectRepository(AdditionalData)
+    private additionalScrapperDataRepository: Repository<AdditionalData>,
     private readonly configService: ConfigService,
   ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
@@ -997,12 +1001,112 @@ export class ScraperService implements OnModuleInit {
           internalLink.content = content || null;
         }
       }
+      try {
+        await fs.writeFile(outputFilePath, JSON.stringify(products, null, 2));
+        console.log(`Product "${product.name}" updated and saved.`);
 
-      await fs.writeFile(outputFilePath, JSON.stringify(products, null, 2));
-      console.log(`Product "${product.name}" updated and saved.`);
+        await this.saveAdditionalScraperData(product);
+      } catch (error) {
+        console.warn(
+          `Product "${product.name}" not updated.: ${error?.message}`,
+        );
+      }
     }
   }
-  catch(error) {
-    console.error('Error processing products:', error);
+
+  public async additionalScrapeProductsToDataBase(): Promise<boolean> {
+    try {
+      const fileData = await fs.readFile(
+        this.mergeAdditionalProductListFileWithContent,
+        'utf-8',
+      );
+      const jsonData = JSON.parse(fileData);
+
+      for (const [index, productData] of jsonData.entries()) {
+        const { link } = productData;
+
+        this.logger.log(
+          `Processing ${index + 1}/${jsonData.length} to database`,
+        );
+
+        const ifRecordExist = await this.getAdditionalScraperRecordByUrl(link);
+
+        if (!ifRecordExist) {
+          await this.saveAdditionalScraperData(productData);
+          this.logger.log(`Saved successfully to database`);
+        } else {
+          this.logger.log(`Record already exists`);
+        }
+      }
+
+      this.logger.log(`Saved all data to database`);
+
+      return true;
+    } catch (error) {
+      console.log({ error });
+      this.logger.warn('No existing JSON file found, starting fresh.');
+      return false;
+    }
+  }
+
+  public async getAdditionalScraperRecordByUrl(
+    url: string,
+  ): Promise<ScraperData | null> {
+    try {
+      // Use findOneBy for a direct condition
+      const record = await this.additionalScrapperDataRepository.findOneBy({
+        url,
+      });
+
+      if (!record) {
+        return null;
+      } else {
+        return record;
+      }
+    } catch (error) {
+      this.logger.warn(`Error fetching scraper record: ${error.message}`);
+      return null;
+    }
+  }
+
+  public async saveAdditionalScraperData(
+    productData: Record<string, any>,
+  ): Promise<ScraperData> {
+    try {
+      // Step 1: Flatten and prepare text
+      const textContent = await flattenAndConcatenate(productData);
+
+      // Step 2: Build vocabulary (static or dynamic per use case)
+      const vocabulary = buildVocabulary([textContent]); // You can save and reuse this for consistency
+
+      // Step 3: Generate vector
+      const vector = vectorize(textContent, vocabulary);
+
+      // Step 4: Save data to database
+      const scraperData = this.additionalScrapperDataRepository.create({
+        url: productData.link,
+        content: textContent,
+        vector,
+        jsonData: productData,
+        productName: productData?.name || '',
+      });
+      return await this.additionalScrapperDataRepository.save(scraperData);
+    } catch (error) {
+      this.logger.warn('Error saving scraper data:', error?.message);
+      throw error;
+    }
+  }
+  public async scrapeContentBasedOnUrl(link: string): Promise<string | null> {
+    try {
+      const selectors = ['.WordSection1', '#eot-doc-wrapper'];
+      if (link) {
+        const content = await scrapeWordSectionContent(link, selectors);
+        return content;
+      }
+      return null;
+    } catch (error) {
+      this.logger.warn('Error scraper data:', error?.message);
+      return null;
+    }
   }
 }

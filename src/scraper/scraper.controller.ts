@@ -46,4 +46,16 @@ export class ScraperController {
     this.scraperService.scrapeProductsContent();
     return { message: 'content scrapping started' };
   }
+
+  @Get('additional-scrape-data-to-database')
+  async additionalScrapeProductsToDataBase() {
+    this.scraperService.additionalScrapeProductsToDataBase();
+    return { message: 'content to add in DB started' };
+  }
+
+  @Post('scrape-content-based-on-url')
+  async scrapeContentBasedOnUrl(@Body('link') link: string) {
+    const content = await this.scraperService.scrapeContentBasedOnUrl(link);
+    return { content };
+  }
 }
