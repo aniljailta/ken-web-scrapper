@@ -1,5 +1,3 @@
-// import { htmlToText } from 'html-to-text';
-import * as fs from 'fs/promises';
 import * as puppeteer from 'puppeteer';
 import * as pdf from 'pdf-parse';
 import axios from 'axios';
@@ -549,24 +547,14 @@ async function extractPdfContent(pdfUrl: string): Promise<string | null> {
 }
 
 // Merge all products from a file and write the merged result to another file
-export async function mergeAllProducts({
-  readFile,
-  writeFile,
-}: {
-  readFile: string;
-  writeFile: string;
-}) {
+export async function mergeAllProducts({ data }: { data: any[] }) {
   const mergedProducts: Record<string, any> = {};
-
-  const fileData = await fs.readFile(readFile, 'utf-8');
-
-  const data = JSON.parse(fileData || '[]');
 
   data.forEach((category) => {
     const categoryName = category.categoryName;
     const categoryLink = category.link;
 
-    // Skip empty product arrays
+    // Skip categories with no products or empty product arrays
     if (!category.products || category.products.length === 0) {
       return;
     }
@@ -574,32 +562,38 @@ export async function mergeAllProducts({
     category.products.forEach((product) => {
       const productLink = product.link;
 
+      // Filter invalid links for the current product
+      const validInternalLinks = (product.internalLinks || []).filter(
+        (internalLink: { name: string; link: string }) =>
+          internalLink?.link &&
+          typeof internalLink?.link === 'string' &&
+          internalLink?.link?.trim() !== '',
+      );
+
+      // Skip the product if it has no valid internalLinks
+      if (validInternalLinks.length === 0) {
+        return;
+      }
+
       if (!mergedProducts[productLink]) {
-        // Add product only if it has internalLinks > 0
-        if (product.internalLinks && product.internalLinks.length > 0) {
-          mergedProducts[productLink] = {
-            ...product,
-            categoryName,
-            categoryLink,
-          };
-        }
+        // Add new product with valid internalLinks
+        mergedProducts[productLink] = {
+          ...product,
+          internalLinks: validInternalLinks,
+          categoryName,
+          categoryLink,
+        };
       } else {
-        // If already exists, merge internalLinks and filter products with internalLinks > 0
+        // If already exists, merge valid internalLinks
         mergedProducts[productLink].internalLinks = [
           ...new Set([
             ...mergedProducts[productLink].internalLinks,
-            ...product.internalLinks,
+            ...validInternalLinks,
           ]),
         ];
       }
     });
   });
-
-  await fs.writeFile(
-    writeFile,
-    JSON.stringify(Object.values(mergedProducts), null, 2),
-    'utf8',
-  );
 
   // Convert merged object back to array
   return Object.values(mergedProducts);
@@ -607,7 +601,8 @@ export async function mergeAllProducts({
 
 function cleanHtml(input) {
   if (typeof input !== 'string') {
-    throw new Error('Input must be a string');
+    console.log('Input must be a string');
+    return null;
   }
   // 1. Convert to valid UTF-8
   const validUtf8 = iconv.decode(iconv.encode(input, 'utf-8'), 'utf-8');

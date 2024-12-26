@@ -656,7 +656,7 @@ export class ScraperService implements OnModuleInit {
 
     for (const category of categories) {
       const { categoryName, link } = category;
-
+      console.log(`Scrapping products of category : ${categoryName}`);
       try {
         // First, try scraping products with the primary selector
         let products = await this.scrapeProductsForCategory(
@@ -704,6 +704,8 @@ export class ScraperService implements OnModuleInit {
         console.error(`Error processing category: ${categoryName}`, error);
       }
     }
+    // Write all data to the file after scraping is complete
+    await this.writeDataToFile();
   }
 
   async scrapeCategories(): Promise<any[]> {
@@ -859,7 +861,6 @@ export class ScraperService implements OnModuleInit {
     selector: string,
   ): Promise<any[]> {
     let browser;
-    // console.log({ productLink });
     try {
       browser = await this.initBrowser();
       const page = await browser.newPage();
@@ -940,8 +941,7 @@ export class ScraperService implements OnModuleInit {
 
     if (!isDuplicate) {
       this.scrapedData.push(category);
-      this.writeDataToFile();
-      console.log(`Added category: ${category.categoryName}`);
+      console.log(`Added products of category : ${category.categoryName}`);
     } else {
       console.log(`Skipped duplicate category: ${category.categoryName}`);
     }
@@ -949,11 +949,17 @@ export class ScraperService implements OnModuleInit {
 
   async writeDataToFile(): Promise<void> {
     try {
+      const data = this.scrapedData;
+
+      const productData = await mergeAllProducts({ data });
+
+      // Write the entire scraped data array to the file
       await fs.writeFile(
         this.productListFile,
-        JSON.stringify(this.scrapedData, null, 2),
+        JSON.stringify(productData, null, 2),
         'utf8',
       );
+      console.log(`Scraped data saved to ${this.productListFile}`);
     } catch (error) {
       console.error('Error writing data to file', error);
     }
@@ -975,10 +981,11 @@ export class ScraperService implements OnModuleInit {
   }
 
   async mergeAllProducts() {
-    const data = await mergeAllProducts({
-      readFile: this.productListFile,
-      writeFile: this.mergeAdditionalProductListFile,
-    });
+    const jsonFilePath = this.productListFile;
+    const rawData = await fs.readFile(jsonFilePath, 'utf-8');
+    const products = JSON.parse(rawData);
+
+    const data = await mergeAllProducts({ data: products });
 
     return data;
   }
@@ -986,31 +993,79 @@ export class ScraperService implements OnModuleInit {
   // Service to process products and store scraped data
   async scrapeProductsContent() {
     const jsonFilePath = this.mergeAdditionalProductListFile;
-    // const jsonFilePath = this.tempListFile;
     const outputFilePath = this.mergeAdditionalProductListFileWithContent;
     const selectors = ['.WordSection1', '#eot-doc-wrapper'];
+
+    // Ensure output file exists or create a valid empty JSON array
+    try {
+      await fs.access(outputFilePath); // Check if file exists
+    } catch {
+      await fs.writeFile(outputFilePath, '[]'); // Initialize with empty JSON array
+    }
+
+    // Read processed links for lookup
+    const processedLinks = new Set();
+    try {
+      const processedData = await fs.readFile(outputFilePath, 'utf-8');
+      const processedProducts = JSON.parse(processedData);
+      processedProducts.forEach((product) => processedLinks.add(product.link));
+    } catch (error) {
+      console.warn(`Could not read processed file: ${error?.message}`);
+    }
+
+    // Read raw product list
     const rawData = await fs.readFile(jsonFilePath, 'utf-8');
     const products = JSON.parse(rawData);
 
-    for (const product of products) {
-      for (const internalLink of product.internalLinks) {
-        const { link } = internalLink;
+    // Open the output file in append mode
+    const fileHandle = await fs.open(outputFilePath, 'r+');
 
-        if (link) {
-          const content = await scrapeWordSectionContent(link, selectors);
-          internalLink.content = content || null;
+    try {
+      // Move to the end of the JSON array before the closing bracket ']'
+      const fileStats = await fileHandle.stat(); // Get file size
+      let position = fileStats.size - 1; // Move cursor to end of file
+
+      // Handle case where file is empty or invalid
+      const fileContent = await fileHandle.readFile('utf-8');
+      if (!fileContent.trim().endsWith(']')) {
+        throw new Error('Invalid JSON structure in the file!');
+      }
+
+      // Append products without clearing content
+      for (const product of products) {
+        // Skip already processed products
+        if (processedLinks.has(product.link)) {
+          console.log(
+            `Skipping product "${product.name}" as it's already processed.`,
+          );
+          continue;
         }
-      }
-      try {
-        await fs.writeFile(outputFilePath, JSON.stringify(products, null, 2));
-        console.log(`Product "${product.name}" updated and saved.`);
 
-        await this.saveAdditionalScraperData(product);
-      } catch (error) {
-        console.warn(
-          `Product "${product.name}" not updated.: ${error?.message}`,
-        );
+        // Process product internal links
+        for (const internalLink of product.internalLinks) {
+          const { link } = internalLink;
+          if (link) {
+            const content = await scrapeWordSectionContent(link, selectors);
+            internalLink.content = content || null;
+          }
+        }
+
+        // Append the new product (handle commas properly)
+        const productData = JSON.stringify(product, null, 2);
+        const prefix = position > 2 ? ',\n' : ''; // Add a comma if file isn't empty
+
+        await fileHandle.write(prefix + productData, position);
+        position += Buffer.byteLength(prefix + productData); // Update position for next append
+
+        console.log(`Product "${product.name}" updated and saved.`);
       }
+
+      // Close JSON array properly if needed
+      await fileHandle.write(']', position); // Ensure file ends with ']'
+    } catch (error) {
+      console.warn(`Error during processing: ${error?.message}`);
+    } finally {
+      await fileHandle.close(); // Close file handle
     }
   }
 
@@ -1042,8 +1097,8 @@ export class ScraperService implements OnModuleInit {
       this.logger.log(`Saved all data to database`);
 
       return true;
-    } catch (error) {
-      console.log({ error });
+    } catch {
+      // console.log({ error });
       this.logger.warn('No existing JSON file found, starting fresh.');
       return false;
     }
