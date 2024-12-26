@@ -992,7 +992,7 @@ export class ScraperService implements OnModuleInit {
 
   // Service to process products and store scraped data
   async scrapeProductsContent() {
-    const jsonFilePath = this.mergeAdditionalProductListFile;
+    const jsonFilePath = this.productListFile;
     const outputFilePath = this.mergeAdditionalProductListFileWithContent;
     const selectors = ['.WordSection1', '#eot-doc-wrapper'];
 
@@ -1000,13 +1000,15 @@ export class ScraperService implements OnModuleInit {
     try {
       await fs.access(outputFilePath); // Check if file exists
     } catch {
-      await fs.writeFile(outputFilePath, '[]'); // Initialize with empty JSON array
+      console.warn('The file is not created. Creating One');
+      await fs.writeFile(outputFilePath, '[]', 'utf8');
     }
 
     // Read processed links for lookup
     const processedLinks = new Set();
     try {
       const processedData = await fs.readFile(outputFilePath, 'utf-8');
+
       const processedProducts = JSON.parse(processedData);
       processedProducts.forEach((product) => processedLinks.add(product.link));
     } catch (error) {
@@ -1017,7 +1019,7 @@ export class ScraperService implements OnModuleInit {
     const rawData = await fs.readFile(jsonFilePath, 'utf-8');
     const products = JSON.parse(rawData);
 
-    // Open the output file in append mode
+    // Open the output file for reading and writing
     const fileHandle = await fs.open(outputFilePath, 'r+');
 
     try {
@@ -1031,12 +1033,16 @@ export class ScraperService implements OnModuleInit {
         throw new Error('Invalid JSON structure in the file!');
       }
 
+      // Remove the last ']' and prepare to append data
+      position = position - 1; // Move position before the closing ']'
+      await fileHandle.truncate(position); // Remove the last ']'
+
       // Append products without clearing content
       for (const product of products) {
         // Skip already processed products
         if (processedLinks.has(product.link)) {
           console.log(
-            `Skipping product "${product.name}" as it's already processed.`,
+            `Skipping product "${product.name}" as it's already processed.,`,
           );
           continue;
         }
@@ -1060,8 +1066,8 @@ export class ScraperService implements OnModuleInit {
         console.log(`Product "${product.name}" updated and saved.`);
       }
 
-      // Close JSON array properly if needed
-      await fileHandle.write(']', position); // Ensure file ends with ']'
+      // Close JSON array properly
+      await fileHandle.write(']', position); // Add back closing ']'
     } catch (error) {
       console.warn(`Error during processing: ${error?.message}`);
     } finally {
