@@ -654,19 +654,19 @@ export class ScraperService implements OnModuleInit {
   }
 
   async scrapeData(): Promise<void> {
+    this.scrapedData = [];
     const categories = await this.scrapeCategories();
 
     for (const category of categories) {
-      const { categoryName, link } = category;
-      console.log(`Scrapping products of category : ${categoryName}`);
+      const { categoryName, categoryLink: link } = category;
+      console.log(`Scrapping products of category: ${categoryName}`);
+
       try {
-        // First, try scraping products with the primary selector
         let products = await this.scrapeProductsForCategory(
           link,
           '#prodByAlpha li a',
         );
 
-        // If no products found, fallback to a broader selector
         if (!products.length) {
           console.warn(
             `No products found using #prodByAlpha for ${categoryName}, falling back to section ul li a`,
@@ -678,7 +678,7 @@ export class ScraperService implements OnModuleInit {
 
           if (!products.length) {
             console.warn(
-              `No products found using second method , falling to cat-container ul li`,
+              `No products found using section ul li a for ${categoryName}, falling back to .cat-container ul li a`,
             );
             products = await this.scrapeProductsForCategory(
               link,
@@ -688,7 +688,7 @@ export class ScraperService implements OnModuleInit {
 
           if (!products.length) {
             console.warn(
-              `No products found using second method , falling to tech-container ul li`,
+              `No products found using .cat-container ul li a for ${categoryName}, falling back to .tech-container ul li a`,
             );
             products = await this.scrapeProductsForCategory(
               link,
@@ -700,16 +700,15 @@ export class ScraperService implements OnModuleInit {
         // Attach products to the category
         category.products = products;
 
-        // Save the category
+        // Save the processed category to the file immediately
         this.addCategoryToFile(category);
       } catch (error) {
         console.error(`Error processing category: ${categoryName}`, error);
       }
     }
-    // Write all data to the file after scraping is complete
-    await this.writeDataToFile();
-  }
 
+    console.log('All categories processed.');
+  }
   async scrapeCategories(): Promise<any[]> {
     let browser;
     try {
@@ -733,7 +732,7 @@ export class ScraperService implements OnModuleInit {
             if (categoryName && categoryLink) {
               categoryList.push({
                 categoryName,
-                link: `https:${categoryLink}`,
+                categoryLink: `https:${categoryLink}`,
               });
             }
           });
@@ -809,8 +808,8 @@ export class ScraperService implements OnModuleInit {
 
             if (productName && sanitizedLink) {
               productList.push({
-                name: productName,
-                link: sanitizedLink,
+                productName: productName,
+                productLink: sanitizedLink,
               });
             }
           }
@@ -818,14 +817,14 @@ export class ScraperService implements OnModuleInit {
           return productList;
         },
         selector,
-        'https://www.cisco.com',
+        this.baseURL,
       );
 
       if (products?.length) {
         for (const product of products) {
           let internalLinks = await this.scrapeInternalLinksForProduct(
-            product.link,
-            'https://www.cisco.com',
+            product.productLink,
+            this.baseURL,
             '#actual-document-listings ul li a',
           );
 
@@ -834,12 +833,11 @@ export class ScraperService implements OnModuleInit {
               `No internalLinks found using second method , falling to tech-container ul li`,
             );
             internalLinks = await this.scrapeInternalLinksForProduct(
-              product.link,
-              'https://www.cisco.com',
+              product.productLink,
+              this.baseURL,
               '.dmc-list-dynamic ul li a',
             );
           }
-
           product.internalLinks = internalLinks; // Assign internal links to each product
         }
       }
@@ -938,12 +936,13 @@ export class ScraperService implements OnModuleInit {
 
   addCategoryToFile(category: any): void {
     const isDuplicate = this.scrapedData.some(
-      (existing) => existing.link === category.link,
+      (existing) => existing.categoryLink === category.categoryLink,
     );
 
     if (!isDuplicate) {
       this.scrapedData.push(category);
-      console.log(`Added products of category : ${category.categoryName}`);
+      this.writeDataToFile();
+      console.log(`Added category: ${category.categoryName}`);
     } else {
       console.log(`Skipped duplicate category: ${category.categoryName}`);
     }
@@ -951,17 +950,11 @@ export class ScraperService implements OnModuleInit {
 
   async writeDataToFile(): Promise<void> {
     try {
-      const data = this.scrapedData;
-
-      const productData = await mergeAllProducts({ data });
-
-      // Write the entire scraped data array to the file
       await fs.writeFile(
-        this.productListFile,
-        JSON.stringify(productData, null, 2),
+        this.tempListFile,
+        JSON.stringify(this.scrapedData, null, 2),
         'utf8',
       );
-      console.log(`Scraped data saved to ${this.productListFile}`);
     } catch (error) {
       console.error('Error writing data to file', error);
     }
@@ -1030,6 +1023,7 @@ export class ScraperService implements OnModuleInit {
     // Process each category
     for (const [categoryName, categoryProducts] of Object.entries(categories)) {
       const fileName = sanitizeFileName(categoryName);
+      console.log({ fileName });
       const outputFilePath = path.join(outputDirectory, `${fileName}.json`);
 
       // Ensure output file exists or create a valid empty JSON array
@@ -1043,7 +1037,7 @@ export class ScraperService implements OnModuleInit {
         );
       } catch {
         console.warn(
-          `File for category "${categoryName}" which is ${fileName} not found. Creating a new one.`,
+          `File for category "${categoryName}" which is ${fileName} not found. Creating a new one`,
         );
         await fs.writeFile(outputFilePath, '[]', 'utf8');
       }

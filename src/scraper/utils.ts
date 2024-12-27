@@ -552,7 +552,7 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
 
   data.forEach((category) => {
     const categoryName = category.categoryName;
-    const categoryLink = category.link;
+    const categoryLink = category.categoryLink;
 
     // Skip categories with no products or empty product arrays
     if (!category.products || category.products.length === 0) {
@@ -560,7 +560,7 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
     }
 
     category.products.forEach((product) => {
-      const productLink = product.link;
+      const productLink = product.productLink;
 
       // Filter invalid links for the current product
       const validInternalLinks = (product.internalLinks || []).filter(
