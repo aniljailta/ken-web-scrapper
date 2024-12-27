@@ -615,3 +615,11 @@ function cleanHtml(input) {
   });
   return sanitizedHtml;
 }
+
+export function sanitizeFileName(fileName: string): string {
+  return fileName
+    .replace(/[^a-zA-Z0-9]/g, '_') // Replace non-alphanumeric characters with an underscore
+    .replace(/_+/g, '_') // Collapse multiple underscores into one
+    .replace(/^_|_$/g, '') // Remove leading and trailing underscores
+    .toLowerCase();
+}

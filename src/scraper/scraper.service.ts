@@ -11,6 +11,7 @@ import {
   flattenAndConcatenate,
   mergeAllProducts,
   mergeAndDeduplicate,
+  sanitizeFileName,
   scrapeWordSectionContent,
   vectorize,
 } from './utils';
@@ -23,6 +24,7 @@ import {
   retryScraperConfig,
 } from './constant';
 import { AdditionalData } from './entities/additional_data.entity';
+import * as path from 'path';
 
 @Injectable()
 export class ScraperService implements OnModuleInit {
@@ -31,7 +33,7 @@ export class ScraperService implements OnModuleInit {
   private readonly logger = new Logger(ScraperService.name);
   private readonly failedProductPath = 'failed_list_product.json';
   private readonly filePath = 'products.json';
-
+  private readonly outputDirectory = 'products-category';
   private productListFile = 'json/products-list.json';
   private mergeAdditionalProductListFile = 'json/additional-products-list.json';
   private tempListFile = 'json/temp-additional-products-list.json';
@@ -991,89 +993,201 @@ export class ScraperService implements OnModuleInit {
   }
 
   // Service to process products and store scraped data
+
   async scrapeProductsContent() {
     const jsonFilePath = this.productListFile;
-    const outputFilePath = this.mergeAdditionalProductListFileWithContent;
+    const outputDirectory = this.outputDirectory;
     const selectors = ['.WordSection1', '#eot-doc-wrapper'];
 
-    // Ensure output file exists or create a valid empty JSON array
+    // Ensure output directory exists
     try {
-      await fs.access(outputFilePath); // Check if file exists
-    } catch {
-      console.warn('The file is not created. Creating One');
-      await fs.writeFile(outputFilePath, '[]', 'utf8');
-    }
-
-    // Read processed links for lookup
-    const processedLinks = new Set();
-    try {
-      const processedData = await fs.readFile(outputFilePath, 'utf-8');
-
-      const processedProducts = JSON.parse(processedData);
-      processedProducts.forEach((product) => processedLinks.add(product.link));
+      await fs.mkdir(outputDirectory, { recursive: true });
     } catch (error) {
-      console.warn(`Could not read processed file: ${error?.message}`);
+      console.error(`Failed to create directory: ${error.message}`);
+      return;
     }
 
     // Read raw product list
-    const rawData = await fs.readFile(jsonFilePath, 'utf-8');
+    let rawData;
+    try {
+      rawData = await fs.readFile(jsonFilePath, 'utf-8');
+    } catch (error) {
+      console.error(`Failed to read product list file: ${error.message}`);
+      return;
+    }
+
     const products = JSON.parse(rawData);
 
-    // Open the output file for reading and writing
-    const fileHandle = await fs.open(outputFilePath, 'r+');
+    // Group products by categoryName
+    const categories = products.reduce((acc, product) => {
+      if (!acc[product.categoryName]) {
+        acc[product.categoryName] = [];
+      }
+      acc[product.categoryName].push(product);
+      return acc;
+    }, {});
 
-    try {
-      // Move to the end of the JSON array before the closing bracket ']'
-      const fileStats = await fileHandle.stat(); // Get file size
-      let position = fileStats.size - 1; // Move cursor to end of file
+    // Process each category
+    for (const [categoryName, categoryProducts] of Object.entries(categories)) {
+      const fileName = sanitizeFileName(categoryName);
+      const outputFilePath = path.join(outputDirectory, `${fileName}.json`);
 
-      // Handle case where file is empty or invalid
-      const fileContent = await fileHandle.readFile('utf-8');
-      if (!fileContent.trim().endsWith(']')) {
-        throw new Error('Invalid JSON structure in the file!');
+      // Ensure output file exists or create a valid empty JSON array
+      const processedLinks = new Set();
+      try {
+        await fs.access(outputFilePath); // Check if file exists
+        const processedData = await fs.readFile(outputFilePath, 'utf-8');
+        const processedProducts = JSON.parse(processedData);
+        processedProducts.forEach((product) =>
+          processedLinks.add(product.link),
+        );
+      } catch {
+        console.warn(
+          `File for category "${categoryName}" which is ${fileName} not found. Creating a new one.`,
+        );
+        await fs.writeFile(outputFilePath, '[]', 'utf8');
       }
 
-      // Remove the last ']' and prepare to append data
-      position = position - 1; // Move position before the closing ']'
-      await fileHandle.truncate(position); // Remove the last ']'
+      // Prepare to append new products to the file
+      const fileHandle = await fs.open(outputFilePath, 'r+');
+      let position;
 
-      // Append products without clearing content
-      for (const product of products) {
-        // Skip already processed products
-        if (processedLinks.has(product.link)) {
-          console.log(
-            `Skipping product "${product.name}" as it's already processed.,`,
-          );
-          continue;
+      try {
+        const fileContent = await fileHandle.readFile('utf-8');
+        const fileStats = await fileHandle.stat();
+
+        // Ensure valid JSON structure
+        if (!fileContent.trim().endsWith(']')) {
+          throw new Error('Invalid JSON structure in the file!');
         }
 
-        // Process product internal links
-        for (const internalLink of product.internalLinks) {
-          const { link } = internalLink;
-          if (link) {
-            const content = await scrapeWordSectionContent(link, selectors);
-            internalLink.content = content || null;
+        // Remove the closing ']'
+        position = fileStats.size - 1;
+        await fileHandle.truncate(position);
+
+        // Process each product
+        for (const product of categoryProducts as any[]) {
+          if (processedLinks.has(product.link)) {
+            console.log(
+              `Skipping product "${product.name}" as it's already processed.`,
+            );
+            continue;
           }
+
+          // Process internal links
+          for (const internalLink of product.internalLinks) {
+            const { link } = internalLink;
+            if (link) {
+              const content = await scrapeWordSectionContent(link, selectors);
+              internalLink.content = content || null;
+            }
+          }
+
+          // Append the product
+          const productData = JSON.stringify(product, null, 2);
+          const prefix = position > 2 ? ',\n' : ''; // Add comma if file isn't empty
+
+          await fileHandle.write(prefix + productData, position);
+          position += Buffer.byteLength(prefix + productData); // Update position
+          console.log(
+            `Product "${product.name}" in category "${categoryName}" saved.`,
+          );
         }
 
-        // Append the new product (handle commas properly)
-        const productData = JSON.stringify(product, null, 2);
-        const prefix = position > 2 ? ',\n' : ''; // Add a comma if file isn't empty
-
-        await fileHandle.write(prefix + productData, position);
-        position += Buffer.byteLength(prefix + productData); // Update position for next append
-
-        console.log(`Product "${product.name}" updated and saved.`);
+        // Close JSON array properly
+        await fileHandle.write(']', position);
+      } catch (error) {
+        console.error(
+          `Error processing category "${categoryName}": ${error.message}`,
+        );
+      } finally {
+        await fileHandle.close();
       }
-
-      // Close JSON array properly
-      await fileHandle.write(']', position); // Add back closing ']'
-    } catch (error) {
-      console.warn(`Error during processing: ${error?.message}`);
-    } finally {
-      await fileHandle.close(); // Close file handle
     }
   }
+  // async scrapeProductsContent() {
+  //   const jsonFilePath = this.productListFile;
+  //   const outputFilePath = this.mergeAdditionalProductListFileWithContent;
+  //   const selectors = ['.WordSection1', '#eot-doc-wrapper'];
+
+  //   // Ensure output file exists or create a valid empty JSON array
+  //   try {
+  //     await fs.access(outputFilePath); // Check if file exists
+  //   } catch {
+  //     console.warn('The file is not created. Creating One');
+  //     await fs.writeFile(outputFilePath, '[]', 'utf8');
+  //   }
+
+  //   // Read processed links for lookup
+  //   const processedLinks = new Set();
+  //   try {
+  //     const processedData = await fs.readFile(outputFilePath, 'utf-8');
+
+  //     const processedProducts = JSON.parse(processedData);
+  //     processedProducts.forEach((product) => processedLinks.add(product.link));
+  //   } catch (error) {
+  //     console.warn(`Could not read processed file: ${error?.message}`);
+  //   }
+
+  //   // Read raw product list
+  //   const rawData = await fs.readFile(jsonFilePath, 'utf-8');
+  //   const products = JSON.parse(rawData);
+
+  //   // Open the output file for reading and writing
+  //   const fileHandle = await fs.open(outputFilePath, 'r+');
+
+  //   try {
+  //     // Move to the end of the JSON array before the closing bracket ']'
+  //     const fileStats = await fileHandle.stat(); // Get file size
+  //     let position = fileStats.size - 1; // Move cursor to end of file
+
+  //     // Handle case where file is empty or invalid
+  //     const fileContent = await fileHandle.readFile('utf-8');
+  //     if (!fileContent.trim().endsWith(']')) {
+  //       throw new Error('Invalid JSON structure in the file!');
+  //     }
+
+  //     // Remove the last ']' and prepare to append data
+  //     position = position - 1; // Move position before the closing ']'
+  //     await fileHandle.truncate(position); // Remove the last ']'
+
+  //     // Append products without clearing content
+  //     for (const product of products) {
+  //       // Skip already processed products
+  //       if (processedLinks.has(product.link)) {
+  //         console.log(
+  //           `Skipping product "${product.name}" as it's already processed.,`,
+  //         );
+  //         continue;
+  //       }
+
+  //       // Process product internal links
+  //       for (const internalLink of product.internalLinks) {
+  //         const { link } = internalLink;
+  //         if (link) {
+  //           const content = await scrapeWordSectionContent(link, selectors);
+  //           internalLink.content = content || null;
+  //         }
+  //       }
+
+  //       // Append the new product (handle commas properly)
+  //       const productData = JSON.stringify(product, null, 2);
+  //       const prefix = position > 2 ? ',\n' : ''; // Add a comma if file isn't empty
+
+  //       await fileHandle.write(prefix + productData, position);
+  //       position += Buffer.byteLength(prefix + productData); // Update position for next append
+
+  //       console.log(`Product "${product.name}" updated and saved.`);
+  //     }
+
+  //     // Close JSON array properly
+  //     await fileHandle.write(']', position); // Add back closing ']'
+  //   } catch (error) {
+  //     console.warn(`Error during processing: ${error?.message}`);
+  //   } finally {
+  //     await fileHandle.close(); // Close file handle
+  //   }
+  // }
 
   public async additionalScrapeProductsToDataBase(): Promise<boolean> {
     try {
