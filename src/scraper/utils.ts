@@ -541,7 +541,7 @@ async function extractPdfContent(pdfUrl: string): Promise<string | null> {
 
     return cleanHtml(processedContent.trim());
   } catch (error) {
-    console.error('Error extracting PDF content:', error);
+    console.error('Error extracting PDF content:', error?.message);
     return null;
   }
 }

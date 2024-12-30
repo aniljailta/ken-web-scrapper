@@ -668,18 +668,12 @@ export class ScraperService implements OnModuleInit {
         );
 
         if (!products.length) {
-          console.warn(
-            `No products found using #prodByAlpha for ${categoryName}, falling back to section ul li a`,
-          );
           products = await this.scrapeProductsForCategory(
             link,
             'section ul li a',
           );
 
           if (!products.length) {
-            console.warn(
-              `No products found using section ul li a for ${categoryName}, falling back to .cat-container ul li a`,
-            );
             products = await this.scrapeProductsForCategory(
               link,
               '.cat-container ul li a',
@@ -687,9 +681,6 @@ export class ScraperService implements OnModuleInit {
           }
 
           if (!products.length) {
-            console.warn(
-              `No products found using .cat-container ul li a for ${categoryName}, falling back to .tech-container ul li a`,
-            );
             products = await this.scrapeProductsForCategory(
               link,
               '.tech-container ul li a',
@@ -703,11 +694,12 @@ export class ScraperService implements OnModuleInit {
         // Save the processed category to the file immediately
         this.addCategoryToFile(category);
       } catch (error) {
-        console.error(`Error processing category: ${categoryName}`, error);
+        this.logger.log(
+          `Error processing category: ${categoryName} : ${error?.message}`,
+        );
       }
     }
-
-    console.log('All categories processed.');
+    this.logger.log('All categories processed.');
   }
   async scrapeCategories(): Promise<any[]> {
     let browser;
@@ -743,7 +735,8 @@ export class ScraperService implements OnModuleInit {
 
       return categories;
     } catch (error) {
-      console.error('Error scraping categories', error);
+      this.logger.error('Error scraping categories', error?.message);
+
       return [];
     } finally {
       if (browser) await browser.close();
@@ -761,9 +754,7 @@ export class ScraperService implements OnModuleInit {
       await page.goto(categoryLink, { waitUntil: 'networkidle2' });
 
       // Wait for the selector to appear
-      await page.waitForSelector(selector, { timeout: 5000 }).catch(() => {
-        console.warn(`Selector not found: ${selector}`);
-      });
+      await page.waitForSelector(selector, { timeout: 5000 }).catch(() => {});
 
       const products = await page.evaluate(
         (selector, baseUrl) => {
@@ -829,9 +820,6 @@ export class ScraperService implements OnModuleInit {
           );
 
           if (!internalLinks.length) {
-            console.warn(
-              `No internalLinks found using second method , falling to tech-container ul li`,
-            );
             internalLinks = await this.scrapeInternalLinksForProduct(
               product.productLink,
               this.baseURL,
@@ -844,10 +832,10 @@ export class ScraperService implements OnModuleInit {
 
       return products;
     } catch (error) {
-      console.error(
-        `Error scraping products for category link: ${categoryLink} with selector: ${selector}`,
-        error,
+      this.logger.error(
+        `Error scraping products for category link: ${categoryLink} with selector: ${selector}: ${error?.message}`,
       );
+
       return [];
     } finally {
       if (browser) await browser.close();
@@ -867,9 +855,7 @@ export class ScraperService implements OnModuleInit {
       await page.goto(productLink, { waitUntil: 'networkidle2' });
 
       // Wait for the selector to appear
-      await page.waitForSelector(selector, { timeout: 5000 }).catch(() => {
-        console.warn(`Selector not found: ${selector}`);
-      });
+      await page.waitForSelector(selector, { timeout: 5000 }).catch(() => {});
 
       const internalLinks = await page.evaluate(
         (selector, baseUrl) => {
@@ -924,10 +910,10 @@ export class ScraperService implements OnModuleInit {
 
       return internalLinks;
     } catch (error) {
-      console.error(
-        `Error scraping internal links for product: ${productLink}`,
-        error,
+      this.logger.error(
+        `Error scraping internal links for product: ${productLink} :${error?.message},`,
       );
+
       return [];
     } finally {
       if (browser) await browser.close();
@@ -956,7 +942,7 @@ export class ScraperService implements OnModuleInit {
         'utf8',
       );
     } catch (error) {
-      console.error('Error writing data to file', error);
+      this.logger.error(`Error writing data to file:  ${error?.message},`);
     }
   }
 
@@ -996,7 +982,7 @@ export class ScraperService implements OnModuleInit {
     try {
       await fs.mkdir(outputDirectory, { recursive: true });
     } catch (error) {
-      console.error(`Failed to create directory: ${error.message}`);
+      this.logger.error(`Failed to create directory: ${error.message}`);
       return;
     }
 
@@ -1005,7 +991,8 @@ export class ScraperService implements OnModuleInit {
     try {
       rawData = await fs.readFile(jsonFilePath, 'utf-8');
     } catch (error) {
-      console.error(`Failed to read product list file: ${error.message}`);
+      this.logger.error(`Failed to read product list file: ${error.message}`);
+
       return;
     }
 
@@ -1023,7 +1010,7 @@ export class ScraperService implements OnModuleInit {
     // Process each category
     for (const [categoryName, categoryProducts] of Object.entries(categories)) {
       const fileName = sanitizeFileName(categoryName);
-      console.log({ fileName });
+      // console.log({ fileName });
       const outputFilePath = path.join(outputDirectory, `${fileName}.json`);
 
       // Ensure output file exists or create a valid empty JSON array
@@ -1035,11 +1022,23 @@ export class ScraperService implements OnModuleInit {
         processedProducts.forEach((product) =>
           processedLinks.add(product.link),
         );
-      } catch {
-        console.warn(
-          `File for category "${categoryName}" which is ${fileName} not found. Creating a new one`,
-        );
-        await fs.writeFile(outputFilePath, '[]', 'utf8');
+      } catch (error) {
+        console.log({ error });
+        if (error.code === 'ENOENT') {
+          // File doesn't exist; create a new one
+
+          this.logger.warn(
+            `File for category "${categoryName}" which is ${fileName} not found. Creating a new one`,
+          );
+          await fs.writeFile(outputFilePath, '[]', 'utf8');
+        } else {
+          // Handle other errors (e.g., file too large to read)
+
+          this.logger.error(
+            `Failed to process file for category "${categoryName}": ${error.message}`,
+          );
+          continue; // Skip processing this category
+        }
       }
 
       // Prepare to append new products to the file
@@ -1062,36 +1061,38 @@ export class ScraperService implements OnModuleInit {
         // Process each product
         for (const product of categoryProducts as any[]) {
           if (processedLinks.has(product.link)) {
-            console.log(
-              `Skipping product "${product.name}" as it's already processed.`,
-            );
+            // console.log(
+            //   `Skipping product "${product.name}" as it's already processed.`,
+            // );
             continue;
           }
-
-          // Process internal links
-          for (const internalLink of product.internalLinks) {
-            const { link } = internalLink;
-            if (link) {
-              const content = await scrapeWordSectionContent(link, selectors);
-              internalLink.content = content || null;
+          if (product?.internalLinks?.length) {
+            // Process internal links
+            for (const internalLink of product.internalLinks) {
+              const { link } = internalLink;
+              if (link) {
+                const content = await scrapeWordSectionContent(link, selectors);
+                internalLink.content = content || null;
+              }
             }
+
+            // Append the product
+            const productData = JSON.stringify(product, null, 2);
+            const prefix = position > 2 ? ',\n' : ''; // Add comma if file isn't empty
+
+            await fileHandle.write(prefix + productData, position);
+            position += Buffer.byteLength(prefix + productData); // Update position
+
+            this.logger.log(
+              `Product "${product.name}" in category "${categoryName}" saved.`,
+            );
           }
-
-          // Append the product
-          const productData = JSON.stringify(product, null, 2);
-          const prefix = position > 2 ? ',\n' : ''; // Add comma if file isn't empty
-
-          await fileHandle.write(prefix + productData, position);
-          position += Buffer.byteLength(prefix + productData); // Update position
-          console.log(
-            `Product "${product.name}" in category "${categoryName}" saved.`,
-          );
         }
 
         // Close JSON array properly
         await fileHandle.write(']', position);
       } catch (error) {
-        console.error(
+        this.logger.error(
           `Error processing category "${categoryName}": ${error.message}`,
         );
       } finally {
@@ -1099,89 +1100,6 @@ export class ScraperService implements OnModuleInit {
       }
     }
   }
-  // async scrapeProductsContent() {
-  //   const jsonFilePath = this.productListFile;
-  //   const outputFilePath = this.mergeAdditionalProductListFileWithContent;
-  //   const selectors = ['.WordSection1', '#eot-doc-wrapper'];
-
-  //   // Ensure output file exists or create a valid empty JSON array
-  //   try {
-  //     await fs.access(outputFilePath); // Check if file exists
-  //   } catch {
-  //     console.warn('The file is not created. Creating One');
-  //     await fs.writeFile(outputFilePath, '[]', 'utf8');
-  //   }
-
-  //   // Read processed links for lookup
-  //   const processedLinks = new Set();
-  //   try {
-  //     const processedData = await fs.readFile(outputFilePath, 'utf-8');
-
-  //     const processedProducts = JSON.parse(processedData);
-  //     processedProducts.forEach((product) => processedLinks.add(product.link));
-  //   } catch (error) {
-  //     console.warn(`Could not read processed file: ${error?.message}`);
-  //   }
-
-  //   // Read raw product list
-  //   const rawData = await fs.readFile(jsonFilePath, 'utf-8');
-  //   const products = JSON.parse(rawData);
-
-  //   // Open the output file for reading and writing
-  //   const fileHandle = await fs.open(outputFilePath, 'r+');
-
-  //   try {
-  //     // Move to the end of the JSON array before the closing bracket ']'
-  //     const fileStats = await fileHandle.stat(); // Get file size
-  //     let position = fileStats.size - 1; // Move cursor to end of file
-
-  //     // Handle case where file is empty or invalid
-  //     const fileContent = await fileHandle.readFile('utf-8');
-  //     if (!fileContent.trim().endsWith(']')) {
-  //       throw new Error('Invalid JSON structure in the file!');
-  //     }
-
-  //     // Remove the last ']' and prepare to append data
-  //     position = position - 1; // Move position before the closing ']'
-  //     await fileHandle.truncate(position); // Remove the last ']'
-
-  //     // Append products without clearing content
-  //     for (const product of products) {
-  //       // Skip already processed products
-  //       if (processedLinks.has(product.link)) {
-  //         console.log(
-  //           `Skipping product "${product.name}" as it's already processed.,`,
-  //         );
-  //         continue;
-  //       }
-
-  //       // Process product internal links
-  //       for (const internalLink of product.internalLinks) {
-  //         const { link } = internalLink;
-  //         if (link) {
-  //           const content = await scrapeWordSectionContent(link, selectors);
-  //           internalLink.content = content || null;
-  //         }
-  //       }
-
-  //       // Append the new product (handle commas properly)
-  //       const productData = JSON.stringify(product, null, 2);
-  //       const prefix = position > 2 ? ',\n' : ''; // Add a comma if file isn't empty
-
-  //       await fileHandle.write(prefix + productData, position);
-  //       position += Buffer.byteLength(prefix + productData); // Update position for next append
-
-  //       console.log(`Product "${product.name}" updated and saved.`);
-  //     }
-
-  //     // Close JSON array properly
-  //     await fileHandle.write(']', position); // Add back closing ']'
-  //   } catch (error) {
-  //     console.warn(`Error during processing: ${error?.message}`);
-  //   } finally {
-  //     await fileHandle.close(); // Close file handle
-  //   }
-  // }
 
   public async additionalScrapeProductsToDataBase(): Promise<boolean> {
     try {
@@ -1212,7 +1130,6 @@ export class ScraperService implements OnModuleInit {
 
       return true;
     } catch {
-      // console.log({ error });
       this.logger.warn('No existing JSON file found, starting fresh.');
       return false;
     }
