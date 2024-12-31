@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import * as fs from 'fs/promises';
+import * as simpleFS from 'fs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ScraperData } from './entities/scraper_data.entity';
@@ -653,7 +654,7 @@ export class ScraperService implements OnModuleInit {
     }
   }
 
-  async scrapeData(): Promise<void> {
+  async scrapeSupportProductsDataLinks(): Promise<void> {
     this.scrapedData = [];
     const categories = await this.scrapeCategories();
 
@@ -699,6 +700,8 @@ export class ScraperService implements OnModuleInit {
         );
       }
     }
+
+    await this.writeDataToFile();
     this.logger.log('All categories processed.');
   }
   async scrapeCategories(): Promise<any[]> {
@@ -927,7 +930,6 @@ export class ScraperService implements OnModuleInit {
 
     if (!isDuplicate) {
       this.scrapedData.push(category);
-      this.writeDataToFile();
       console.log(`Added category: ${category.categoryName}`);
     } else {
       console.log(`Skipped duplicate category: ${category.categoryName}`);
@@ -936,9 +938,10 @@ export class ScraperService implements OnModuleInit {
 
   async writeDataToFile(): Promise<void> {
     try {
+      const products = await this.mergeAllProducts();
       await fs.writeFile(
         this.tempListFile,
-        JSON.stringify(this.scrapedData, null, 2),
+        JSON.stringify(products, null, 2),
         'utf8',
       );
     } catch (error) {
@@ -977,22 +980,22 @@ export class ScraperService implements OnModuleInit {
     const jsonFilePath = this.productListFile;
     const outputDirectory = this.outputDirectory;
     const selectors = ['.WordSection1', '#eot-doc-wrapper'];
+    const maxProductsPerFile = 5;
 
     // Ensure output directory exists
     try {
-      await fs.mkdir(outputDirectory, { recursive: true });
+      await simpleFS.promises.mkdir(outputDirectory, { recursive: true });
     } catch (error) {
-      this.logger.error(`Failed to create directory: ${error.message}`);
+      console.error(`Failed to create directory: ${error.message}`);
       return;
     }
 
     // Read raw product list
     let rawData;
     try {
-      rawData = await fs.readFile(jsonFilePath, 'utf-8');
+      rawData = await simpleFS.promises.readFile(jsonFilePath, 'utf-8');
     } catch (error) {
-      this.logger.error(`Failed to read product list file: ${error.message}`);
-
+      console.error(`Failed to read product list file: ${error.message}`);
       return;
     }
 
@@ -1009,94 +1012,115 @@ export class ScraperService implements OnModuleInit {
 
     // Process each category
     for (const [categoryName, categoryProducts] of Object.entries(categories)) {
-      const fileName = sanitizeFileName(categoryName);
-      // console.log({ fileName });
-      const outputFilePath = path.join(outputDirectory, `${fileName}.json`);
-
-      // Ensure output file exists or create a valid empty JSON array
+      const sanitizedCategoryName = sanitizeFileName(categoryName);
       const processedLinks = new Set();
-      try {
-        await fs.access(outputFilePath); // Check if file exists
-        const processedData = await fs.readFile(outputFilePath, 'utf-8');
-        const processedProducts = JSON.parse(processedData);
-        processedProducts.forEach((product) =>
-          processedLinks.add(product.link),
-        );
-      } catch (error) {
-        console.log({ error });
-        if (error.code === 'ENOENT') {
-          // File doesn't exist; create a new one
+      let currentFileIndex = 1;
+      let productCountInCurrentFile = 0;
+      let outputFilePath = path.join(
+        outputDirectory,
+        `${sanitizedCategoryName}_${currentFileIndex}.json`,
+      );
 
-          this.logger.warn(
-            `File for category "${categoryName}" which is ${fileName} not found. Creating a new one`,
+      // Load existing files and track processed products
+      while (true) {
+        try {
+          const currentContent = await simpleFS.promises.readFile(
+            outputFilePath,
+            'utf-8',
           );
-          await fs.writeFile(outputFilePath, '[]', 'utf8');
-        } else {
-          // Handle other errors (e.g., file too large to read)
+          const parsedProducts = JSON.parse(currentContent);
+          parsedProducts.forEach((product) => processedLinks.add(product.link));
+          productCountInCurrentFile = parsedProducts.length;
 
-          this.logger.error(
-            `Failed to process file for category "${categoryName}": ${error.message}`,
+          // If the current file is full, move to the next file
+          if (productCountInCurrentFile >= maxProductsPerFile) {
+            currentFileIndex++;
+            outputFilePath = path.join(
+              outputDirectory,
+              `${sanitizedCategoryName}_${currentFileIndex}.json`,
+            );
+          } else {
+            break; // Found the file where new products can be added
+          }
+        } catch (error) {
+          // Stop searching if file doesn't exist
+          if (error.code === 'ENOENT') break;
+          console.error(
+            `Error reading file "${outputFilePath}": ${error.message}`,
           );
-          continue; // Skip processing this category
+          return;
         }
       }
 
-      // Prepare to append new products to the file
-      const fileHandle = await fs.open(outputFilePath, 'r+');
-      let position;
+      // Append each product
+      for (const product of categoryProducts as any) {
+        if (processedLinks.has(product.link)) continue;
 
-      try {
-        const fileContent = await fileHandle.readFile('utf-8');
-        const fileStats = await fileHandle.stat();
-
-        // Ensure valid JSON structure
-        if (!fileContent.trim().endsWith(']')) {
-          throw new Error('Invalid JSON structure in the file!');
-        }
-
-        // Remove the closing ']'
-        position = fileStats.size - 1;
-        await fileHandle.truncate(position);
-
-        // Process each product
-        for (const product of categoryProducts as any[]) {
-          if (processedLinks.has(product.link)) {
-            // console.log(
-            //   `Skipping product "${product.name}" as it's already processed.`,
-            // );
-            continue;
-          }
-          if (product?.internalLinks?.length) {
-            // Process internal links
-            for (const internalLink of product.internalLinks) {
-              const { link } = internalLink;
-              if (link) {
-                const content = await scrapeWordSectionContent(link, selectors);
-                internalLink.content = content || null;
-              }
+        // Scrape content for the product
+        if (product?.internalLinks?.length) {
+          for (const internalLink of product.internalLinks) {
+            const { link } = internalLink;
+            if (link) {
+              const content = await scrapeWordSectionContent(link, selectors);
+              internalLink.content = content || null;
             }
-
-            // Append the product
-            const productData = JSON.stringify(product, null, 2);
-            const prefix = position > 2 ? ',\n' : ''; // Add comma if file isn't empty
-
-            await fileHandle.write(prefix + productData, position);
-            position += Buffer.byteLength(prefix + productData); // Update position
-
-            this.logger.log(
-              `Product "${product.name}" in category "${categoryName}" saved.`,
-            );
           }
         }
 
-        // Close JSON array properly
-        await fileHandle.write(']', position);
-      } catch (error) {
-        this.logger.error(
-          `Error processing category "${categoryName}": ${error.message}`,
-        );
-      } finally {
-        await fileHandle.close();
+        try {
+          // Load current file content
+          let currentContent = '[]';
+          try {
+            currentContent = await simpleFS.promises.readFile(
+              outputFilePath,
+              'utf-8',
+            );
+            currentContent = currentContent.trim();
+          } catch (error) {
+            if (error.code !== 'ENOENT') {
+              console.error(
+                `Error reading file "${outputFilePath}": ${error.message}`,
+              );
+              return;
+            }
+          }
+
+          // Remove the trailing `]` to append a new product
+          currentContent = currentContent.endsWith(']')
+            ? currentContent.slice(0, -1)
+            : currentContent;
+          const prefix = currentContent.length > 1 ? ',\n' : '';
+          const productData = prefix + JSON.stringify(product, null, 2) + ']';
+
+          // Write back the updated JSON
+          await simpleFS.promises.writeFile(
+            outputFilePath,
+            currentContent + productData,
+            'utf8',
+          );
+          console.log(
+            `Product "${product.name}" saved to "${outputFilePath}".`,
+          );
+          processedLinks.add(product.link);
+          productCountInCurrentFile++;
+        } catch (error) {
+          console.error(`Error appending product: ${error.message}`);
+        }
+
+        // If current file reaches 5 products, move to the next file
+        if (productCountInCurrentFile >= maxProductsPerFile) {
+          currentFileIndex++;
+          productCountInCurrentFile = 0;
+          outputFilePath = path.join(
+            outputDirectory,
+            `${sanitizedCategoryName}_${currentFileIndex}.json`,
+          );
+          try {
+            await simpleFS.promises.writeFile(outputFilePath, '[]', 'utf8'); // Initialize the new file
+          } catch (error) {
+            console.error(`Error creating new file: ${error.message}`);
+          }
+        }
       }
     }
   }

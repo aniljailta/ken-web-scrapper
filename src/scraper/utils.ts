@@ -461,7 +461,7 @@ export async function scrapeWordSectionContent(
   link: string,
   selectors: string[],
 ): Promise<string | null> {
-  console.log(`Processing link: ${link}`);
+  // console.log(`Processing link: ${link}`);
   if (link.endsWith('.pdf')) {
     // Handle PDF links
     return await extractPdfContent(link);
@@ -485,11 +485,6 @@ export async function scrapeWordSectionContent(
 
           if (content) {
             return cleanHtml(content);
-
-            // return htmlToText(content, {
-            //   wordwrap: 130,
-            //   preserveNewlines: true,
-            // });
           }
         } catch {
           // console.warn(`Selector not found or content empty: ${selector}`);
@@ -511,7 +506,9 @@ export async function scrapeWordSectionContent(
       }
       return null;
     } catch (error) {
-      console.error(`Error scraping content for link: ${link}`, error);
+      console.error(
+        `Error scraping content for link: ${link} : ${error?.message}`,
+      );
       return null;
     } finally {
       if (browser) await browser.close();

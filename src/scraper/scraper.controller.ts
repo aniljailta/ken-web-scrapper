@@ -28,17 +28,17 @@ export class ScraperController {
     return response;
   }
   // To scrape the product data to products-list.json
-  @Get('scrape-new-data')
-  async scrapeData() {
-    this.scraperService.scrapeData();
+  @Get('scrape-support-product-links')
+  async scrapeSupportProductsDataLinks() {
+    this.scraperService.scrapeSupportProductsDataLinks();
     return { message: 'scrapping started' };
   }
 
-  // To merge the product data from products-list.json file to additional-products-list
-  @Get('merge-all-products')
-  async mergeAllProducts() {
-    return await this.scraperService.mergeAllProducts();
-  }
+  // // To merge the product data from products-list.json file to additional-products-list
+  // @Get('merge-all-products')
+  // async mergeAllProducts() {
+  //   return await this.scraperService.mergeAllProducts();
+  // }
 
   // To scrape the internal links data from file additional-products-list
   @Get('scrape-products-content')
