@@ -14,6 +14,14 @@ export class ScraperController {
     return { response };
   }
 
+  @Post('product-query')
+  async queryFunctionCalling(
+    @Body('question') question: string,
+  ): Promise<{ response: string }> {
+    const response = await this.scraperService.queryProduct(question);
+    return { response };
+  }
+
   // To scrape the product data to product.json
   @Get('scrape-data-to-json')
   async scapeToJsonFile(): Promise<any> {

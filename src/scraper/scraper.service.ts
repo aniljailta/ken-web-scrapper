@@ -20,6 +20,7 @@ import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
 import {
   ALL_PRODUCT_LIST_URL,
+  findDevToolFunction,
   initialScraperConfig,
   retryForCompactScraperConfig,
   retryScraperConfig,
@@ -1241,21 +1242,25 @@ export class ScraperService implements OnModuleInit {
       for (const file of files) {
         if (path.extname(file) === '.json') {
           const filePath = path.join(folderPath, file);
-          const data = simpleFS.readFileSync(filePath, 'utf8');
+          const data = simpleFS.readFileSync(filePath, 'utf-8');
           const jsonData = JSON.parse(data);
 
           if (Array.isArray(jsonData)) {
             for (const item of jsonData) {
               const productRecord = await this.saveAdditionalScraperData(item);
+              console.log(
+                '🚀 ~ ScraperService ~ readJsonFilesAndSave ~ productRecord:',
+                productRecord,
+              );
 
               if (item.internalLinks && Array.isArray(item.internalLinks)) {
                 for (const contentData of item.internalLinks) {
                   if (contentData.content) {
                     // Create and save entry in pivot table
-                    await this.internalContentRepository.save({
-                      scraperDataId: productRecord.id,
-                      internalContent: contentData,
-                    });
+                    // await this.internalContentRepository.save({
+                    //   scraperDataId: productRecord.id,
+                    //   internalContent: contentData,
+                    // });
                   }
                 }
               }
@@ -1267,5 +1272,55 @@ export class ScraperService implements OnModuleInit {
     } catch (error) {
       console.error('Error processing JSON files:', error);
     }
+  }
+  async queryProduct(query: string) {
+    //
+
+    return this.queryByName(query);
+    const tools: any = [findDevToolFunction];
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'user',
+          content: query,
+        },
+      ],
+      tools,
+    });
+    this.logger.log(`The user is Asking "${query}"`);
+    if (response.choices[0].message.tool_calls) {
+      const functionCall = response.choices[0].message.tool_calls[0].function;
+      if (functionCall.name === 'fetch_sku_details') {
+        const parsedArguments = JSON.parse(functionCall.arguments);
+        if (parsedArguments.name) {
+          return this.queryByName(parsedArguments.name);
+        }
+      }
+    }
+    return response.choices[0].message.content;
+  }
+
+  private async queryByName(name: string) {
+    console.log('🚀 ~ ScraperService ~ queryByName ~ name:', name);
+
+    const internalContent = await this.internalContentRepository.findOne({
+      where: {},
+      select: ['internalContent'],
+    });
+    console.log(
+      '🚀 ~ ScraperService ~ queryByName ~ internalContent:',
+      internalContent,
+    );
+    return 'hoh';
+    const response = await this.scrapperDataRepository.findOne({
+      where: {
+        productName: name,
+      },
+      select: ['productName', 'content', 'createdAt'],
+    });
+    console.log('🚀 ~ ScraperService ~ queryByName ~ response:', response);
+
+    return 'Hello';
   }
 }
