@@ -575,12 +575,9 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
 
       const totalLinks = validInternalLinks.length;
 
-      // Skip chunking if no chunking is required
-      if (
-        totalLinks <= CHUNK_SIZE ||
-        (totalLinks > CHUNK_SIZE && totalLinks <= 130)
-      ) {
-        // Check for duplicate productLink
+      // Perform chunking only if needed
+      if (totalLinks <= CHUNK_SIZE) {
+        // Add the single chunk directly
         if (!uniqueProductLinks.has(productLink)) {
           mergedProducts[productLink] = {
             link: product.productLink,
@@ -594,23 +591,21 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
         return;
       }
 
-      // Perform chunking for internalLinks > 60
+      // Handle multiple chunks
       const productBaseName = product.productName || productLink; // Use productName or productLink as a base name
       let index = 1;
 
       for (let i = 0; i < totalLinks; i += CHUNK_SIZE) {
         const chunk = validInternalLinks.slice(i, i + CHUNK_SIZE);
 
-        // Generate a new productLink if needed
+        // Use the base productLink for the first chunk
         const newProductLink =
           i === 0 ? productLink : `${productLink}-${index}`;
-
-        // Skip adding duplicates
-        if (uniqueProductLinks.has(newProductLink)) continue;
-
-        // Set product name for chunks
         const newProductName =
-          i === 0 ? productBaseName : `${productBaseName} ${index - 1}`;
+          i === 0 ? productBaseName : `${productBaseName} ${index}`;
+
+        // Skip duplicates
+        if (uniqueProductLinks.has(newProductLink)) continue;
 
         // Add new product
         mergedProducts[newProductLink] = {

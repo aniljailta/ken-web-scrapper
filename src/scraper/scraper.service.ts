@@ -1269,7 +1269,7 @@ export class ScraperService implements OnModuleInit {
     }
   }
 
-  async getProductDataBaseOnName(name) {
+  async getProductData(name: string) {
     try {
       const trimmedName = name.trim();
       const productData = await this.scrapperDataRepository.find({

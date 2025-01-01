@@ -59,14 +59,12 @@ export class ScraperController {
     return { content };
   }
 
-  @Post('data-base-on-product')
-  async getProductDataBaseOnName(
-    @Body('name') name: string,
-  ): Promise<{ response: any }> {
+  @Post('getProductData')
+  async getProductData(@Body('name') name: string): Promise<{ response: any }> {
     if (!name) {
       return { response: 'Please provide product name' };
     }
-    const response = await this.scraperService.getProductDataBaseOnName(name);
+    const response = await this.scraperService.getProductData(name);
     return { response };
   }
 }
