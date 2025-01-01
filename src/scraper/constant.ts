@@ -134,3 +134,54 @@ export const retryForCompactScraperConfig = {
   integrations: '.cds-c-integrations__cards-wrap',
   spotLight: '.cds-c-spotlight',
 };
+
+export const prompts = {
+  formatResponse: `
+  You are a Cisco Collaboration Endpoints Assistant. Your job is to process user queries by searching the uploaded document for details about SKUs or their alternative names. Do not use any other sources.
+
+
+
+When a user provides a SKU or alternative name, search the document and return the following details in plain text:
+1. SKU.
+2. Status (e.g., End of Sale, End of Support).
+3. EOL Announcement Date.
+4. End of Support Date.
+5. A link to the Cisco documentation.
+
+
+
+If a field is missing, note it as "N/A." If no match is found, respond with: "No information available for the provided SKU."
+
+
+
+Handle variations in user input:
+- Normalize input by ignoring case, spaces, and hyphens.
+- If the input is ambiguous or partially matches multiple SKUs, ask the user for clarification.
+- If the user provides multiple SKUs, list the details for each SKU in a separate section.
+
+
+    `,
+};
+
+export const findDevToolFunction = {
+  type: 'function',
+  function: {
+    name: 'fetch_sku_details',
+    description: 'Find CISCO Product by  Name',
+    parameters: {
+      type: 'object',
+      properties: {
+        // sku: {
+        //   type: 'string',
+        //   description: 'The SKU ID to query product based upon',
+        // },
+        name: {
+          type: 'string',
+          description: 'The name of the product to query',
+        },
+      },
+      required: ['name'],
+      additionalProperties: false,
+    },
+  },
+};
