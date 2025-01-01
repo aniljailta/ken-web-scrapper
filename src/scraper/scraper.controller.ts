@@ -48,8 +48,8 @@ export class ScraperController {
   }
 
   @Get('additional-scrape-data-to-database')
-  async additionalScrapeProductsToDataBase() {
-    this.scraperService.additionalScrapeProductsToDataBase();
+  async readJsonFilesAndSave() {
+    this.scraperService.readJsonFilesAndSave();
     return { message: 'content to add in DB started' };
   }
 

@@ -3,7 +3,9 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { InternalContent } from './internal_content.entity';
 
 @Entity()
 export class AdditionalData {
@@ -16,15 +18,20 @@ export class AdditionalData {
   @Column({ unique: true })
   url: string;
 
-  @Column('text')
-  content: string;
+  // @Column('text')
+  // content: string;
 
-  @Column('float', { array: true })
-  vector: number[];
+  // @Column('float', { array: true })
+  // vector: number[];
 
   @Column('jsonb')
   jsonData: any;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => InternalContent, (internalContent) => internalContent.id, {
+    onDelete: 'CASCADE',
+  })
+  internalContents: InternalContent[];
 }

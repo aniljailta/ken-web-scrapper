@@ -546,6 +546,8 @@ async function extractPdfContent(pdfUrl: string): Promise<string | null> {
 // Merge all products from a file and write the merged result to another file
 export async function mergeAllProducts({ data }: { data: any[] }) {
   const mergedProducts: Record<string, any> = {};
+  const uniqueProductLinks = new Set<string>();
+  const CHUNK_SIZE = 100; // Default chunk size
 
   data.forEach((category) => {
     const categoryName = category.categoryName;
@@ -559,35 +561,68 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
     category.products.forEach((product) => {
       const productLink = product.productLink;
 
-      // Filter invalid links for the current product
-      const validInternalLinks = (product.internalLinks || []).filter(
-        (internalLink: { name: string; link: string }) =>
-          internalLink?.link &&
-          typeof internalLink?.link === 'string' &&
-          internalLink?.link?.trim() !== '',
+      // Filter valid internalLinks for the current product and remove duplicates
+      const validInternalLinks = Array.from(
+        new Set(
+          (product.internalLinks || []).filter(
+            (internalLink: { name: string; link: string }) =>
+              internalLink?.link &&
+              typeof internalLink?.link === 'string' &&
+              internalLink?.link?.trim() !== '',
+          ),
+        ),
       );
 
-      // Skip the product if it has no valid internalLinks
-      if (validInternalLinks.length === 0) {
+      const totalLinks = validInternalLinks.length;
+
+      // Skip chunking if no chunking is required
+      if (
+        totalLinks <= CHUNK_SIZE ||
+        (totalLinks > CHUNK_SIZE && totalLinks <= 130)
+      ) {
+        // Check for duplicate productLink
+        if (!uniqueProductLinks.has(productLink)) {
+          mergedProducts[productLink] = {
+            ...product,
+            internalLinks: validInternalLinks,
+            categoryName,
+            categoryLink,
+          };
+          uniqueProductLinks.add(productLink);
+        }
         return;
       }
 
-      if (!mergedProducts[productLink]) {
-        // Add new product with valid internalLinks
-        mergedProducts[productLink] = {
+      // Perform chunking for internalLinks > 60
+      const productBaseName = product.productName || productLink; // Use productName or productLink as a base name
+      let index = 1;
+
+      for (let i = 0; i < totalLinks; i += CHUNK_SIZE) {
+        const chunk = validInternalLinks.slice(i, i + CHUNK_SIZE);
+
+        // Generate a new productLink if needed
+        const newProductLink =
+          i === 0 ? productLink : `${productLink}-${index}`;
+
+        // Skip adding duplicates
+        if (uniqueProductLinks.has(newProductLink)) continue;
+
+        // Set product name for chunks
+        const newProductName =
+          i === 0 ? productBaseName : `${productBaseName} ${index - 1}`;
+
+        // Add new product
+        mergedProducts[newProductLink] = {
           ...product,
-          internalLinks: validInternalLinks,
+          productLink: newProductLink,
+          productName: newProductName,
+          internalLinks: chunk,
           categoryName,
           categoryLink,
         };
-      } else {
-        // If already exists, merge valid internalLinks
-        mergedProducts[productLink].internalLinks = [
-          ...new Set([
-            ...mergedProducts[productLink].internalLinks,
-            ...validInternalLinks,
-          ]),
-        ];
+
+        uniqueProductLinks.add(newProductLink);
+        index++;
       }
     });
   });

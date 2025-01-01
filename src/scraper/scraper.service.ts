@@ -26,6 +26,7 @@ import {
 } from './constant';
 import { AdditionalData } from './entities/additional_data.entity';
 import * as path from 'path';
+import { InternalContent } from './entities/internal_content.entity';
 
 @Injectable()
 export class ScraperService implements OnModuleInit {
@@ -36,7 +37,6 @@ export class ScraperService implements OnModuleInit {
   private readonly filePath = 'products.json';
   private readonly outputDirectory = 'products-category';
   private productListFile = 'json/products-list.json';
-  private mergeAdditionalProductListFile = 'json/additional-products-list.json';
   private tempListFile = 'json/temp-additional-products-list.json';
   private mergeAdditionalProductListFileWithContent =
     'json/additional-products-list-with-content.json';
@@ -52,6 +52,9 @@ export class ScraperService implements OnModuleInit {
 
     @InjectRepository(AdditionalData)
     private additionalScrapperDataRepository: Repository<AdditionalData>,
+
+    @InjectRepository(InternalContent)
+    private internalContentRepository: Repository<InternalContent>,
     private readonly configService: ConfigService,
   ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
@@ -930,17 +933,23 @@ export class ScraperService implements OnModuleInit {
 
     if (!isDuplicate) {
       this.scrapedData.push(category);
-      console.log(`Added category: ${category.categoryName}`);
+      this.logger.log(`Added category: ${category.categoryName}`);
     } else {
-      console.log(`Skipped duplicate category: ${category.categoryName}`);
+      this.logger.log(`Skipped duplicate category: ${category.categoryName}`);
     }
   }
 
   async writeDataToFile(): Promise<void> {
     try {
-      const products = await this.mergeAllProducts();
       await fs.writeFile(
-        this.tempListFile,
+        'json/additional-products-list.json',
+        JSON.stringify(this.scrapedData, null, 2),
+        'utf8',
+      );
+
+      const products = await mergeAllProducts({ data: this.scrapedData });
+      await fs.writeFile(
+        this.productListFile,
         JSON.stringify(products, null, 2),
         'utf8',
       );
@@ -980,13 +989,13 @@ export class ScraperService implements OnModuleInit {
     const jsonFilePath = this.productListFile;
     const outputDirectory = this.outputDirectory;
     const selectors = ['.WordSection1', '#eot-doc-wrapper'];
-    const maxProductsPerFile = 5;
+    const maxProductsPerFile = 15;
 
     // Ensure output directory exists
     try {
       await simpleFS.promises.mkdir(outputDirectory, { recursive: true });
     } catch (error) {
-      console.error(`Failed to create directory: ${error.message}`);
+      this.logger.error(`Failed to create directory: ${error.message}`);
       return;
     }
 
@@ -995,7 +1004,8 @@ export class ScraperService implements OnModuleInit {
     try {
       rawData = await simpleFS.promises.readFile(jsonFilePath, 'utf-8');
     } catch (error) {
-      console.error(`Failed to read product list file: ${error.message}`);
+      this.logger.error(`Failed to read product list file: ${error.message}`);
+
       return;
     }
 
@@ -1045,9 +1055,10 @@ export class ScraperService implements OnModuleInit {
         } catch (error) {
           // Stop searching if file doesn't exist
           if (error.code === 'ENOENT') break;
-          console.error(
+          this.logger.error(
             `Error reading file "${outputFilePath}": ${error.message}`,
           );
+
           return;
         }
       }
@@ -1078,7 +1089,7 @@ export class ScraperService implements OnModuleInit {
             currentContent = currentContent.trim();
           } catch (error) {
             if (error.code !== 'ENOENT') {
-              console.error(
+              this.logger.error(
                 `Error reading file "${outputFilePath}": ${error.message}`,
               );
               return;
@@ -1098,9 +1109,10 @@ export class ScraperService implements OnModuleInit {
             currentContent + productData,
             'utf8',
           );
-          console.log(
+          this.logger.log(
             `Product "${product.name}" saved to "${outputFilePath}".`,
           );
+
           processedLinks.add(product.link);
           productCountInCurrentFile++;
         } catch (error) {
@@ -1161,7 +1173,7 @@ export class ScraperService implements OnModuleInit {
 
   public async getAdditionalScraperRecordByUrl(
     url: string,
-  ): Promise<ScraperData | null> {
+  ): Promise<AdditionalData | null> {
     try {
       // Use findOneBy for a direct condition
       const record = await this.additionalScrapperDataRepository.findOneBy({
@@ -1181,23 +1193,23 @@ export class ScraperService implements OnModuleInit {
 
   public async saveAdditionalScraperData(
     productData: Record<string, any>,
-  ): Promise<ScraperData> {
+  ): Promise<AdditionalData> {
     try {
       // Step 1: Flatten and prepare text
-      const textContent = await flattenAndConcatenate(productData);
+      const textContent = `${productData.name}\n${productData.link}\n${productData.categoryName}\n${productData.categoryLink}`;
 
       // Step 2: Build vocabulary (static or dynamic per use case)
-      const vocabulary = buildVocabulary([textContent]); // You can save and reuse this for consistency
+      // const vocabulary = buildVocabulary([textContent]); // You can save and reuse this for consistency
 
       // Step 3: Generate vector
-      const vector = vectorize(textContent, vocabulary);
+      // const vector = vectorize(textContent, vocabulary);
 
       // Step 4: Save data to database
       const scraperData = this.additionalScrapperDataRepository.create({
         url: productData.link,
-        content: textContent,
-        vector,
-        jsonData: productData,
+        // content: textContent,
+        // vector,
+        jsonData: textContent,
         productName: productData?.name || '',
       });
       return await this.additionalScrapperDataRepository.save(scraperData);
@@ -1217,6 +1229,43 @@ export class ScraperService implements OnModuleInit {
     } catch (error) {
       this.logger.warn('Error scraper data:', error?.message);
       return null;
+    }
+  }
+
+  async readJsonFilesAndSave() {
+    const folderPath = path.join(process.cwd(), this.outputDirectory);
+
+    try {
+      const files = simpleFS.readdirSync(folderPath);
+
+      for (const file of files) {
+        if (path.extname(file) === '.json') {
+          const filePath = path.join(folderPath, file);
+          const data = simpleFS.readFileSync(filePath, 'utf8');
+          const jsonData = JSON.parse(data);
+
+          if (Array.isArray(jsonData)) {
+            for (const item of jsonData) {
+              const productRecord = await this.saveAdditionalScraperData(item);
+
+              if (item.internalLinks && Array.isArray(item.internalLinks)) {
+                for (const contentData of item.internalLinks) {
+                  if (contentData.content) {
+                    // Create and save entry in pivot table
+                    await this.internalContentRepository.save({
+                      scraperDataId: productRecord.id,
+                      internalContent: contentData,
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      this.logger.log(`All JSON files processed successfully.`);
+    } catch (error) {
+      console.error('Error processing JSON files:', error);
     }
   }
 }
