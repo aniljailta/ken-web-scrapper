@@ -974,7 +974,7 @@ export class ScraperService implements OnModuleInit {
   }
 
   async mergeAllProducts() {
-    const jsonFilePath = this.productListFile;
+    const jsonFilePath = 'json/additional-products-list.json';
     const rawData = await fs.readFile(jsonFilePath, 'utf-8');
     const products = JSON.parse(rawData);
 

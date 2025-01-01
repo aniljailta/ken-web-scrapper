@@ -583,7 +583,8 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
         // Check for duplicate productLink
         if (!uniqueProductLinks.has(productLink)) {
           mergedProducts[productLink] = {
-            ...product,
+            link: product.productLink,
+            name: product.productName,
             internalLinks: validInternalLinks,
             categoryName,
             categoryLink,
@@ -613,9 +614,8 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
 
         // Add new product
         mergedProducts[newProductLink] = {
-          ...product,
-          productLink: newProductLink,
-          productName: newProductName,
+          link: newProductLink,
+          name: newProductName,
           internalLinks: chunk,
           categoryName,
           categoryLink,

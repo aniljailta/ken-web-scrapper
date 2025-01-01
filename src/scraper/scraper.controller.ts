@@ -35,10 +35,10 @@ export class ScraperController {
   }
 
   // // To merge the product data from products-list.json file to additional-products-list
-  // @Get('merge-all-products')
-  // async mergeAllProducts() {
-  //   return await this.scraperService.mergeAllProducts();
-  // }
+  @Get('merge-all-products')
+  async mergeAllProducts() {
+    return await this.scraperService.mergeAllProducts();
+  }
 
   // To scrape the internal links data from file additional-products-list
   @Get('scrape-products-content')
