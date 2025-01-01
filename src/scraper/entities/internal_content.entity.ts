@@ -19,7 +19,7 @@ export class InternalContent {
   @ManyToOne(() => AdditionalData, (scraperData) => scraperData.id, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'scraper_data_id' })
+  @JoinColumn({ name: 'scraperDataId' })
   scraperData: AdditionalData;
 
   @Column('jsonb')

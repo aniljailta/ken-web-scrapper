@@ -3,7 +3,7 @@ import * as puppeteer from 'puppeteer';
 import * as fs from 'fs/promises';
 import * as simpleFS from 'fs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { ScraperData } from './entities/scraper_data.entity';
 import {
   buildVocabulary,
@@ -1266,6 +1266,58 @@ export class ScraperService implements OnModuleInit {
       this.logger.log(`All JSON files processed successfully.`);
     } catch (error) {
       console.error('Error processing JSON files:', error);
+    }
+  }
+
+  async getProductDataBaseOnName(name) {
+    try {
+      const trimmedName = name.trim();
+      const productData = await this.scrapperDataRepository.find({
+        where: {
+          productName: ILike(`%${trimmedName}%`),
+        },
+      });
+
+      const additionalData = await this.additionalScrapperDataRepository.find({
+        where: {
+          productName: ILike(`%${trimmedName}%`),
+        },
+        relations: ['internalContents'],
+      });
+
+      // Combine data based on `productName`
+      const mergedData = [];
+
+      for (const product of productData) {
+        const matchingAdditionalData = additionalData.find(
+          (additional) => additional.productName === product.productName,
+        );
+
+        mergedData.push({
+          ...product,
+          additionalData: matchingAdditionalData || null, // Attach matching additional data if found
+        });
+      }
+
+      // Optionally add remaining `additionalData` entries that didn't match
+      const unmatchedAdditionalData = additionalData.filter(
+        (additional) =>
+          !productData.some(
+            (product) => product.productName === additional.productName,
+          ),
+      );
+
+      unmatchedAdditionalData.forEach((additional) => {
+        mergedData.push({
+          ...additional,
+          additionalData: null,
+        });
+      });
+
+      return mergedData;
+    } catch (error) {
+      this.logger.warn('Error fetching product data:', error?.message);
+      return [];
     }
   }
 }

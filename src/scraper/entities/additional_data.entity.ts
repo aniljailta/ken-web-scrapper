@@ -30,8 +30,12 @@ export class AdditionalData {
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToMany(() => InternalContent, (internalContent) => internalContent.id, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(
+    () => InternalContent,
+    (internalContent) => internalContent.scraperData,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   internalContents: InternalContent[];
 }
