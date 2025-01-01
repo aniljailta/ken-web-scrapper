@@ -3,7 +3,7 @@ import * as puppeteer from 'puppeteer';
 import * as fs from 'fs/promises';
 import * as simpleFS from 'fs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { ScraperData } from './entities/scraper_data.entity';
 import {
   buildVocabulary,
@@ -22,6 +22,7 @@ import {
   ALL_PRODUCT_LIST_URL,
   findDevToolFunction,
   initialScraperConfig,
+  prompts,
   retryForCompactScraperConfig,
   retryScraperConfig,
 } from './constant';
@@ -1276,7 +1277,6 @@ export class ScraperService implements OnModuleInit {
   async queryProduct(query: string) {
     //
 
-    return this.queryByName(query);
     const tools: any = [findDevToolFunction];
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -1294,33 +1294,105 @@ export class ScraperService implements OnModuleInit {
       if (functionCall.name === 'fetch_sku_details') {
         const parsedArguments = JSON.parse(functionCall.arguments);
         if (parsedArguments.name) {
-          return this.queryByName(parsedArguments.name);
+          return await this.queryByName(parsedArguments.name);
         }
       }
     }
-    return response.choices[0].message.content;
   }
 
   private async queryByName(name: string) {
-    console.log('🚀 ~ ScraperService ~ queryByName ~ name:', name);
+    const result = await this.getProductDataBaseOnName(name);
+    console.log('🚀 ~ ScraperService ~ queryByName ~ result:', result);
+    if (!result) {
+      return 'No Relevent Product Found!';
+    }
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'assistant',
+          content: prompts.formatResponse,
+        },
 
-    const internalContent = await this.internalContentRepository.findOne({
-      where: {},
-      select: ['internalContent'],
+        {
+          role: 'system',
+          content: `You will also be provided with the JSON Data & You supposed format it in the following type or string
+         SKU: CTS-SX10N-K9
+Status: End of Sale
+EOL Announcement Date: July 30, 2019
+End of Support Date: January 31, 2025
+Link: https://www.cisco.com/c/en/us/support/collaboration-endpoints/telepresence-sx10-quick-set/model.htmll 
+          
+          `,
+        },
+        {
+          role: 'user',
+          content: `
+     ${JSON.stringify(result, null, 2)}
+          `,
+        },
+      ],
     });
-    console.log(
-      '🚀 ~ ScraperService ~ queryByName ~ internalContent:',
-      internalContent,
-    );
-    return 'hoh';
-    const response = await this.scrapperDataRepository.findOne({
-      where: {
-        productName: name,
-      },
-      select: ['productName', 'content', 'createdAt'],
-    });
-    console.log('🚀 ~ ScraperService ~ queryByName ~ response:', response);
 
-    return 'Hello';
+    return response.choices[0].message.content;
+  }
+  async getProductDataBaseOnName(name) {
+    try {
+      const trimmedName = name.trim();
+      const productData = await this.scrapperDataRepository.find({
+        where: {
+          productName: ILike(`%${trimmedName}%`),
+        },
+        select: [
+          'jsonData',
+          'productName',
+          'id',
+          'createdAt',
+          'content',
+          'url',
+        ],
+      });
+
+      const additionalData = await this.additionalScrapperDataRepository.find({
+        where: {
+          productName: ILike(`%${trimmedName}%`),
+        },
+        relations: ['internalContents'],
+      });
+
+      // Combine data based on `productName`
+      const mergedData = [];
+
+      for (const product of productData) {
+        const matchingAdditionalData = additionalData.find(
+          (additional) => additional.productName === product.productName,
+        );
+
+        mergedData.push({
+          ...product,
+          additionalData: matchingAdditionalData || null, // Attach matching additional data if found
+        });
+      }
+
+      // Optionally add remaining `additionalData` entries that didn't match
+      const unmatchedAdditionalData = additionalData.filter(
+        (additional) =>
+          !productData.some(
+            (product) => product.productName === additional.productName,
+          ),
+      );
+
+      unmatchedAdditionalData.forEach((additional) => {
+        mergedData.push({
+          ...additional,
+          additionalData: null,
+        });
+      });
+
+      return mergedData;
+    } catch (error) {
+      this.logger.warn('Error fetching product data:', error?.message);
+      return [];
+    }
   }
 }
