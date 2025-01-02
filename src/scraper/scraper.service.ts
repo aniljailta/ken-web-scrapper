@@ -1331,7 +1331,7 @@ export class ScraperService implements OnModuleInit {
     }
   }
 
-  async getProductData(query: string) {
+  async queryProduct(query: string) {
     const tools: any = [findDevToolFunction];
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -1356,7 +1356,7 @@ export class ScraperService implements OnModuleInit {
   }
 
   private async queryByName(name: string) {
-    const result = await this.getProductDataBaseOnName(name);
+    const result = await this.getProductData(name);
     console.log('🚀 ~ ScraperService ~ queryByName ~ result:', result);
     if (!result) {
       return 'No Relevent Product Found!';
@@ -1391,7 +1391,7 @@ Link: https://www.cisco.com/c/en/us/support/collaboration-endpoints/telepresence
 
     return response.choices[0].message.content;
   }
-  async getProductDataBaseOnName(name) {
+  async getProductData(name: string) {
     try {
       const trimmedName = name.trim();
       const productData = await this.scrapperDataRepository.find({
