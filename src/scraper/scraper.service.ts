@@ -1305,20 +1305,20 @@ export class ScraperService implements OnModuleInit {
           if (Array.isArray(jsonData)) {
             for (const item of jsonData) {
               const productRecord = await this.saveAdditionalScraperData(item);
-              console.log(
-                '🚀 ~ ScraperService ~ readJsonFilesAndSave ~ productRecord:',
-                productRecord,
-              );
+              // console.log(
+              //   '🚀 ~ ScraperService ~ readJsonFilesAndSave ~ productRecord:',
+              //   productRecord,
+              // );
 
               if (item.internalLinks && Array.isArray(item.internalLinks)) {
                 for (const contentData of item.internalLinks) {
-                  if (contentData.content) {
-                    // Create and save entry in pivot table
-                    // await this.internalContentRepository.save({
-                    //   scraperDataId: productRecord.id,
-                    //   internalContent: contentData,
-                    // });
-                  }
+                  // if (contentData.content) {
+                  // Create and save entry in pivot table
+                  await this.internalContentRepository.save({
+                    scraperDataId: productRecord.id,
+                    internalContent: contentData,
+                  });
+                  // }
                 }
               }
             }
@@ -1357,7 +1357,7 @@ export class ScraperService implements OnModuleInit {
 
   private async queryByName(name: string) {
     const result = await this.getProductData(name);
-    console.log('🚀 ~ ScraperService ~ queryByName ~ result:', result);
+    // console.log('🚀 ~ ScraperService ~ queryByName ~ result:', result);
     if (!result) {
       return 'No Relevent Product Found!';
     }
