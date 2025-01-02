@@ -668,7 +668,7 @@ export class ScraperService implements OnModuleInit {
       try {
         let products = await this.scrapeProductsForCategory(
           link,
-          '#prodByAlpha li a',
+          '#allSupportedProducts li a',
         );
 
         if (!products.length) {
@@ -832,7 +832,12 @@ export class ScraperService implements OnModuleInit {
               '.dmc-list-dynamic ul li a',
             );
           }
+          const productDataInfo = await this.scrapeInternalProductInfo(
+            product.productLink,
+          );
+
           product.internalLinks = internalLinks; // Assign internal links to each product
+          product.info = productDataInfo || null;
         }
       }
 
@@ -848,6 +853,56 @@ export class ScraperService implements OnModuleInit {
     }
   }
 
+  async scrapeInternalProductInfo(productLink: string): Promise<any[]> {
+    let browser;
+    try {
+      browser = await this.initBrowser();
+      const page = await browser.newPage();
+      await page.goto(productLink, { waitUntil: 'networkidle2' });
+
+      const data = await page.evaluate(() => {
+        const table = document.querySelector('.data-wrapper');
+        if (!table) return null;
+
+        const rows = table.querySelectorAll('tr');
+        const tableData: Record<string, string> = {};
+
+        rows.forEach((row) => {
+          let header = row.querySelector('th')?.textContent?.trim();
+
+          const valueElement = row.querySelector('td');
+          if (header && valueElement) {
+            // Normalize the header to replace spaces with underscores
+            header = header.replace(/\s+/g, '_').trim();
+
+            // Remove unwanted spaces, newlines, and nested tags
+            let value = Array.from(valueElement.childNodes)
+              .filter((node) => node.nodeType === Node.TEXT_NODE) // Only get text nodes
+              .map((node) => node.textContent?.trim() || '') // Trim each text node
+              .join(' '); // Combine cleaned text
+
+            // Remove excessive spaces
+            value = value.replace(/\s+/g, ' ').trim();
+
+            // Add to the result
+            tableData[header] = value;
+          }
+        });
+
+        return tableData;
+      });
+
+      return data;
+    } catch (error) {
+      this.logger.error(
+        `Error scraping info data: ${productLink} :${error?.message},`,
+      );
+
+      return null;
+    } finally {
+      if (browser) await browser.close();
+    }
+  }
   // Function to scrape internal links for a given product
   async scrapeInternalLinksForProduct(
     productLink: string,
@@ -1195,8 +1250,9 @@ export class ScraperService implements OnModuleInit {
     productData: Record<string, any>,
   ): Promise<AdditionalData> {
     try {
+      delete productData?.internalLinks; // Remove internal links before saving
       // Step 1: Flatten and prepare text
-      const textContent = `${productData.name}\n${productData.link}\n${productData.categoryName}\n${productData.categoryLink}`;
+      const textContent = productData;
 
       // Step 2: Build vocabulary (static or dynamic per use case)
       // const vocabulary = buildVocabulary([textContent]); // You can save and reuse this for consistency

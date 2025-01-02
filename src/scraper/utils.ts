@@ -585,6 +585,7 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
             internalLinks: validInternalLinks,
             categoryName,
             categoryLink,
+            info: product?.info,
           };
           uniqueProductLinks.add(productLink);
         }
@@ -614,6 +615,7 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
           internalLinks: chunk,
           categoryName,
           categoryLink,
+          info: product?.info,
         };
 
         uniqueProductLinks.add(newProductLink);
