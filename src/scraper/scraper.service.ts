@@ -20,7 +20,9 @@ import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
 import {
   ALL_PRODUCT_LIST_URL,
+  findDevToolFunction,
   initialScraperConfig,
+  prompts,
   retryForCompactScraperConfig,
   retryScraperConfig,
 } from './constant';
@@ -1297,21 +1299,25 @@ export class ScraperService implements OnModuleInit {
       for (const file of files) {
         if (path.extname(file) === '.json') {
           const filePath = path.join(folderPath, file);
-          const data = simpleFS.readFileSync(filePath, 'utf8');
+          const data = simpleFS.readFileSync(filePath, 'utf-8');
           const jsonData = JSON.parse(data);
 
           if (Array.isArray(jsonData)) {
             for (const item of jsonData) {
               const productRecord = await this.saveAdditionalScraperData(item);
+              console.log(
+                '🚀 ~ ScraperService ~ readJsonFilesAndSave ~ productRecord:',
+                productRecord,
+              );
 
               if (item.internalLinks && Array.isArray(item.internalLinks)) {
                 for (const contentData of item.internalLinks) {
                   if (contentData.content) {
                     // Create and save entry in pivot table
-                    await this.internalContentRepository.save({
-                      scraperDataId: productRecord.id,
-                      internalContent: contentData,
-                    });
+                    // await this.internalContentRepository.save({
+                    //   scraperDataId: productRecord.id,
+                    //   internalContent: contentData,
+                    // });
                   }
                 }
               }
@@ -1325,13 +1331,81 @@ export class ScraperService implements OnModuleInit {
     }
   }
 
-  async getProductData(name: string) {
+  async getProductData(query: string) {
+    const tools: any = [findDevToolFunction];
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'user',
+          content: query,
+        },
+      ],
+      tools,
+    });
+    this.logger.log(`The user is Asking "${query}"`);
+    if (response.choices[0].message.tool_calls) {
+      const functionCall = response.choices[0].message.tool_calls[0].function;
+      if (functionCall.name === 'fetch_sku_details') {
+        const parsedArguments = JSON.parse(functionCall.arguments);
+        if (parsedArguments.name) {
+          return await this.queryByName(parsedArguments.name);
+        }
+      }
+    }
+  }
+
+  private async queryByName(name: string) {
+    const result = await this.getProductDataBaseOnName(name);
+    console.log('🚀 ~ ScraperService ~ queryByName ~ result:', result);
+    if (!result) {
+      return 'No Relevent Product Found!';
+    }
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'assistant',
+          content: prompts.formatResponse,
+        },
+
+        {
+          role: 'system',
+          content: `You will also be provided with the JSON Data & You supposed format it in the following type or string
+         SKU: CTS-SX10N-K9
+Status: End of Sale
+EOL Announcement Date: July 30, 2019
+End of Support Date: January 31, 2025
+Link: https://www.cisco.com/c/en/us/support/collaboration-endpoints/telepresence-sx10-quick-set/model.htmll 
+          
+          `,
+        },
+        {
+          role: 'user',
+          content: `
+     ${JSON.stringify(result, null, 2)}
+          `,
+        },
+      ],
+    });
+
+    return response.choices[0].message.content;
+  }
+  async getProductDataBaseOnName(name) {
     try {
       const trimmedName = name.trim();
       const productData = await this.scrapperDataRepository.find({
         where: {
           productName: ILike(`%${trimmedName}%`),
         },
+        select: [
+          'jsonData',
+          'productName',
+          'id',
+          'createdAt',
+          'content',
+          'url',
+        ],
       });
 
       const additionalData = await this.additionalScrapperDataRepository.find({
