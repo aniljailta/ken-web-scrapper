@@ -652,3 +652,33 @@ export function sanitizeFileName(fileName: string): string {
     .replace(/^_|_$/g, '') // Remove leading and trailing underscores
     .toLowerCase();
 }
+
+export function mapProductsToInsight(productList, insightProductList) {
+  // Initialize the new product data array
+  const mappedProducts = [];
+
+  // Iterate over the product list
+  productList.forEach((product) => {
+    const productName = product.name.toLowerCase();
+
+    // Iterate over the insight product list
+    insightProductList.forEach((insightProduct) => {
+      const description = insightProduct.description.toLowerCase();
+
+      // Check if the product name is found in the description
+      if (description.includes(productName)) {
+        // Create a new object with the desired keys and values
+        const mappedProduct = {
+          // ...product,
+          productName: product.name,
+          PID: insightProduct.sku, // Add SKU as PID
+        };
+
+        // Add the mapped product to the result array
+        mappedProducts.push(mappedProduct);
+      }
+    });
+  });
+
+  return mappedProducts;
+}

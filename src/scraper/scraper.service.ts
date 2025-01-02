@@ -1376,4 +1376,36 @@ export class ScraperService implements OnModuleInit {
       return [];
     }
   }
+  async scrapeProductDataOfInsightFile(): Promise<any> {
+    try {
+      const listData = await fs.readFile(
+        'json/insite_product_list.json',
+        'utf8',
+      );
+      const a = JSON.parse(listData || '[]');
+
+      const dataList = a.products.map((product: any) => {
+        return {
+          availability: product.availability,
+          description: product.description,
+          manufacturerImage: product.manufacturerImage,
+          insightPrice: product.insightPrice,
+          listPrice: product.listPrice,
+          longDescription: product.longDescription,
+          manufacturerPartNumber: product.manufacturerPartNumber,
+          materialId: product.materialId,
+          sku: product.sku,
+        };
+      });
+
+      await fs.writeFile(
+        'json/insight_product_list.json',
+        JSON.stringify(dataList, null, 2),
+      );
+
+      return a.products;
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
 }
