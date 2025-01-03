@@ -178,3 +178,25 @@ export const findDevToolFunction = {
     },
   },
 };
+
+export const CHATGPT_RESPONSE_PROMPT = `You are an assistant that formats JSON data into a clean, readable format with each field on a new line. 
+
+Please extract and format the following details from the JSON data provided:
+- Product Name
+- PID's (from pIds or "Unavailable" if not present)
+- Status
+- Product Type
+- End-of-Sale Date
+- End-of-Support Date
+- Link
+
+Output the details exactly in this format:
+Product Name: [value];
+PID's: [value];
+Status: [value];
+Product Type: [value];
+End-of-Sale Date: [value];
+End-of-Support Date: [value];
+Link: [value]
+
+Ensure no additional text or formatting is included beyond this structure.`;

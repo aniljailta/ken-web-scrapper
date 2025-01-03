@@ -1,7 +1,10 @@
 import * as puppeteer from 'puppeteer';
 import * as pdf from 'pdf-parse';
 import axios from 'axios';
-import * as sanitizeHtml from 'sanitize-html';
+import * as fs from 'fs/promises';
+import sanitizeHtml from 'sanitize-html';
+
+import * as fuzz from 'fuzzball';
 
 import * as iconv from 'iconv-lite';
 
@@ -624,8 +627,19 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
     });
   });
 
+  const mergedProductsArray = Object.values(mergedProducts);
+
+  const insightListData = await fs.readFile(
+    'json/insight_product_list.json',
+    'utf8',
+  );
+
+  const insightList = JSON.parse(insightListData || '[]');
+
+  const withPIds = mapProductsToInsight(mergedProductsArray, insightList);
+
   // Convert merged object back to array
-  return Object.values(mergedProducts);
+  return withPIds;
 }
 
 function cleanHtml(input) {
@@ -655,30 +669,42 @@ export function sanitizeFileName(fileName: string): string {
 
 export function mapProductsToInsight(productList, insightProductList) {
   // Initialize the new product data array
-  const mappedProducts = [];
 
-  // Iterate over the product list
-  productList.forEach((product) => {
-    const productName = product.name.toLowerCase();
-
-    // Iterate over the insight product list
-    insightProductList.forEach((insightProduct) => {
-      const description = insightProduct.description.toLowerCase();
-
-      // Check if the product name is found in the description
-      if (description.includes(productName)) {
-        // Create a new object with the desired keys and values
-        const mappedProduct = {
-          // ...product,
-          productName: product.name,
-          PID: insightProduct.sku, // Add SKU as PID
-        };
-
-        // Add the mapped product to the result array
-        mappedProducts.push(mappedProduct);
-      }
-    });
+  const insightProductData = insightProductList.map((insightProduct) => {
+    return {
+      description: insightProduct.description.toLowerCase(),
+      sku: insightProduct.sku,
+    };
   });
 
-  return mappedProducts;
+  // Iterate over the product list
+  const iterateProductList = productList.map((product) => {
+    const productName = product.name.toLowerCase();
+
+    if (product.info.pIds && product.info.pIds?.length) {
+      return product;
+    } else {
+      const results = fuzz.extract(productName, insightProductData, {
+        scorer: fuzz.token_set_ratio, // Can also use token_sort_ratio or ratio
+        cutoff: 70,
+        processor: (choice) => choice.description,
+      });
+
+      const pIDSList =
+        results && results.length
+          ? results[0] && results[0].length
+            ? results[0]
+                .map((item) => item.sku)
+                .filter((sku) => sku !== undefined)
+            : []
+          : [];
+
+      return {
+        ...product,
+        info: { ...product.info, pIds: pIDSList },
+      };
+    }
+  });
+
+  return iterateProductList;
 }

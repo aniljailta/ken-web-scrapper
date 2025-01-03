@@ -75,4 +75,9 @@ export class ScraperController {
     const response = await this.scraperService.getProductData(name);
     return { response };
   }
+
+  // @Get('matchString')
+  // async matchString() {
+  //   return await this.scraperService.matchString();
+  // }
 }

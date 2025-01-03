@@ -10,6 +10,7 @@ import {
   cosineSimilarity,
   extractProductData,
   flattenAndConcatenate,
+  mapProductsToInsight,
   mergeAllProducts,
   mergeAndDeduplicate,
   sanitizeFileName,
@@ -20,9 +21,9 @@ import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
 import {
   ALL_PRODUCT_LIST_URL,
+  CHATGPT_RESPONSE_PROMPT,
   findDevToolFunction,
   initialScraperConfig,
-  prompts,
   retryForCompactScraperConfig,
   retryScraperConfig,
 } from './constant';
@@ -39,7 +40,6 @@ export class ScraperService implements OnModuleInit {
   private readonly filePath = 'products.json';
   private readonly outputDirectory = 'products-category';
   private productListFile = 'json/products-list.json';
-  private tempListFile = 'json/temp-additional-products-list.json';
   private mergeAdditionalProductListFileWithContent =
     'json/additional-products-list-with-content.json';
 
@@ -663,6 +663,10 @@ export class ScraperService implements OnModuleInit {
     this.scrapedData = [];
     const categories = await this.scrapeCategories();
 
+    // const filterCategoryList = categories.filter(
+    //   (i) => i.categoryName === 'Collaboration Endpoints',
+    // );
+
     for (const category of categories) {
       const { categoryName, categoryLink: link } = category;
       console.log(`Scrapping products of category: ${categoryName}`);
@@ -867,7 +871,7 @@ export class ScraperService implements OnModuleInit {
         if (!table) return null;
 
         const rows = table.querySelectorAll('tr');
-        const tableData: Record<string, string> = {};
+        const tableData: any = {};
 
         rows.forEach((row) => {
           let header = row.querySelector('th')?.textContent?.trim();
@@ -879,8 +883,19 @@ export class ScraperService implements OnModuleInit {
 
             // Remove unwanted spaces, newlines, and nested tags
             let value = Array.from(valueElement.childNodes)
-              .filter((node) => node.nodeType === Node.TEXT_NODE) // Only get text nodes
-              .map((node) => node.textContent?.trim() || '') // Trim each text node
+              .filter(
+                (node) =>
+                  node.nodeType === Node.TEXT_NODE ||
+                  (node.nodeType === Node.ELEMENT_NODE &&
+                    (node as Element).tagName === 'SPAN'), // Include only spans
+              )
+              .map((node) =>
+                node.nodeType === Node.TEXT_NODE
+                  ? node.textContent?.trim() || ''
+                  : (node as Element).tagName === 'SPAN'
+                    ? node.textContent?.trim() || ''
+                    : '',
+              )
               .join(' '); // Combine cleaned text
 
             // Remove excessive spaces
@@ -891,6 +906,17 @@ export class ScraperService implements OnModuleInit {
           }
         });
 
+        // Extract PIDs
+        const pidListWrapper = document.querySelector('.pid-list-wrapper');
+        if (pidListWrapper) {
+          const iDs = Array.from(pidListWrapper.querySelectorAll('li')).map(
+            (li) => li.textContent?.trim() || '',
+          );
+
+          tableData['pIds'] = iDs;
+        } else {
+          tableData['pIds'] = [];
+        }
         return tableData;
       });
 
@@ -1046,7 +1072,7 @@ export class ScraperService implements OnModuleInit {
     const jsonFilePath = this.productListFile;
     const outputDirectory = this.outputDirectory;
     const selectors = ['.WordSection1', '#eot-doc-wrapper'];
-    const maxProductsPerFile = 15;
+    const maxProductsPerFile = 12;
 
     // Ensure output directory exists
     try {
@@ -1346,6 +1372,7 @@ export class ScraperService implements OnModuleInit {
     this.logger.log(`The user is Asking "${query}"`);
     if (response.choices[0].message.tool_calls) {
       const functionCall = response.choices[0].message.tool_calls[0].function;
+
       if (functionCall.name === 'fetch_sku_details') {
         const parsedArguments = JSON.parse(functionCall.arguments);
         if (parsedArguments.name) {
@@ -1357,34 +1384,33 @@ export class ScraperService implements OnModuleInit {
 
   private async queryByName(name: string) {
     const result = await this.getProductData(name);
-    // console.log('🚀 ~ ScraperService ~ queryByName ~ result:', result);
-    if (!result) {
+
+    const data = result.map((i) => {
+      return {
+        productName: i.productName,
+        content: i.content,
+        link: i.url,
+        additionalInfo: i.jsonData.info || i.additionalData?.jsonData.info,
+        internalLinks: i.internalContents || i.additionalData?.internalContents,
+      };
+    });
+
+    console.log({ result: data[0] });
+
+    if (!data.length) {
       return 'No Relevent Product Found!';
     }
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
-          role: 'assistant',
-          content: prompts.formatResponse,
-        },
-
-        {
           role: 'system',
-          content: `You will also be provided with the JSON Data & You supposed format it in the following type or string
-         SKU: CTS-SX10N-K9
-Status: End of Sale
-EOL Announcement Date: July 30, 2019
-End of Support Date: January 31, 2025
-Link: https://www.cisco.com/c/en/us/support/collaboration-endpoints/telepresence-sx10-quick-set/model.htmll 
-          
-          `,
+          content: CHATGPT_RESPONSE_PROMPT,
         },
         {
           role: 'user',
-          content: `
-     ${JSON.stringify(result, null, 2)}
-          `,
+          content: `Here is the JSON data you need to process: 
+    ${JSON.stringify(data, null, 2)}`,
         },
       ],
     });
@@ -1478,6 +1504,33 @@ Link: https://www.cisco.com/c/en/us/support/collaboration-endpoints/telepresence
       );
 
       return a.products;
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  async matchString(): Promise<any> {
+    try {
+      const productData = await fs.readFile('json/products-list.json', 'utf8');
+
+      const productList = JSON.parse(productData || '[]');
+
+      const filterProductList = productList.slice(0, 30).map((product: any) => {
+        return {
+          name: product.name,
+        };
+      });
+
+      const listData = await fs.readFile(
+        'json/insight_product_list.json',
+        'utf8',
+      );
+
+      const insiteList = JSON.parse(listData || '[]');
+
+      const list = await mapProductsToInsight(filterProductList, insiteList);
+
+      return list;
     } catch (error) {
       return { error: error.message };
     }
