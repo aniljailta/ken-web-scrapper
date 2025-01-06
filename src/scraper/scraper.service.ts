@@ -10,7 +10,6 @@ import {
   cosineSimilarity,
   extractProductData,
   flattenAndConcatenate,
-  mapProductsToInsight,
   mergeAllProducts,
   mergeAndDeduplicate,
   sanitizeFileName,
@@ -1474,65 +1473,6 @@ export class ScraperService implements OnModuleInit {
     } catch (error) {
       this.logger.warn('Error fetching product data:', error?.message);
       return [];
-    }
-  }
-  async scrapeProductDataOfInsightFile(): Promise<any> {
-    try {
-      const listData = await fs.readFile(
-        'json/insite_product_list.json',
-        'utf8',
-      );
-      const a = JSON.parse(listData || '[]');
-
-      const dataList = a.products.map((product: any) => {
-        return {
-          availability: product.availability,
-          description: product.description,
-          manufacturerImage: product.manufacturerImage,
-          insightPrice: product.insightPrice,
-          listPrice: product.listPrice,
-          longDescription: product.longDescription,
-          manufacturerPartNumber: product.manufacturerPartNumber,
-          materialId: product.materialId,
-          sku: product.sku,
-        };
-      });
-
-      await fs.writeFile(
-        'json/insight_product_list.json',
-        JSON.stringify(dataList, null, 2),
-      );
-
-      return a.products;
-    } catch (error) {
-      return { error: error.message };
-    }
-  }
-
-  async matchString(): Promise<any> {
-    try {
-      const productData = await fs.readFile('json/products-list.json', 'utf8');
-
-      const productList = JSON.parse(productData || '[]');
-
-      const filterProductList = productList.slice(0, 30).map((product: any) => {
-        return {
-          name: product.name,
-        };
-      });
-
-      const listData = await fs.readFile(
-        'json/insight_product_list.json',
-        'utf8',
-      );
-
-      const insiteList = JSON.parse(listData || '[]');
-
-      const list = await mapProductsToInsight(filterProductList, insiteList);
-
-      return list;
-    } catch (error) {
-      return { error: error.message };
     }
   }
 }

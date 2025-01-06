@@ -681,7 +681,7 @@ export function mapProductsToInsight(productList, insightProductList) {
   const iterateProductList = productList.map((product) => {
     const productName = product.name.toLowerCase();
 
-    if (product.info.pIds && product.info.pIds?.length) {
+    if (product?.info?.pIds && product?.info?.pIds?.length) {
       return product;
     } else {
       const results = fuzz.extract(productName, insightProductData, {
@@ -693,15 +693,19 @@ export function mapProductsToInsight(productList, insightProductList) {
       const pIDSList =
         results && results.length
           ? results[0] && results[0].length
-            ? results[0]
-                .map((item) => item.sku)
-                .filter((sku) => sku !== undefined)
+            ? Array.from(
+                new Set(
+                  results[0]
+                    .map((item) => item.sku)
+                    .filter((sku) => sku !== undefined),
+                ),
+              )
             : []
           : [];
 
       return {
         ...product,
-        info: { ...product.info, pIds: pIDSList },
+        info: { ...product?.info, pIds: pIDSList },
       };
     }
   });

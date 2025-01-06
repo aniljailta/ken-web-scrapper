@@ -1,9 +1,13 @@
 import { Controller, Post, Body, Get } from '@nestjs/common';
 import { ScraperService } from './scraper.service';
+import { ECommerceService } from './ecommerce.services';
 
 @Controller('scraper')
 export class ScraperController {
-  constructor(private readonly scraperService: ScraperService) {}
+  constructor(
+    private readonly scraperService: ScraperService,
+    private readonly eCommerceService: ECommerceService,
+  ) {}
 
   // To ask the AI assistant about the product
   @Post('query')
@@ -76,8 +80,13 @@ export class ScraperController {
     return { response };
   }
 
-  // @Get('matchString')
-  // async matchString() {
-  //   return await this.scraperService.matchString();
-  // }
+  @Get('matchString')
+  async matchString() {
+    return await this.eCommerceService.matchString();
+  }
+
+  @Get('ormProductList')
+  async scrapeProductDataOfORMWebsite() {
+    return await this.eCommerceService.scrapeProductDataOfORMWebsite();
+  }
 }
