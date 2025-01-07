@@ -87,6 +87,20 @@ export class ScraperController {
 
   @Get('ormProductList')
   async scrapeProductDataOfORMWebsite() {
-    return await this.eCommerceService.scrapeProductDataOfORMWebsite();
+    this.eCommerceService.scrapeProductDataOfORMWebsite();
+    return { message: 'scrapping started' };
+  }
+
+  @Get('itPriceProductList')
+  async scrapeProductDataOfITPriceWebsite() {
+    this.eCommerceService.scrapeProductDataOfITPriceWebsite();
+
+    return { message: 'scrapping started' };
+  }
+
+  @Post('scrapeFromUrl')
+  async scrapeFromUrl(@Body('link') link: string) {
+    const content = await this.eCommerceService.scrapeContentBasedOnUrl(link);
+    return { content };
   }
 }

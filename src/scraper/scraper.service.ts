@@ -8,6 +8,7 @@ import { ScraperData } from './entities/scraper_data.entity';
 import {
   buildVocabulary,
   cosineSimilarity,
+  extractPIDsFromLinks,
   extractProductData,
   flattenAndConcatenate,
   mergeAllProducts,
@@ -1070,8 +1071,8 @@ export class ScraperService implements OnModuleInit {
   async scrapeProductsContent() {
     const jsonFilePath = this.productListFile;
     const outputDirectory = this.outputDirectory;
-    const selectors = ['.WordSection1', '#eot-doc-wrapper'];
-    const maxProductsPerFile = 12;
+    // const selectors = ['.WordSection1', '#eot-doc-wrapper'];
+    const maxProductsPerFile = 30;
 
     // Ensure output directory exists
     try {
@@ -1153,9 +1154,14 @@ export class ScraperService implements OnModuleInit {
         if (product?.internalLinks?.length) {
           for (const internalLink of product.internalLinks) {
             const { link } = internalLink;
-            if (link) {
-              const content = await scrapeWordSectionContent(link, selectors);
-              internalLink.content = content || null;
+            // if (link) {
+            //   const content = await scrapeWordSectionContent(link, selectors);
+            //   internalLink.content = content || null;
+            // }
+
+            if (link.endsWith('.html')) {
+              const content = extractPIDsFromLinks(link);
+              internalLink.pIds = content || null;
             }
           }
         }

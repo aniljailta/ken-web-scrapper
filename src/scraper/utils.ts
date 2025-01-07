@@ -712,3 +712,80 @@ export function mapProductsToInsight(productList, insightProductList) {
 
   return iterateProductList;
 }
+export const retryFunction = async (fn, retries = 2) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      console.error(`Retry ${i + 1} failed: ${error.message}`);
+    }
+  }
+  console.error('All retries failed. Skipping to the next task.');
+  return null; // Return null if all retries fail
+};
+
+export const extractPIDsFromLinks = async (link: string) => {
+  let browser;
+
+  try {
+    // Attempt to launch browser with timeout and error handling
+    browser = await puppeteer.launch({
+      headless: true,
+      timeout: 60000, // Launch timeout in milliseconds
+    });
+
+    const page = await browser.newPage();
+    await page.goto(link, { waitUntil: 'networkidle2', timeout: 60000 });
+
+    const extractedData = await page.evaluate(() => {
+      try {
+        const tables = document.querySelectorAll('table');
+        const headerVariations = [
+          'End-of-Sale Product Part Number',
+          'Part Number',
+          'Product Number',
+        ];
+
+        const extractedSet = new Set<string>();
+
+        tables.forEach((table) => {
+          const headerCells = Array.from(
+            table.querySelectorAll('tr:first-child td, tr:first-child th'),
+          );
+
+          const columnIndex = headerCells.findIndex((cell) => {
+            const normalizedText = cell.textContent.trim().replace(/\s+/g, ' ');
+            return headerVariations.some((header) =>
+              normalizedText.includes(header),
+            );
+          });
+
+          if (columnIndex !== -1) {
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            rows.forEach((row) => {
+              const cells = row.querySelectorAll('td');
+              const value = cells[columnIndex]?.textContent?.trim();
+              if (value) {
+                extractedSet.add(value);
+              }
+            });
+          }
+        });
+
+        return Array.from(extractedSet); // Return unique data
+      } catch (error) {
+        console.error('Error during table evaluation:', error.message);
+        return []; // Return empty array if evaluation fails
+      }
+    });
+
+    return extractedData || [];
+  } catch (error) {
+    console.error('Error during scraping process:', error.message);
+    return []; // Return empty array if browser launch or navigation fails
+  } finally {
+    if (browser) {
+      await browser.close(); // Ensure browser is closed to release resources
+    }
+  }
+};
