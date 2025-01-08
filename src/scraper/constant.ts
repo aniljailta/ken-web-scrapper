@@ -164,10 +164,11 @@ export const findDevToolFunction = {
     parameters: {
       type: 'object',
       properties: {
-        // sku: {
-        //   type: 'string',
-        //   description: 'The SKU ID to query product based upon',
-        // },
+        pIds: {
+          type: 'string',
+          description:
+            'The PID to query product based upon eg: WS-C2960X-48TS-L=, HS-W-322-USBA=, CS-T10-TS-L-K9+ ',
+        },
         name: {
           type: 'string',
           description: 'The name of the product to query',
@@ -188,15 +189,17 @@ Please extract and format the following details from the JSON data provided:
 - Product Type
 - End-of-Sale Date
 - End-of-Support Date
+- Series Release Date
 - Link
 
-Output the details exactly in this format:
+Output the details exactly in this format, but include a field only if it has a valid, non-empty value:
 Product Name: [value];
 PID's: [value];
 Status: [value];
 Product Type: [value];
 End-of-Sale Date: [value];
 End-of-Support Date: [value];
-Link: [value]
+Series Release Date: [value];
+Link: [value];
 
-Ensure no additional text or formatting is included beyond this structure.`;
+Do not include fields where the value is empty, null, or unavailable. Ensure no additional text or formatting is included beyond this structure.`;

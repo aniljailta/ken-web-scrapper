@@ -27,6 +27,9 @@ export class AdditionalData {
   @Column('jsonb')
   jsonData: any;
 
+  @Column('jsonb')
+  productIds: any;
+
   @CreateDateColumn()
   createdAt: Date;
 

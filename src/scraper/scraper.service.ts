@@ -8,6 +8,7 @@ import { ScraperData } from './entities/scraper_data.entity';
 import {
   buildVocabulary,
   cosineSimilarity,
+  extractAndStorePIds,
   extractPIDsFromLinks,
   extractProductData,
   flattenAndConcatenate,
@@ -990,10 +991,11 @@ export class ScraperService implements OnModuleInit {
       // // Dynamic selectors list
       // const selectors = ['.WordSection1', '#eot-doc-wrapper'];
 
-      // // Scrape content from each link
+      //  Scrape content from each link
       // for (const link of internalLinks) {
-      //   if (link.link) {
-      //     link.content = await scrapeWordSectionContent(link.link, selectors);
+      //   if (link.link && link.link.endsWith('.html')) {
+      //     const pIds = await extractPIDsFromLinks(link);
+      //     link.pIds = pIds || null;
       //   }
       // }
 
@@ -1160,7 +1162,7 @@ export class ScraperService implements OnModuleInit {
             // }
 
             if (link.endsWith('.html')) {
-              const content = extractPIDsFromLinks(link);
+              const content = await extractPIDsFromLinks(link);
               internalLink.pIds = content || null;
             }
           }
@@ -1287,17 +1289,21 @@ export class ScraperService implements OnModuleInit {
       // Step 1: Flatten and prepare text
       const textContent = productData;
 
+      const productIds = productData?.info?.pIds || [];
+
+      delete textContent?.info?.pIds; // Remove internal links before saving
       // Step 2: Build vocabulary (static or dynamic per use case)
       // const vocabulary = buildVocabulary([textContent]); // You can save and reuse this for consistency
 
       // Step 3: Generate vector
       // const vector = vectorize(textContent, vocabulary);
-
+      // console.log({ productIds });
       // Step 4: Save data to database
       const scraperData = this.additionalScrapperDataRepository.create({
         url: productData.link,
         // content: textContent,
         // vector,
+        productIds: productIds,
         jsonData: textContent,
         productName: productData?.name || '',
       });
@@ -1335,23 +1341,25 @@ export class ScraperService implements OnModuleInit {
 
           if (Array.isArray(jsonData)) {
             for (const item of jsonData) {
-              const productRecord = await this.saveAdditionalScraperData(item);
+              const productData = extractAndStorePIds(item);
+              // const productRecord =
+              await this.saveAdditionalScraperData(productData);
               // console.log(
               //   '🚀 ~ ScraperService ~ readJsonFilesAndSave ~ productRecord:',
               //   productRecord,
               // );
 
-              if (item.internalLinks && Array.isArray(item.internalLinks)) {
-                for (const contentData of item.internalLinks) {
-                  // if (contentData.content) {
-                  // Create and save entry in pivot table
-                  await this.internalContentRepository.save({
-                    scraperDataId: productRecord.id,
-                    internalContent: contentData,
-                  });
-                  // }
-                }
-              }
+              // if (item.internalLinks && Array.isArray(item.internalLinks)) {
+              //   for (const contentData of item.internalLinks) {
+              //     // if (contentData.content) {
+              //     // Create and save entry in pivot table
+              //     // await this.internalContentRepository.save({
+              //     //   scraperDataId: productRecord.id,
+              //     //   internalContent: contentData,
+              //     // });
+              //     // }
+              //   }
+              // }
             }
           }
         }
@@ -1374,12 +1382,13 @@ export class ScraperService implements OnModuleInit {
       ],
       tools,
     });
-    this.logger.log(`The user is Asking "${query}"`);
+    // this.logger.log(`The user is Asking "${query}"`);
     if (response.choices[0].message.tool_calls) {
       const functionCall = response.choices[0].message.tool_calls[0].function;
 
       if (functionCall.name === 'fetch_sku_details') {
         const parsedArguments = JSON.parse(functionCall.arguments);
+
         if (parsedArguments.name) {
           return await this.queryByName(parsedArguments.name);
         }
@@ -1390,20 +1399,21 @@ export class ScraperService implements OnModuleInit {
   private async queryByName(name: string) {
     const result = await this.getProductData(name);
 
-    const data = result.map((i) => {
-      return {
-        productName: i.productName,
-        content: i.content,
-        link: i.url,
-        additionalInfo: i.jsonData.info || i.additionalData?.jsonData.info,
-        internalLinks: i.internalContents || i.additionalData?.internalContents,
-      };
-    });
-
-    console.log({ result: data[0] });
+    const data = result
+      .map((i) => {
+        return {
+          productName: i.productName,
+          link: i.url,
+          additionalInfo: i.jsonData.info,
+          internalLinks: i.internalContents,
+          productData: i?.productData || [],
+          productIds: i?.productIds.slice(0, 500) || [],
+        };
+      })
+      .slice(0, 3);
 
     if (!data.length) {
-      return 'No Relevent Product Found!';
+      return 'No Relevant Product Found!';
     }
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -1422,60 +1432,43 @@ export class ScraperService implements OnModuleInit {
 
     return response.choices[0].message.content;
   }
-  async getProductData(name: string) {
+  async getProductData(name: string): Promise<any> {
     try {
       const trimmedName = name.trim();
-      const productData = await this.scrapperDataRepository.find({
-        where: {
-          productName: ILike(`%${trimmedName}%`),
-        },
-        select: [
-          'jsonData',
-          'productName',
-          'id',
-          'createdAt',
-          'content',
-          'url',
-        ],
-      });
 
-      const additionalData = await this.additionalScrapperDataRepository.find({
-        where: {
-          productName: ILike(`%${trimmedName}%`),
-        },
-        relations: ['internalContents'],
-      });
+      // Fetch additional data
+      const additionalData = await this.additionalScrapperDataRepository
+        .createQueryBuilder('data')
+        .leftJoinAndSelect('data.internalContents', 'internalContents')
+        .where('data.productName ILIKE :productName', {
+          productName: `%${trimmedName}%`,
+        })
+        .orWhere('data.productIds @> :trimmedNameAsJson', {
+          trimmedNameAsJson: JSON.stringify([trimmedName]),
+        })
+        .getMany();
 
-      // Combine data based on `productName`
-      const mergedData = [];
+      // Map over additionalData with asynchronous operations
+      const data = await Promise.all(
+        additionalData.map(async (additionalItem) => {
+          // Fetch matching product data
+          const productData = await this.scrapperDataRepository.find({
+            where: {
+              productName: ILike(`%${additionalItem.productName}%`),
+            },
+            select: ['jsonData', 'productName', 'createdAt', 'content', 'url'],
+          });
 
-      for (const product of productData) {
-        const matchingAdditionalData = additionalData.find(
-          (additional) => additional.productName === product.productName,
-        );
-
-        mergedData.push({
-          ...product,
-          additionalData: matchingAdditionalData || null, // Attach matching additional data if found
-        });
-      }
-
-      // Optionally add remaining `additionalData` entries that didn't match
-      const unmatchedAdditionalData = additionalData.filter(
-        (additional) =>
-          !productData.some(
-            (product) => product.productName === additional.productName,
-          ),
+          // Return the transformed object
+          return {
+            productName: additionalItem.productName,
+            ...additionalItem, // Include all other properties of additionalItem
+            productData: productData.length > 0 ? productData : null, // Include productData or null
+          };
+        }),
       );
 
-      unmatchedAdditionalData.forEach((additional) => {
-        mergedData.push({
-          ...additional,
-          additionalData: null,
-        });
-      });
-
-      return mergedData;
+      return data;
     } catch (error) {
       this.logger.warn('Error fetching product data:', error?.message);
       return [];
