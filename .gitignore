@@ -56,4 +56,9 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 products-category
 products-category-copy
-json
+
+json/*
+!json/orm-products.json
+!json/merge-product-list.json
+
+products-category-copy-old

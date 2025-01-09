@@ -805,7 +805,7 @@ export const extractPIDsFromLinks = async (link: string) => {
     // Attempt with initial timeout
     return await scrapeData(initialTimeout);
   } catch (error) {
-    if (error.message.includes('Navigation timeout')) {
+    if (error?.message?.includes('Navigation timeout')) {
       console.warn(
         `Navigation timeout with ${initialTimeout}ms exceeded. Retrying with ${extendedTimeout}ms...`,
       );
