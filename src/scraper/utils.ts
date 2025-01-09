@@ -1,7 +1,10 @@
 import * as puppeteer from 'puppeteer';
 import * as pdf from 'pdf-parse';
 import axios from 'axios';
-import * as sanitizeHtml from 'sanitize-html';
+import * as fs from 'fs/promises';
+import sanitizeHtml from 'sanitize-html';
+
+import * as fuzz from 'fuzzball';
 
 import * as iconv from 'iconv-lite';
 
@@ -547,7 +550,7 @@ async function extractPdfContent(pdfUrl: string): Promise<string | null> {
 export async function mergeAllProducts({ data }: { data: any[] }) {
   const mergedProducts: Record<string, any> = {};
   const uniqueProductLinks = new Set<string>();
-  const CHUNK_SIZE = 100; // Default chunk size
+  // const CHUNK_SIZE = 100; // Default chunk size
 
   data.forEach((category) => {
     const categoryName = category.categoryName;
@@ -573,62 +576,79 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
         ),
       );
 
-      const totalLinks = validInternalLinks.length;
+      // const totalLinks = validInternalLinks.length;
 
-      // Skip chunking if no chunking is required
-      if (
-        totalLinks <= CHUNK_SIZE ||
-        (totalLinks > CHUNK_SIZE && totalLinks <= 130)
-      ) {
-        // Check for duplicate productLink
-        if (!uniqueProductLinks.has(productLink)) {
-          mergedProducts[productLink] = {
-            link: product.productLink,
-            name: product.productName,
-            internalLinks: validInternalLinks,
-            categoryName,
-            categoryLink,
-          };
-          uniqueProductLinks.add(productLink);
-        }
-        return;
-      }
-
-      // Perform chunking for internalLinks > 60
-      const productBaseName = product.productName || productLink; // Use productName or productLink as a base name
-      let index = 1;
-
-      for (let i = 0; i < totalLinks; i += CHUNK_SIZE) {
-        const chunk = validInternalLinks.slice(i, i + CHUNK_SIZE);
-
-        // Generate a new productLink if needed
-        const newProductLink =
-          i === 0 ? productLink : `${productLink}-${index}`;
-
-        // Skip adding duplicates
-        if (uniqueProductLinks.has(newProductLink)) continue;
-
-        // Set product name for chunks
-        const newProductName =
-          i === 0 ? productBaseName : `${productBaseName} ${index - 1}`;
-
-        // Add new product
-        mergedProducts[newProductLink] = {
-          link: newProductLink,
-          name: newProductName,
-          internalLinks: chunk,
+      // // Perform chunking only if needed
+      // if (totalLinks <= CHUNK_SIZE) {
+      // Add the single chunk directly
+      if (!uniqueProductLinks.has(productLink)) {
+        mergedProducts[productLink] = {
+          link: product.productLink,
+          name: product.productName,
+          internalLinks: validInternalLinks,
           categoryName,
           categoryLink,
+          info: product?.info,
         };
-
-        uniqueProductLinks.add(newProductLink);
-        index++;
+        uniqueProductLinks.add(productLink);
       }
+      //   return;
+      // }
+
+      //     // Handle multiple chunks
+      //     const productBaseName = product.productName || productLink; // Use productName or productLink as a base name
+      //     let index = 1;
+
+      //     for (let i = 0; i < totalLinks; i += CHUNK_SIZE) {
+      //       const chunk = validInternalLinks.slice(i, i + CHUNK_SIZE);
+
+      //       // Use the base productLink for the first chunk
+      //       const newProductLink =
+      //         i === 0 ? productLink : `${productLink}-${index}`;
+      //       const newProductName =
+      //         i === 0 ? productBaseName : `${productBaseName} ${index}`;
+
+      //       // Skip duplicates
+      //       if (uniqueProductLinks.has(newProductLink)) continue;
+
+      //       // Add new product
+      //       mergedProducts[newProductLink] = {
+      //         link: newProductLink,
+      //         name: newProductName,
+      //         internalLinks: chunk,
+      //         categoryName,
+      //         categoryLink,
+      //         info: product?.info,
+      //       };
+
+      //       uniqueProductLinks.add(newProductLink);
+      //       index++;
+      //     }
     });
   });
 
+  const mergedProductsArray = Object.values(mergedProducts);
+  // return mergedProductsArray;
+  const insightListData = await fs.readFile(
+    'json/insight_product_list.json',
+    'utf8',
+  );
+
+  const ormWebsiteListData = await fs.readFile(
+    'json/orm-products.json',
+    'utf8',
+  );
+
+  const insightList = JSON.parse(insightListData || '[]');
+  const ormWebsiteList = JSON.parse(ormWebsiteListData || '[]');
+
+  const withPIds = mapProductsToInsight(mergedProductsArray, [
+    ...insightList,
+    ...ormWebsiteList,
+  ]);
+
   // Convert merged object back to array
-  return Object.values(mergedProducts);
+  return withPIds;
 }
 
 function cleanHtml(input) {
@@ -654,4 +674,196 @@ export function sanitizeFileName(fileName: string): string {
     .replace(/_+/g, '_') // Collapse multiple underscores into one
     .replace(/^_|_$/g, '') // Remove leading and trailing underscores
     .toLowerCase();
+}
+
+export function mapProductsToInsight(productList, insightProductList) {
+  // Initialize the new product data array
+
+  const insightProductData = insightProductList.map((insightProduct) => {
+    return {
+      description: insightProduct.description.toLowerCase(),
+      sku: insightProduct.sku,
+    };
+  });
+
+  // Iterate over the product list
+  const iterateProductList = productList.map((product) => {
+    const productName = product.name.toLowerCase();
+
+    if (product?.info?.pIds && product?.info?.pIds?.length) {
+      return product;
+    } else {
+      const results = fuzz.extract(productName, insightProductData, {
+        scorer: fuzz.token_set_ratio, // Can also use token_sort_ratio or ratio
+        cutoff: 80,
+        processor: (choice) => choice.description,
+      });
+
+      const pIDSList =
+        results && results.length
+          ? results[0] && results[0].length
+            ? Array.from(
+                new Set(
+                  results[0]
+                    .map((item) => item.sku)
+                    .filter((sku) => sku !== undefined),
+                ),
+              )
+            : []
+          : [];
+
+      return {
+        ...product,
+        info: { ...product?.info, pIds: pIDSList },
+      };
+    }
+  });
+
+  return iterateProductList;
+}
+export const retryFunction = async (fn, retries = 2) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      console.error(`Retry ${i + 1} failed: ${error.message}`);
+    }
+  }
+  console.error('All retries failed. Skipping to the next task.');
+  return null; // Return null if all retries fail
+};
+
+export const extractPIDsFromLinks = async (link: string) => {
+  let browser;
+  const initialTimeout = 20000; // Initial timeout in milliseconds
+  const extendedTimeout = 50000; // Extended timeout in milliseconds
+
+  const scrapeData = async (timeout: number) => {
+    try {
+      // Launch the browser with the specified timeout
+      browser = await puppeteer.launch({
+        headless: true,
+        timeout,
+      });
+
+      const page = await browser.newPage();
+      await page.goto(link, { waitUntil: 'networkidle2', timeout });
+
+      const extractedData = await page.evaluate(() => {
+        try {
+          const tables = document.querySelectorAll('table');
+          const headerVariations = [
+            'End-of-Sale Product Part Number',
+            'Part Number',
+            'Product Number',
+          ];
+
+          const extractedSet = new Set<string>();
+
+          tables.forEach((table) => {
+            const headerCells = Array.from(
+              table.querySelectorAll('tr:first-child td, tr:first-child th'),
+            );
+
+            const columnIndex = headerCells.findIndex((cell) => {
+              const normalizedText = cell.textContent
+                .trim()
+                .replace(/\s+/g, ' ');
+              return headerVariations.some((header) =>
+                normalizedText.includes(header),
+              );
+            });
+
+            if (columnIndex !== -1) {
+              const rows = Array.from(table.querySelectorAll('tbody tr'));
+              rows.forEach((row) => {
+                const cells = row.querySelectorAll('td');
+                const value = cells[columnIndex]?.textContent?.trim();
+                if (value) {
+                  extractedSet.add(value);
+                }
+              });
+            }
+          });
+
+          return Array.from(extractedSet); // Return unique data
+        } catch (error) {
+          console.error('Error during table evaluation:', error.message);
+          return []; // Return empty array if evaluation fails
+        }
+      });
+
+      return extractedData || [];
+    } finally {
+      if (browser) {
+        await browser.close(); // Ensure browser is closed to release resources
+      }
+    }
+  };
+
+  try {
+    // Attempt with initial timeout
+    return await scrapeData(initialTimeout);
+  } catch (error) {
+    if (error?.message?.includes('Navigation timeout')) {
+      console.warn(
+        `Navigation timeout with ${initialTimeout}ms exceeded. Retrying with ${extendedTimeout}ms...`,
+      );
+      try {
+        // Retry with extended timeout
+        return await scrapeData(extendedTimeout);
+      } catch (retryError) {
+        console.error(
+          'Error during retry with extended timeout:',
+          retryError.message,
+          link,
+        );
+        return [];
+      }
+    } else {
+      console.error('Unexpected error during scraping process:', error.message);
+      return [];
+    }
+  }
+};
+
+export function extractAndStorePIds(productItem: any) {
+  // Create a Set to store unique pIds
+  const allPIds = new Set<string>();
+
+  // Loop through the data
+
+  // Ensure internalLinks exists if it's not there
+  if (!productItem.internalLinks) {
+    productItem.internalLinks = [];
+  }
+
+  // Loop through internalLinks in each productItem
+  productItem.internalLinks.forEach((internalLink: any) => {
+    // Ensure pIds exists in internalLink
+    if (!internalLink.pIds) {
+      internalLink.pIds = [];
+    }
+
+    // Add pIds from internalLinks to the Set (ensures uniqueness)
+    internalLink.pIds.forEach((pid: string) => {
+      allPIds.add(pid);
+    });
+  });
+
+  // Ensure the info field and pIds exists
+  if (!productItem.info) {
+    productItem.info = {};
+  }
+  if (!productItem.info.pIds) {
+    productItem.info.pIds = [];
+  }
+
+  // Add the unique pIds to the productItem's info.pIds if they aren't empty
+  if (allPIds.size > 0) {
+    productItem.info.pIds = Array.from(allPIds);
+  }
+
+  // Return the updated data
+  return productItem;
 }

@@ -3,11 +3,13 @@ import * as puppeteer from 'puppeteer';
 import * as fs from 'fs/promises';
 import * as simpleFS from 'fs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { ScraperData } from './entities/scraper_data.entity';
 import {
   buildVocabulary,
   cosineSimilarity,
+  extractAndStorePIds,
+  extractPIDsFromLinks,
   extractProductData,
   flattenAndConcatenate,
   mergeAllProducts,
@@ -20,6 +22,8 @@ import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
 import {
   ALL_PRODUCT_LIST_URL,
+  CHATGPT_RESPONSE_PROMPT,
+  findDevToolFunction,
   initialScraperConfig,
   retryForCompactScraperConfig,
   retryScraperConfig,
@@ -37,7 +41,6 @@ export class ScraperService implements OnModuleInit {
   private readonly filePath = 'products.json';
   private readonly outputDirectory = 'products-category';
   private productListFile = 'json/products-list.json';
-  private tempListFile = 'json/temp-additional-products-list.json';
   private mergeAdditionalProductListFileWithContent =
     'json/additional-products-list-with-content.json';
 
@@ -661,6 +664,10 @@ export class ScraperService implements OnModuleInit {
     this.scrapedData = [];
     const categories = await this.scrapeCategories();
 
+    // const filterCategoryList = categories.filter(
+    //   (i) => i.categoryName === 'Collaboration Endpoints',
+    // );
+
     for (const category of categories) {
       const { categoryName, categoryLink: link } = category;
       console.log(`Scrapping products of category: ${categoryName}`);
@@ -668,7 +675,7 @@ export class ScraperService implements OnModuleInit {
       try {
         let products = await this.scrapeProductsForCategory(
           link,
-          '#prodByAlpha li a',
+          '#allSupportedProducts li a',
         );
 
         if (!products.length) {
@@ -832,7 +839,12 @@ export class ScraperService implements OnModuleInit {
               '.dmc-list-dynamic ul li a',
             );
           }
+          const productDataInfo = await this.scrapeInternalProductInfo(
+            product.productLink,
+          );
+
           product.internalLinks = internalLinks; // Assign internal links to each product
+          product.info = productDataInfo || null;
         }
       }
 
@@ -848,6 +860,78 @@ export class ScraperService implements OnModuleInit {
     }
   }
 
+  async scrapeInternalProductInfo(productLink: string): Promise<any[]> {
+    let browser;
+    try {
+      browser = await this.initBrowser();
+      const page = await browser.newPage();
+      await page.goto(productLink, { waitUntil: 'networkidle2' });
+
+      const data = await page.evaluate(() => {
+        const table = document.querySelector('.data-wrapper');
+        if (!table) return null;
+
+        const rows = table.querySelectorAll('tr');
+        const tableData: any = {};
+
+        rows.forEach((row) => {
+          let header = row.querySelector('th')?.textContent?.trim();
+
+          const valueElement = row.querySelector('td');
+          if (header && valueElement) {
+            // Normalize the header to replace spaces with underscores
+            header = header.replace(/\s+/g, '_').trim();
+
+            // Remove unwanted spaces, newlines, and nested tags
+            let value = Array.from(valueElement.childNodes)
+              .filter(
+                (node) =>
+                  node.nodeType === Node.TEXT_NODE ||
+                  (node.nodeType === Node.ELEMENT_NODE &&
+                    (node as Element).tagName === 'SPAN'), // Include only spans
+              )
+              .map((node) =>
+                node.nodeType === Node.TEXT_NODE
+                  ? node.textContent?.trim() || ''
+                  : (node as Element).tagName === 'SPAN'
+                    ? node.textContent?.trim() || ''
+                    : '',
+              )
+              .join(' '); // Combine cleaned text
+
+            // Remove excessive spaces
+            value = value.replace(/\s+/g, ' ').trim();
+
+            // Add to the result
+            tableData[header] = value;
+          }
+        });
+
+        // Extract PIDs
+        const pidListWrapper = document.querySelector('.pid-list-wrapper');
+        if (pidListWrapper) {
+          const iDs = Array.from(pidListWrapper.querySelectorAll('li')).map(
+            (li) => li.textContent?.trim() || '',
+          );
+
+          tableData['pIds'] = iDs;
+        } else {
+          tableData['pIds'] = [];
+        }
+        return tableData;
+      });
+
+      return data;
+    } catch (error) {
+      this.logger.error(
+        `Error scraping info data: ${productLink} :${error?.message},`,
+      );
+
+      return null;
+    } finally {
+      if (browser) await browser.close();
+    }
+  }
   // Function to scrape internal links for a given product
   async scrapeInternalLinksForProduct(
     productLink: string,
@@ -907,10 +991,11 @@ export class ScraperService implements OnModuleInit {
       // // Dynamic selectors list
       // const selectors = ['.WordSection1', '#eot-doc-wrapper'];
 
-      // // Scrape content from each link
+      //  Scrape content from each link
       // for (const link of internalLinks) {
-      //   if (link.link) {
-      //     link.content = await scrapeWordSectionContent(link.link, selectors);
+      //   if (link.link && link.link.endsWith('.html')) {
+      //     const pIds = await extractPIDsFromLinks(link);
+      //     link.pIds = pIds || null;
       //   }
       // }
 
@@ -988,8 +1073,8 @@ export class ScraperService implements OnModuleInit {
   async scrapeProductsContent() {
     const jsonFilePath = this.productListFile;
     const outputDirectory = this.outputDirectory;
-    const selectors = ['.WordSection1', '#eot-doc-wrapper'];
-    const maxProductsPerFile = 15;
+    // const selectors = ['.WordSection1', '#eot-doc-wrapper'];
+    const maxProductsPerFile = 30;
 
     // Ensure output directory exists
     try {
@@ -1071,9 +1156,14 @@ export class ScraperService implements OnModuleInit {
         if (product?.internalLinks?.length) {
           for (const internalLink of product.internalLinks) {
             const { link } = internalLink;
-            if (link) {
-              const content = await scrapeWordSectionContent(link, selectors);
-              internalLink.content = content || null;
+            // if (link) {
+            //   const content = await scrapeWordSectionContent(link, selectors);
+            //   internalLink.content = content || null;
+            // }
+
+            if (link.endsWith('.html')) {
+              const content = await extractPIDsFromLinks(link);
+              internalLink.pIds = content || null;
             }
           }
         }
@@ -1195,20 +1285,25 @@ export class ScraperService implements OnModuleInit {
     productData: Record<string, any>,
   ): Promise<AdditionalData> {
     try {
+      delete productData?.internalLinks; // Remove internal links before saving
       // Step 1: Flatten and prepare text
-      const textContent = `${productData.name}\n${productData.link}\n${productData.categoryName}\n${productData.categoryLink}`;
+      const textContent = productData;
 
+      const productIds = productData?.info?.pIds || [];
+
+      delete textContent?.info?.pIds; // Remove internal links before saving
       // Step 2: Build vocabulary (static or dynamic per use case)
       // const vocabulary = buildVocabulary([textContent]); // You can save and reuse this for consistency
 
       // Step 3: Generate vector
       // const vector = vectorize(textContent, vocabulary);
-
+      // console.log({ productIds });
       // Step 4: Save data to database
       const scraperData = this.additionalScrapperDataRepository.create({
         url: productData.link,
         // content: textContent,
         // vector,
+        productIds: productIds,
         jsonData: textContent,
         productName: productData?.name || '',
       });
@@ -1241,24 +1336,30 @@ export class ScraperService implements OnModuleInit {
       for (const file of files) {
         if (path.extname(file) === '.json') {
           const filePath = path.join(folderPath, file);
-          const data = simpleFS.readFileSync(filePath, 'utf8');
+          const data = simpleFS.readFileSync(filePath, 'utf-8');
           const jsonData = JSON.parse(data);
 
           if (Array.isArray(jsonData)) {
             for (const item of jsonData) {
-              const productRecord = await this.saveAdditionalScraperData(item);
+              const productData = extractAndStorePIds(item);
+              // const productRecord =
+              await this.saveAdditionalScraperData(productData);
+              // console.log(
+              //   '🚀 ~ ScraperService ~ readJsonFilesAndSave ~ productRecord:',
+              //   productRecord,
+              // );
 
-              if (item.internalLinks && Array.isArray(item.internalLinks)) {
-                for (const contentData of item.internalLinks) {
-                  if (contentData.content) {
-                    // Create and save entry in pivot table
-                    await this.internalContentRepository.save({
-                      scraperDataId: productRecord.id,
-                      internalContent: contentData,
-                    });
-                  }
-                }
-              }
+              // if (item.internalLinks && Array.isArray(item.internalLinks)) {
+              //   for (const contentData of item.internalLinks) {
+              //     // if (contentData.content) {
+              //     // Create and save entry in pivot table
+              //     // await this.internalContentRepository.save({
+              //     //   scraperDataId: productRecord.id,
+              //     //   internalContent: contentData,
+              //     // });
+              //     // }
+              //   }
+              // }
             }
           }
         }
@@ -1266,6 +1367,111 @@ export class ScraperService implements OnModuleInit {
       this.logger.log(`All JSON files processed successfully.`);
     } catch (error) {
       console.error('Error processing JSON files:', error);
+    }
+  }
+
+  async queryProduct(query: string) {
+    const tools: any = [findDevToolFunction];
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'user',
+          content: query,
+        },
+      ],
+      tools,
+    });
+    // this.logger.log(`The user is Asking "${query}"`);
+    if (response.choices[0].message.tool_calls) {
+      const functionCall = response.choices[0].message.tool_calls[0].function;
+
+      if (functionCall.name === 'fetch_sku_details') {
+        const parsedArguments = JSON.parse(functionCall.arguments);
+
+        if (parsedArguments.name) {
+          return await this.queryByName(parsedArguments.name);
+        }
+      }
+    }
+  }
+
+  private async queryByName(name: string) {
+    const result = await this.getProductData(name);
+
+    const data = result
+      .map((i) => {
+        return {
+          productName: i.productName,
+          link: i.url,
+          additionalInfo: i.jsonData.info,
+          internalLinks: i.internalContents,
+          productData: i?.productData || [],
+          productIds: i?.productIds.slice(0, 500) || [],
+        };
+      })
+      .slice(0, 3);
+
+    if (!data.length) {
+      return 'No Relevant Product Found!';
+    }
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: CHATGPT_RESPONSE_PROMPT,
+        },
+        {
+          role: 'user',
+          content: `Here is the JSON data you need to process: 
+    ${JSON.stringify(data, null, 2)}`,
+        },
+      ],
+    });
+
+    return response.choices[0].message.content;
+  }
+  async getProductData(name: string): Promise<any> {
+    try {
+      const trimmedName = name.trim();
+
+      // Fetch additional data
+      const additionalData = await this.additionalScrapperDataRepository
+        .createQueryBuilder('data')
+        .leftJoinAndSelect('data.internalContents', 'internalContents')
+        .where('data.productName ILIKE :productName', {
+          productName: `%${trimmedName}%`,
+        })
+        .orWhere('data.productIds @> :trimmedNameAsJson', {
+          trimmedNameAsJson: JSON.stringify([trimmedName]),
+        })
+        .getMany();
+
+      // Map over additionalData with asynchronous operations
+      const data = await Promise.all(
+        additionalData.map(async (additionalItem) => {
+          // Fetch matching product data
+          const productData = await this.scrapperDataRepository.find({
+            where: {
+              productName: ILike(`%${additionalItem.productName}%`),
+            },
+            select: ['jsonData', 'productName', 'createdAt', 'content', 'url'],
+          });
+
+          // Return the transformed object
+          return {
+            productName: additionalItem.productName,
+            ...additionalItem, // Include all other properties of additionalItem
+            productData: productData.length > 0 ? productData : null, // Include productData or null
+          };
+        }),
+      );
+
+      return data;
+    } catch (error) {
+      this.logger.warn('Error fetching product data:', error?.message);
+      return [];
     }
   }
 }

@@ -1,9 +1,13 @@
 import { Controller, Post, Body, Get } from '@nestjs/common';
 import { ScraperService } from './scraper.service';
+import { ECommerceService } from './ecommerce.services';
 
 @Controller('scraper')
 export class ScraperController {
-  constructor(private readonly scraperService: ScraperService) {}
+  constructor(
+    private readonly scraperService: ScraperService,
+    private readonly eCommerceService: ECommerceService,
+  ) {}
 
   // To ask the AI assistant about the product
   @Post('query')
@@ -11,6 +15,14 @@ export class ScraperController {
     @Body('question') question: string,
   ): Promise<{ response: string }> {
     const response = await this.scraperService.getResponse(question);
+    return { response };
+  }
+
+  @Post('product-query')
+  async queryFunctionCalling(
+    @Body('question') question: string,
+  ): Promise<{ response: string }> {
+    const response = await this.scraperService.queryProduct(question);
     return { response };
   }
 
@@ -56,6 +68,39 @@ export class ScraperController {
   @Post('scrape-content-based-on-url')
   async scrapeContentBasedOnUrl(@Body('link') link: string) {
     const content = await this.scraperService.scrapeContentBasedOnUrl(link);
+    return { content };
+  }
+
+  @Post('getProductData')
+  async getProductData(@Body('name') name: string): Promise<{ response: any }> {
+    if (!name) {
+      return { response: 'Please provide product name' };
+    }
+    const response = await this.scraperService.getProductData(name);
+    return { response };
+  }
+
+  @Get('matchString')
+  async matchString() {
+    return await this.eCommerceService.matchString();
+  }
+
+  @Get('ormProductList')
+  async scrapeProductDataOfORMWebsite() {
+    this.eCommerceService.scrapeProductDataOfORMWebsite();
+    return { message: 'scrapping started' };
+  }
+
+  @Get('itPriceProductList')
+  async scrapeProductDataOfITPriceWebsite() {
+    this.eCommerceService.scrapeProductDataOfITPriceWebsite();
+
+    return { message: 'scrapping started' };
+  }
+
+  @Post('scrapeFromUrl')
+  async scrapeFromUrl(@Body('link') link: string) {
+    const content = await this.eCommerceService.scrapeContentBasedOnUrl(link);
     return { content };
   }
 }

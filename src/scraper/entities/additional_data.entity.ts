@@ -27,11 +27,18 @@ export class AdditionalData {
   @Column('jsonb')
   jsonData: any;
 
+  @Column('jsonb')
+  productIds: any;
+
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToMany(() => InternalContent, (internalContent) => internalContent.id, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(
+    () => InternalContent,
+    (internalContent) => internalContent.scraperData,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   internalContents: InternalContent[];
 }
