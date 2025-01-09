@@ -778,9 +778,20 @@ export const extractPIDsFromLinks = async (link: string) => {
               const rows = Array.from(table.querySelectorAll('tbody tr'));
               rows.forEach((row) => {
                 const cells = row.querySelectorAll('td');
-                const value = cells[columnIndex]?.textContent?.trim();
+                let value = cells[columnIndex]?.textContent?.trim();
                 if (value) {
-                  extractedSet.add(value);
+                  // Clean the value
+                  value = value
+                    .replace(/\s+/g, ' ') // Normalize spaces
+                    .replace(/\n/g, '') // Remove newline characters
+                    .trim();
+
+                  // Check if the value contains any header variation (exclude headers)
+                  if (
+                    !headerVariations.some((header) => value.includes(header))
+                  ) {
+                    extractedSet.add(value);
+                  }
                 }
               });
             }
@@ -830,7 +841,11 @@ export const extractPIDsFromLinks = async (link: string) => {
 export function extractAndStorePIds(productItem: any) {
   // Create a Set to store unique pIds
   const allPIds = new Set<string>();
-
+  const headerVariations = [
+    'End-of-Sale Product Part Number',
+    'Part Number',
+    'Product Number',
+  ];
   // Loop through the data
 
   // Ensure internalLinks exists if it's not there
@@ -847,7 +862,14 @@ export function extractAndStorePIds(productItem: any) {
 
     // Add pIds from internalLinks to the Set (ensures uniqueness)
     internalLink.pIds.forEach((pid: string) => {
-      allPIds.add(pid);
+      pid = pid
+        .replace(/\s+/g, ' ') // Normalize spaces
+        .replace(/\n/g, '') // Remove newline characters
+        .trim();
+
+      if (!headerVariations.some((header) => pid.includes(header))) {
+        allPIds.add(pid);
+      }
     });
   });
 

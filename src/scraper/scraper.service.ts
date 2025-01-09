@@ -35,6 +35,7 @@ import { InternalContent } from './entities/internal_content.entity';
 @Injectable()
 export class ScraperService implements OnModuleInit {
   private openai: OpenAI;
+  private chatBotQueryPassword: string;
   private baseURL = 'https://www.cisco.com';
   private readonly logger = new Logger(ScraperService.name);
   private readonly failedProductPath = 'failed_list_product.json';
@@ -62,6 +63,9 @@ export class ScraperService implements OnModuleInit {
   ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
 
+    const chatBotQueryPassword =
+      this.configService.get<string>('QUERY_PASSWORD');
+
     if (!apiKey) {
       throw new Error(
         'OPENAI_API_KEY is not defined in the environment variables.',
@@ -69,6 +73,8 @@ export class ScraperService implements OnModuleInit {
     }
 
     this.openai = new OpenAI({ apiKey });
+
+    this.chatBotQueryPassword = chatBotQueryPassword;
 
     this.ensureFileExists();
   }
@@ -645,7 +651,7 @@ export class ScraperService implements OnModuleInit {
 
         if (!ifRecordExist) {
           await this.saveScraperData(productData);
-          this.logger.log(`Saved successfully to database`);
+          // this.logger.log(`Saved successfully to database`);
         } else {
           this.logger.log(`Record already exists`);
         }
@@ -1341,9 +1347,19 @@ export class ScraperService implements OnModuleInit {
 
           if (Array.isArray(jsonData)) {
             for (const item of jsonData) {
-              const productData = extractAndStorePIds(item);
-              // const productRecord =
-              await this.saveAdditionalScraperData(productData);
+              const ifRecordExist =
+                await this.additionalScrapperDataRepository.findOneBy({
+                  url: item.link,
+                });
+
+              if (!ifRecordExist) {
+                const productData = extractAndStorePIds(item);
+                // const productRecord =
+                await this.saveAdditionalScraperData(productData);
+              } else {
+                this.logger.log(`Record already exists`);
+              }
+
               // console.log(
               //   '🚀 ~ ScraperService ~ readJsonFilesAndSave ~ productRecord:',
               //   productRecord,
@@ -1370,7 +1386,15 @@ export class ScraperService implements OnModuleInit {
     }
   }
 
-  async queryProduct(query: string) {
+  async queryProduct(query: string, password: string) {
+    if (!password || !query) {
+      return 'Bad request!';
+    }
+    const decodedPassword = Buffer.from(password, 'hex').toString('utf8');
+
+    if (decodedPassword !== this.chatBotQueryPassword) {
+      return 'Invalid Password!';
+    }
     const tools: any = [findDevToolFunction];
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -1388,11 +1412,12 @@ export class ScraperService implements OnModuleInit {
 
       if (functionCall.name === 'fetch_sku_details') {
         const parsedArguments = JSON.parse(functionCall.arguments);
-
         if (parsedArguments.name) {
           return await this.queryByName(parsedArguments.name);
         }
       }
+    } else {
+      return await this.queryByName(query);
     }
   }
 
@@ -1435,7 +1460,6 @@ export class ScraperService implements OnModuleInit {
   async getProductData(name: string): Promise<any> {
     try {
       const trimmedName = name.trim();
-
       // Fetch additional data
       const additionalData = await this.additionalScrapperDataRepository
         .createQueryBuilder('data')
@@ -1443,11 +1467,17 @@ export class ScraperService implements OnModuleInit {
         .where('data.productName ILIKE :productName', {
           productName: `%${trimmedName}%`,
         })
-        .orWhere('data.productIds @> :trimmedNameAsJson', {
-          trimmedNameAsJson: JSON.stringify([trimmedName]),
-        })
+        .orWhere(
+          `EXISTS (
+            SELECT 1 
+            FROM jsonb_array_elements_text(data.productIds) AS elem 
+            WHERE elem ILIKE :trimmedNamePattern
+          )`,
+          {
+            trimmedNamePattern: `%${trimmedName}%`,
+          },
+        )
         .getMany();
-
       // Map over additionalData with asynchronous operations
       const data = await Promise.all(
         additionalData.map(async (additionalItem) => {

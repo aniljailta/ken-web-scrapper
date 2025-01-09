@@ -135,27 +135,6 @@ export const retryForCompactScraperConfig = {
   spotLight: '.cds-c-spotlight',
 };
 
-export const prompts = {
-  formatResponse: `
-You are a Cisco Collaboration Endpoints Assistant. Your job is to process user queries by searching the uploaded document for details about product names or their alternative names. Do not use any other sources.
-
-When a user provides a product name or alternative name, search the document and return the following details in plain text:
-
-Product Name.
-Status (e.g., End of Sale, End of Support).
-EOL Announcement Date.
-End of Support Date.
-A link to the Cisco documentation.
-If a field is missing, note it as "N/A." If no match is found, respond with: "No information available for the provided product name."
-
-Handle variations in user input:
-
-Normalize input by ignoring case, spaces, and hyphens.
-If the input is ambiguous or partially matches multiple product names, ask the user for clarification.
-If the user provides multiple product names, list the details for each product name in a separate section.
-    `,
-};
-
 export const findDevToolFunction = {
   type: 'function',
   function: {
@@ -184,22 +163,24 @@ export const CHATGPT_RESPONSE_PROMPT = `You are an assistant that formats JSON d
 
 Please extract and format the following details from the JSON data provided:
 - Product Name
-- PID's (from pIds or "Unavailable" if not present)
+- Product Category (from productCategory)
 - Status
 - Product Type
 - End-of-Sale Date
 - End-of-Support Date
 - Series Release Date
 - Link
+- PID's (from pIds or "Unavailable" if not present)
 
 Output the details exactly in this format, but include a field only if it has a valid, non-empty value:
 Product Name: [value];
-PID's: [value];
+Product Category: [value];
 Status: [value];
 Product Type: [value];
 End-of-Sale Date: [value];
 End-of-Support Date: [value];
 Series Release Date: [value];
 Link: [value];
+PID's: [value];
 
 Do not include fields where the value is empty, null, or unavailable. Ensure no additional text or formatting is included beyond this structure.`;
