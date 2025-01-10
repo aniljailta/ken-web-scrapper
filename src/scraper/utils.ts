@@ -7,6 +7,7 @@ import sanitizeHtml from 'sanitize-html';
 import * as fuzz from 'fuzzball';
 
 import * as iconv from 'iconv-lite';
+import { headerVariations } from './constant';
 
 // Tokenize the input text into an array of words
 function tokenize(text: string): string[] {
@@ -749,62 +750,55 @@ export const extractPIDsFromLinks = async (link: string) => {
       const page = await browser.newPage();
       await page.goto(link, { waitUntil: 'networkidle2', timeout });
 
-      const extractedData = await page.evaluate(() => {
+      const extractedData = await page.evaluate((headerVariations) => {
         try {
           const tables = document.querySelectorAll('table');
-          const headerVariations = [
-            'End-of-Sale Product Part Number',
-            'Part Number',
-            'Product Number',
-          ];
-
-          const extractedSet = new Set<string>();
+          const extractedSet = new Set<string>(); // Use a Set directly to store unique data
 
           tables.forEach((table) => {
             const headerCells = Array.from(
               table.querySelectorAll('tr:first-child td, tr:first-child th'),
             );
 
-            const columnIndex = headerCells.findIndex((cell) => {
-              const normalizedText = cell.textContent
-                .trim()
-                .replace(/\s+/g, ' ');
+            // Find the relevant column index
+            const columnIndex = headerCells.findIndex((cell: any) => {
+              const normalizedText = cell.innerText
+                ?.trim()
+                .replace(/\s+/g, ' ')
+                .toLowerCase();
+
               return headerVariations.some((header) =>
-                normalizedText.includes(header),
+                normalizedText.includes(header.toLowerCase()),
               );
             });
 
             if (columnIndex !== -1) {
+              // Extract data from rows for the relevant column
               const rows = Array.from(table.querySelectorAll('tbody tr'));
               rows.forEach((row) => {
                 const cells = row.querySelectorAll('td');
-                let value = cells[columnIndex]?.textContent?.trim();
+                const value = cells[columnIndex]?.textContent?.trim();
+
                 if (value) {
-                  // Clean the value
-                  value = value
+                  const cleanedValue = value
                     .replace(/\s+/g, ' ') // Normalize spaces
                     .replace(/\n/g, '') // Remove newline characters
                     .trim();
 
-                  // Check if the value contains any header variation (exclude headers)
-                  if (
-                    !headerVariations.some((header) => value.includes(header))
-                  ) {
-                    extractedSet.add(value);
-                  }
+                  extractedSet.add(cleanedValue); // Add unique value to the Set
                 }
               });
             }
           });
 
-          return Array.from(extractedSet); // Return unique data
+          return Array.from(extractedSet); // Convert Set back to array
         } catch (error) {
-          console.error('Error during table evaluation:', error.message);
-          return []; // Return empty array if evaluation fails
+          console.error('Error during content extraction:', error.message);
+          return [];
         }
-      });
+      }, headerVariations);
 
-      return extractedData || [];
+      return extractedData;
     } finally {
       if (browser) {
         await browser.close(); // Ensure browser is closed to release resources
@@ -841,11 +835,7 @@ export const extractPIDsFromLinks = async (link: string) => {
 export function extractAndStorePIds(productItem: any) {
   // Create a Set to store unique pIds
   const allPIds = new Set<string>();
-  const headerVariations = [
-    'End-of-Sale Product Part Number',
-    'Part Number',
-    'Product Number',
-  ];
+
   // Loop through the data
 
   // Ensure internalLinks exists if it's not there
