@@ -6,7 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-import { AdditionalData } from './additional_data.entity';
+import { SupportProductData } from './support_product_data.entity';
 
 @Entity('internal_content')
 export class InternalContent {
@@ -16,11 +16,11 @@ export class InternalContent {
   @Column()
   scraperDataId: number;
 
-  @ManyToOne(() => AdditionalData, (scraperData) => scraperData.id, {
+  @ManyToOne(() => SupportProductData, (scraperData) => scraperData.id, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'scraperDataId' })
-  scraperData: AdditionalData;
+  scraperData: SupportProductData;
 
   @Column('jsonb')
   internalContent: Record<string, any>; // Stores name and link as JSON

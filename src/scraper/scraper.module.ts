@@ -3,13 +3,18 @@ import { ScraperService } from './scraper.service';
 import { ScraperData } from './entities/scraper_data.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScraperController } from './scraper.controller';
-import { AdditionalData } from './entities/additional_data.entity';
+
 import { InternalContent } from './entities/internal_content.entity';
 import { ECommerceService } from './ecommerce.services';
+import { SupportProductData } from './entities/support_product_data.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ScraperData, AdditionalData, InternalContent]),
+    TypeOrmModule.forFeature([
+      ScraperData,
+      SupportProductData,
+      InternalContent,
+    ]),
   ],
   providers: [ScraperService, ECommerceService],
   controllers: [ScraperController],
