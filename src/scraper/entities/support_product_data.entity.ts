@@ -8,7 +8,7 @@ import {
 import { InternalContent } from './internal_content.entity';
 
 @Entity()
-export class AdditionalData {
+export class SupportProductData {
   @PrimaryGeneratedColumn()
   id: number;
 

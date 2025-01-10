@@ -28,7 +28,7 @@ import {
   retryForCompactScraperConfig,
   retryScraperConfig,
 } from './constant';
-import { AdditionalData } from './entities/additional_data.entity';
+import { SupportProductData } from './entities/support_product_data.entity';
 import * as path from 'path';
 import { InternalContent } from './entities/internal_content.entity';
 
@@ -51,8 +51,8 @@ export class ScraperService implements OnModuleInit {
     @InjectRepository(ScraperData)
     private scrapperDataRepository: Repository<ScraperData>,
 
-    @InjectRepository(AdditionalData)
-    private additionalScrapperDataRepository: Repository<AdditionalData>,
+    @InjectRepository(SupportProductData)
+    private supportProductScrapperDataRepository: Repository<SupportProductData>,
 
     @InjectRepository(InternalContent)
     private internalContentRepository: Repository<InternalContent>,
@@ -1228,10 +1228,10 @@ export class ScraperService implements OnModuleInit {
 
   public async getAdditionalScraperRecordByUrl(
     url: string,
-  ): Promise<AdditionalData | null> {
+  ): Promise<SupportProductData | null> {
     try {
       // Use findOneBy for a direct condition
-      const record = await this.additionalScrapperDataRepository.findOneBy({
+      const record = await this.supportProductScrapperDataRepository.findOneBy({
         url,
       });
 
@@ -1246,9 +1246,9 @@ export class ScraperService implements OnModuleInit {
     }
   }
 
-  public async saveAdditionalScraperData(
+  public async saveSupportProductScraperData(
     productData: Record<string, any>,
-  ): Promise<AdditionalData> {
+  ): Promise<SupportProductData> {
     try {
       delete productData?.internalLinks; // Remove internal links before saving
       // Step 1: Flatten and prepare text
@@ -1264,7 +1264,7 @@ export class ScraperService implements OnModuleInit {
       // const vector = vectorize(textContent, vocabulary);
       // console.log({ productIds });
       // Step 4: Save data to database
-      const scraperData = this.additionalScrapperDataRepository.create({
+      const scraperData = this.supportProductScrapperDataRepository.create({
         url: productData.link,
         // content: textContent,
         // vector,
@@ -1272,14 +1272,14 @@ export class ScraperService implements OnModuleInit {
         jsonData: textContent,
         productName: productData?.name || '',
       });
-      return await this.additionalScrapperDataRepository.save(scraperData);
+      return await this.supportProductScrapperDataRepository.save(scraperData);
     } catch (error) {
       this.logger.warn('Error saving scraper data:', error?.message);
       throw error;
     }
   }
 
-  public async updateAdditionalScraperData(
+  public async updateSupportProductScraperData(
     productData: Record<string, any>,
     id: number,
   ) {
@@ -1292,12 +1292,15 @@ export class ScraperService implements OnModuleInit {
 
       delete textContent?.info?.pIds; // Remove internal links before saving
 
-      const response = await this.additionalScrapperDataRepository.update(id, {
-        url: productData.link,
-        productIds: productIds,
-        jsonData: textContent,
-        productName: productData?.name || '',
-      });
+      const response = await this.supportProductScrapperDataRepository.update(
+        id,
+        {
+          url: productData.link,
+          productIds: productIds,
+          jsonData: textContent,
+          productName: productData?.name || '',
+        },
+      );
 
       return response;
     } catch (error) {
@@ -1334,16 +1337,16 @@ export class ScraperService implements OnModuleInit {
           if (Array.isArray(jsonData)) {
             for (const item of jsonData) {
               const ifRecordExist =
-                await this.additionalScrapperDataRepository.findOneBy({
+                await this.supportProductScrapperDataRepository.findOneBy({
                   url: item.link,
                 });
               const productData = extractAndStorePIds(item);
 
               if (!ifRecordExist) {
                 // const productRecord =
-                await this.saveAdditionalScraperData(productData);
+                await this.saveSupportProductScraperData(productData);
               } else {
-                await this.updateAdditionalScraperData(
+                await this.updateSupportProductScraperData(
                   productData,
                   ifRecordExist.id,
                 );
@@ -1446,8 +1449,8 @@ export class ScraperService implements OnModuleInit {
   async getProductData(name: string): Promise<any> {
     try {
       const trimmedName = name.trim();
-      // Fetch additional data
-      const additionalData = await this.additionalScrapperDataRepository
+      // Fetch support data
+      const supportData = await this.supportProductScrapperDataRepository
         .createQueryBuilder('data')
         .leftJoinAndSelect('data.internalContents', 'internalContents')
         .where('data.productName ILIKE :productName', {
@@ -1466,19 +1469,19 @@ export class ScraperService implements OnModuleInit {
         .getMany();
       // Map over additionalData with asynchronous operations
       const data = await Promise.all(
-        additionalData.map(async (additionalItem) => {
+        supportData.map(async (item) => {
           // Fetch matching product data
           const productData = await this.scrapperDataRepository.find({
             where: {
-              productName: ILike(`%${additionalItem.productName}%`),
+              productName: ILike(`%${item.productName}%`),
             },
             select: ['jsonData', 'productName', 'createdAt', 'content', 'url'],
           });
 
           // Return the transformed object
           return {
-            productName: additionalItem.productName,
-            ...additionalItem, // Include all other properties of additionalItem
+            productName: item.productName,
+            ...item, // Include all other properties of additionalItem
             productData: productData.length > 0 ? productData : null, // Include productData or null
           };
         }),
