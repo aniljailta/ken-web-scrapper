@@ -42,9 +42,6 @@ export class ScraperService implements OnModuleInit {
   private readonly filePath = 'products.json';
   private readonly outputDirectory = 'products-category';
   private productListFile = 'json/products-list.json';
-  private mergeAdditionalProductListFileWithContent =
-    'json/additional-products-list-with-content.json';
-
   private scrapedData: any[] = []; // In-memory array to store results
   private async initBrowser() {
     return await puppeteer.launch({ headless: true });
@@ -670,10 +667,6 @@ export class ScraperService implements OnModuleInit {
     this.scrapedData = [];
     const categories = await this.scrapeCategories();
 
-    // const filterCategoryList = categories.filter(
-    //   (i) => i.categoryName === 'Collaboration Endpoints',
-    // );
-
     for (const category of categories) {
       const { categoryName, categoryLink: link } = category;
       console.log(`Scrapping products of category: ${categoryName}`);
@@ -1233,40 +1226,6 @@ export class ScraperService implements OnModuleInit {
     }
   }
 
-  public async additionalScrapeProductsToDataBase(): Promise<boolean> {
-    try {
-      const fileData = await fs.readFile(
-        this.mergeAdditionalProductListFileWithContent,
-        'utf-8',
-      );
-      const jsonData = JSON.parse(fileData);
-
-      for (const [index, productData] of jsonData.entries()) {
-        const { link } = productData;
-
-        this.logger.log(
-          `Processing ${index + 1}/${jsonData.length} to database`,
-        );
-
-        const ifRecordExist = await this.getAdditionalScraperRecordByUrl(link);
-
-        if (!ifRecordExist) {
-          await this.saveAdditionalScraperData(productData);
-          this.logger.log(`Saved successfully to database`);
-        } else {
-          this.logger.log(`Record already exists`);
-        }
-      }
-
-      this.logger.log(`Saved all data to database`);
-
-      return true;
-    } catch {
-      this.logger.warn('No existing JSON file found, starting fresh.');
-      return false;
-    }
-  }
-
   public async getAdditionalScraperRecordByUrl(
     url: string,
   ): Promise<AdditionalData | null> {
@@ -1319,6 +1278,33 @@ export class ScraperService implements OnModuleInit {
       throw error;
     }
   }
+
+  public async updateAdditionalScraperData(
+    productData: Record<string, any>,
+    id: number,
+  ) {
+    try {
+      delete productData?.internalLinks; // Remove internal links before saving
+
+      const textContent = productData;
+
+      const productIds = productData?.info?.pIds || [];
+
+      delete textContent?.info?.pIds; // Remove internal links before saving
+
+      const response = await this.additionalScrapperDataRepository.update(id, {
+        url: productData.link,
+        productIds: productIds,
+        jsonData: textContent,
+        productName: productData?.name || '',
+      });
+
+      return response;
+    } catch (error) {
+      this.logger.warn('Error updating scraper data:', error?.message);
+      return false;
+    }
+  }
   public async scrapeContentBasedOnUrl(link: string): Promise<string | null> {
     try {
       const selectors = ['.WordSection1', '#eot-doc-wrapper'];
@@ -1351,19 +1337,19 @@ export class ScraperService implements OnModuleInit {
                 await this.additionalScrapperDataRepository.findOneBy({
                   url: item.link,
                 });
+              const productData = extractAndStorePIds(item);
 
               if (!ifRecordExist) {
-                const productData = extractAndStorePIds(item);
                 // const productRecord =
                 await this.saveAdditionalScraperData(productData);
               } else {
-                this.logger.log(`Record already exists`);
-              }
+                await this.updateAdditionalScraperData(
+                  productData,
+                  ifRecordExist.id,
+                );
 
-              // console.log(
-              //   '🚀 ~ ScraperService ~ readJsonFilesAndSave ~ productRecord:',
-              //   productRecord,
-              // );
+                this.logger.log(`Record updated of id: ${ifRecordExist.id}`);
+              }
 
               // if (item.internalLinks && Array.isArray(item.internalLinks)) {
               //   for (const contentData of item.internalLinks) {
