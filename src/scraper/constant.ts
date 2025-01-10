@@ -184,3 +184,13 @@ Link: [value];
 PID's: [value];
 
 Do not include fields where the value is empty, null, or unavailable. Ensure no additional text or formatting is included beyond this structure.`;
+
+export const headerVariations = [
+  'End-of-Sale Product Part Number',
+  'Part Number',
+  'Product Number',
+  'Part number',
+  'Product number',
+  'End-of-Sale Product Part number',
+  'SKU',
+];
