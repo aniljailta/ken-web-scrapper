@@ -7,7 +7,7 @@ import sanitizeHtml from 'sanitize-html';
 import * as fuzz from 'fuzzball';
 
 import * as iconv from 'iconv-lite';
-import { headerVariations } from './constant';
+import { excludeVariation, headerVariations } from './constant';
 
 // Tokenize the input text into an array of words
 function tokenize(text: string): string[] {
@@ -837,8 +837,10 @@ export const extractPIDsFromLinks = async (link: string) => {
 export function extractAndStorePIds(productItem: any) {
   // Create a Set to store unique pIds
   const allPIds = new Set<string>();
-
-  // Loop through the data
+  const validPidRegex = /^[\w\s-]+[=_]?$/;
+  const normalizedHeaders = excludeVariation.map((header) =>
+    header.toLowerCase(),
+  );
 
   // Ensure internalLinks exists if it's not there
   if (!productItem.internalLinks) {
@@ -854,17 +856,26 @@ export function extractAndStorePIds(productItem: any) {
 
     // Add pIds from internalLinks to the Set (ensures uniqueness)
     internalLink.pIds.forEach((pid: string) => {
-      pid = pid
-        .replace(/\s+/g, ' ') // Normalize spaces
-        .replace(/\n/g, '') // Remove newline characters
-        .trim();
+      const pidParts = pid.split('●').map((part) => part.trim());
+      pidParts.forEach((part) => {
+        // Normalize and validate each part
+        const cleanedPid = part
+          .replace(/\s+/g, ' ') // Normalize spaces
+          .replace(/\n/g, '') // Remove newline characters
+          .trim();
 
-      if (!headerVariations.some((header) => pid.includes(header))) {
-        allPIds.add(pid);
-      }
+        // Check if cleanedPid is valid and not in normalizedHeaders
+        if (
+          !normalizedHeaders.some(
+            (header) => cleanedPid.toLowerCase() === header,
+          ) &&
+          validPidRegex.test(cleanedPid)
+        ) {
+          allPIds.add(cleanedPid);
+        }
+      });
     });
   });
-
   // Ensure the info field and pIds exists
   if (!productItem.info) {
     productItem.info = {};

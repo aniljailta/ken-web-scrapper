@@ -1419,12 +1419,12 @@ export class ScraperService implements OnModuleInit {
           productName: i.productName,
           link: i.url,
           additionalInfo: i.jsonData.info,
-          internalLinks: i.internalContents,
+          // internalLinks: i.internalContents,
           productData: i?.productData || [],
-          productIds: i?.productIds.slice(0, 500) || [],
+          productIds: i?.productIds.slice(0, 1000) || [],
         };
       })
-      .slice(0, 3);
+      .slice(0, 2);
 
     if (!data.length) {
       return 'No Relevant Product Found!';
