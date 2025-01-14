@@ -572,7 +572,9 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
             (internalLink: { name: string; link: string }) =>
               internalLink?.link &&
               typeof internalLink?.link === 'string' &&
-              internalLink?.link?.trim() !== '',
+              internalLink?.link?.trim() !== '' &&
+              internalLink?.link.endsWith('.html') &&
+              checkUrlIncludesWords(internalLink?.link),
           ),
         ),
       );
@@ -691,7 +693,7 @@ export function mapProductsToInsight(productList, insightProductList) {
   const iterateProductList = productList.map((product) => {
     const productName = product.name.toLowerCase();
 
-    if (product?.info?.pIds && product?.info?.pIds?.length) {
+    if (product?.info?.pIds?.length || product?.internalLinks?.length) {
       return product;
     } else {
       const results = fuzz.extract(productName, insightProductData, {
@@ -878,4 +880,32 @@ export function extractAndStorePIds(productItem: any) {
 
   // Return the updated data
   return productItem;
+}
+
+export function checkUrlIncludesWords(url: string) {
+  const arr = [
+    'data',
+    'sheet',
+    'end',
+    'eol',
+    'eos',
+    'life',
+    'sale',
+    'data sheet',
+    'datasheet',
+    'ds',
+    'bulletin',
+  ];
+  // Normalize the URL by removing special characters and converting to lowercase
+  const normalizedUrl = url
+    .replace(/[^a-zA-Z0-9 ]/g, ' ') // Replace special characters with space
+    .toLowerCase();
+
+  // Iterate through each word/phrase in the array 'a'
+  return arr.some((phrase) => {
+    const normalizedPhrase = phrase.toLowerCase();
+
+    // Check if the phrase (or word) exists as a substring in the normalized URL
+    return normalizedUrl.includes(normalizedPhrase);
+  });
 }

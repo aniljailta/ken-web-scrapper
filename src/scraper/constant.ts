@@ -189,8 +189,6 @@ export const headerVariations = [
   'End-of-Sale Product Part Number',
   'Part Number',
   'Product Number',
-  'Part number',
-  'Product number',
-  'End-of-Sale Product Part number',
   'SKU',
+  'Model',
 ];

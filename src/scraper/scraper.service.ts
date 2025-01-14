@@ -1073,7 +1073,7 @@ export class ScraperService implements OnModuleInit {
     const jsonFilePath = this.productListFile;
     const outputDirectory = this.outputDirectory;
     // const selectors = ['.WordSection1', '#eot-doc-wrapper'];
-    const maxProductsPerFile = 30;
+    const maxProductsPerFile = 50;
 
     // Ensure output directory exists
     try {
