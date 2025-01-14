@@ -170,7 +170,7 @@ Please extract and format the following details from the JSON data provided:
 - End-of-Support Date
 - Series Release Date
 - Link
-- PID's (from pIds or "Unavailable" if not present)
+- PID's (from pIds or "Unavailable" if not present as Pid example is like WS-C2960X-48TS-L=, HS-W-322-USBA=, CS-T10-TS-L-K9+, SPA 502G, C9504, WBPN)
 
 Output the details exactly in this format, but include a field only if it has a valid, non-empty value:
 Product Name: [value];
@@ -198,6 +198,8 @@ export const excludeVariation = [
   'End-of-Sale Product Part Number',
   'Part Number',
   'Product Number',
+  'Part Numbers',
+  'Product Numbers',
   'SKU',
   'Model',
   'Part #',
@@ -233,4 +235,8 @@ export const excludeVariation = [
   'loads',
   'Spare',
   'Optional',
+  'Subscription',
+  'Manage',
+  'Monitored',
+  'Migration',
 ];
