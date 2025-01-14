@@ -7,7 +7,7 @@ import sanitizeHtml from 'sanitize-html';
 import * as fuzz from 'fuzzball';
 
 import * as iconv from 'iconv-lite';
-import { headerVariations } from './constant';
+import { excludeVariation, headerVariations } from './constant';
 
 // Tokenize the input text into an array of words
 function tokenize(text: string): string[] {
@@ -572,7 +572,9 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
             (internalLink: { name: string; link: string }) =>
               internalLink?.link &&
               typeof internalLink?.link === 'string' &&
-              internalLink?.link?.trim() !== '',
+              internalLink?.link?.trim() !== '' &&
+              internalLink?.link.endsWith('.html') &&
+              checkUrlIncludesWords(internalLink?.link),
           ),
         ),
       );
@@ -691,7 +693,7 @@ export function mapProductsToInsight(productList, insightProductList) {
   const iterateProductList = productList.map((product) => {
     const productName = product.name.toLowerCase();
 
-    if (product?.info?.pIds && product?.info?.pIds?.length) {
+    if (product?.info?.pIds?.length || product?.internalLinks?.length) {
       return product;
     } else {
       const results = fuzz.extract(productName, insightProductData, {
@@ -835,8 +837,10 @@ export const extractPIDsFromLinks = async (link: string) => {
 export function extractAndStorePIds(productItem: any) {
   // Create a Set to store unique pIds
   const allPIds = new Set<string>();
-
-  // Loop through the data
+  const validPidRegex = /^[\w\s-]+[=_]?$/;
+  const normalizedHeaders = excludeVariation.map((header) =>
+    header.toLowerCase(),
+  );
 
   // Ensure internalLinks exists if it's not there
   if (!productItem.internalLinks) {
@@ -852,17 +856,26 @@ export function extractAndStorePIds(productItem: any) {
 
     // Add pIds from internalLinks to the Set (ensures uniqueness)
     internalLink.pIds.forEach((pid: string) => {
-      pid = pid
-        .replace(/\s+/g, ' ') // Normalize spaces
-        .replace(/\n/g, '') // Remove newline characters
-        .trim();
+      const pidParts = pid.split('●').map((part) => part.trim());
+      pidParts.forEach((part) => {
+        // Normalize and validate each part
+        const cleanedPid = part
+          .replace(/\s+/g, ' ') // Normalize spaces
+          .replace(/\n/g, '') // Remove newline characters
+          .trim();
 
-      if (!headerVariations.some((header) => pid.includes(header))) {
-        allPIds.add(pid);
-      }
+        // Check if cleanedPid is valid and not in normalizedHeaders
+        if (
+          !normalizedHeaders.some(
+            (header) => cleanedPid.toLowerCase() === header,
+          ) &&
+          validPidRegex.test(cleanedPid)
+        ) {
+          allPIds.add(cleanedPid);
+        }
+      });
     });
   });
-
   // Ensure the info field and pIds exists
   if (!productItem.info) {
     productItem.info = {};
@@ -878,4 +891,32 @@ export function extractAndStorePIds(productItem: any) {
 
   // Return the updated data
   return productItem;
+}
+
+export function checkUrlIncludesWords(url: string) {
+  const arr = [
+    'data',
+    'sheet',
+    'end',
+    'eol',
+    'eos',
+    'life',
+    'sale',
+    'data sheet',
+    'datasheet',
+    'ds',
+    'bulletin',
+  ];
+  // Normalize the URL by removing special characters and converting to lowercase
+  const normalizedUrl = url
+    .replace(/[^a-zA-Z0-9 ]/g, ' ') // Replace special characters with space
+    .toLowerCase();
+
+  // Iterate through each word/phrase in the array 'a'
+  return arr.some((phrase) => {
+    const normalizedPhrase = phrase.toLowerCase();
+
+    // Check if the phrase (or word) exists as a substring in the normalized URL
+    return normalizedUrl.includes(normalizedPhrase);
+  });
 }

@@ -1073,7 +1073,7 @@ export class ScraperService implements OnModuleInit {
     const jsonFilePath = this.productListFile;
     const outputDirectory = this.outputDirectory;
     // const selectors = ['.WordSection1', '#eot-doc-wrapper'];
-    const maxProductsPerFile = 30;
+    const maxProductsPerFile = 50;
 
     // Ensure output directory exists
     try {
@@ -1419,12 +1419,12 @@ export class ScraperService implements OnModuleInit {
           productName: i.productName,
           link: i.url,
           additionalInfo: i.jsonData.info,
-          internalLinks: i.internalContents,
+          // internalLinks: i.internalContents,
           productData: i?.productData || [],
-          productIds: i?.productIds.slice(0, 500) || [],
+          productIds: i?.productIds.slice(0, 1000) || [],
         };
       })
-      .slice(0, 3);
+      .slice(0, 2);
 
     if (!data.length) {
       return 'No Relevant Product Found!';
