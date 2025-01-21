@@ -239,4 +239,13 @@ export const excludeVariation = [
   'Manage',
   'Monitored',
   'Migration',
+  'speed',
+  'virtual',
+  'Model Name',
+  'Fast Ethernet',
+  'rate',
+  'code',
+  'level',
+  'support',
+  'unit',
 ];

@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       }),
     }),
     ScraperModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

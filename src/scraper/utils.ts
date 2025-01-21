@@ -654,7 +654,7 @@ export async function mergeAllProducts({ data }: { data: any[] }) {
   return withPIds;
 }
 
-function cleanHtml(input) {
+export function cleanHtml(input: string) {
   if (typeof input !== 'string') {
     console.log('Input must be a string');
     return null;
@@ -662,8 +662,12 @@ function cleanHtml(input) {
   // 1. Convert to valid UTF-8
   const validUtf8 = iconv.decode(iconv.encode(input, 'utf-8'), 'utf-8');
   // 2. Remove null bytes and control characters
-  const cleanedString = validUtf8.replace(/[\x00-\x1F\x7F]/g, '').trim();
-  // 3. Sanitize the HTML
+  let cleanedString = validUtf8.replace(/[\x00-\x1F\x7F]/g, '').trim();
+
+  // 3. Remove excessive spaces and non-breaking spaces (including \u00A0)
+  cleanedString = cleanedString.replace(/[\u00A0\s]+/g, ' ');
+
+  // 4. Sanitize the HTML
   const sanitizedHtml = sanitizeHtml(cleanedString, {
     allowedTags: [],
     allowedAttributes: {},
@@ -919,4 +923,12 @@ export function checkUrlIncludesWords(url: string) {
     // Check if the phrase (or word) exists as a substring in the normalized URL
     return normalizedUrl.includes(normalizedPhrase);
   });
+}
+
+export function refineTable(html: string) {
+  // Refine the HTML to get without class and styles
+  return html.replace(
+    /(<[^>]+)(\s+(style|class|id|data-[\w-]+|onclick|role)\s*=\s*["'][^"']*["'])/g,
+    '$1',
+  );
 }
