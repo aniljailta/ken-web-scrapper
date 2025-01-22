@@ -190,8 +190,8 @@ export const headerVariations = [
   'Part Number',
   'Product Number',
   'SKU',
-  'Model',
-  'Part #',
+  // 'Model',
+  // 'Part #',
 ];
 
 export const excludeVariation = [
@@ -239,4 +239,13 @@ export const excludeVariation = [
   'Manage',
   'Monitored',
   'Migration',
+  'speed',
+  'virtual',
+  'Model Name',
+  'Fast Ethernet',
+  'rate',
+  'code',
+  'level',
+  'support',
+  'unit',
 ];

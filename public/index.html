@@ -23,7 +23,7 @@
         background: #fff;
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        max-width: 800px;
+        max-width: 1100px;
         width: 90%; /* Ensures the card fits smaller screens */
         padding: 20px;
         box-sizing: border-box;
@@ -38,9 +38,6 @@
       }
 
       /* Form groups */
-      .form-group {
-        margin-bottom: 15px;
-      }
 
       label {
         display: block;
@@ -58,7 +55,7 @@
 
       /* Submit button */
       button {
-        width: 100%;
+        width: 110px;
         background-color: #007bff;
         color: white;
         padding: 10px;
@@ -79,7 +76,6 @@
         border: 1px solid #ccc;
         border-radius: 5px;
         background-color: #f9f9f9;
-        white-space: pre-wrap; /* Preserve formatting for multiline responses */
         max-height: 300px; /* Limit height */
         overflow-y: auto; /* Make scrollable when content exceeds height */
       }
@@ -103,6 +99,14 @@
 
       .spinner div:nth-child(2) {
         animation-delay: -1s;
+      }
+
+      .product {
+        margin-bottom: 20px;
+      }
+
+      .mb-5 {
+        margin-bottom: 20px;
       }
 
       @keyframes bounce {
@@ -139,24 +143,51 @@
           max-height: 200px; /* Reduce height for smaller screens */
         }
       }
+      .flex {
+        display: flex;
+        justify-content: space-between; /* Space elements evenly */
+        align-items: center; /* Center elements vertically */
+        gap: 10px; /* Optional gap between elements */
+        flex-wrap: wrap;
+      }
+
+      /* Each form group takes equal width */
+      .form-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 20px;
+      }
+
+      /* Input fields should stretch to fill the width of their parent */
+      .form-group input {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        height: 40px;
+      }
     </style>
   </head>
   <body>
     <div class="card">
       <h1>Cisco Product Query</h1>
-      <div class="form-group">
-        <label for="inputBox">Enter product name or Id</label>
-        <input type="text" id="inputBox" placeholder="Enter text" />
+      <div class="flex">
+        <div class="form-group">
+          <label for="inputBox">Enter product name or Id</label>
+          <input type="text" id="inputBox" placeholder="Enter text" />
+        </div>
+        <div class="form-group">
+          <label for="passwordBox">Enter Password</label>
+          <input
+            type="password"
+            id="passwordBox"
+            placeholder="Enter your password"
+          />
+        </div>
+
+        <button onclick="callApi()">Submit</button>
       </div>
-      <div class="form-group">
-        <label for="passwordBox">Enter Password</label>
-        <input
-          type="password"
-          id="passwordBox"
-          placeholder="Enter your password"
-        />
-      </div>
-      <button onclick="callApi()">Submit</button>
       <div class="spinner" id="spinner" style="display: none">
         <div></div>
         <div></div>
@@ -167,6 +198,121 @@
     </div>
 
     <script>
+      function generateHTML(data) {
+        return data
+          .map((product) => {
+            // Map the Supported Models
+            const supportedModels = product.additionalInfo.Supported_Models.map(
+              (model) => `<li>${model}</li>`,
+            ).join('');
+
+            const productIds = product.productIds
+              .map((model) => `<li>${model}</li>`)
+              .join('');
+
+            // Map the Internal Links
+            const internalLinks =
+              product.internalLinks?.length > 0
+                ? product.internalLinks
+                    .map((link) => {
+                      // Helper function to render fields dynamically
+                      const renderField = (field) => {
+                        if (!field) return '';
+
+                        const text = field.text ? `<p>${field.text}</p>` : '';
+                        const tables =
+                          field.tables?.length > 0
+                            ? field.tables
+                                .map(
+                                  (table) =>
+                                    `<div class="table mb-5">${table}</div>`,
+                                )
+                                .join('')
+                            : '';
+
+                        return `${text}${tables}`;
+                      };
+
+                      // Render all fields in the `link` object dynamically
+                      const dynamicFields = Object.keys(link)
+                        .filter(
+                          (key) =>
+                            !['name', 'link', 'id', 'productDataId'].includes(
+                              key,
+                            ),
+                        ) // Exclude `name` and `link`
+                        .map((key) => {
+                          const field = link[key];
+
+                          // Skip rendering if field data is null, undefined, or empty
+                          if (
+                            !field ||
+                            (typeof field === 'object' &&
+                              !field.text &&
+                              !field.tables?.length)
+                          ) {
+                            return '';
+                          }
+
+                          // Render the field title and content
+
+                          const formattedTitle = key
+                            .replace(/_/g, ' ') // Replace underscores with spaces
+                            .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
+                          const fieldTitle = `<h5>${formattedTitle}</h5>`;
+                          return `${fieldTitle}${renderField(field)}`;
+                        })
+                        .filter(Boolean) // Remove any empty strings from the map
+                        .join('');
+
+                      // Handle name and link separately
+                      const textContent = `
+            <div>
+              <h4>${link.name}</h4>
+              ${link.link ? `<p>Link: <a href="${link.link}" target="_blank">${link.link}</a></p>` : ''}
+              ${dynamicFields}
+            </div>
+          `;
+
+                      return textContent;
+                    })
+                    .join('')
+                : '';
+
+            return `
+                <div class="product">
+                    <h2>${product.productName}</h2>
+                    <p>Link: <a href="${product.link}" target="_blank">${product.link}</a></p>
+                    <p>Status: ${product.additionalInfo.Status || 'N/A'}</p>
+                    <p>End-of-Sale Date: ${product.additionalInfo['End-of-Sale_Date'] || 'N/A'}</p>
+                    <p>End-of-Support Date: ${product.additionalInfo['End-of-Support_Date'] || 'N/A'}</p>
+                    <p>Series Release Date: ${product.additionalInfo.Series_Release_Date || 'N/A'}</p>
+                    <p>Migration Info: ${product.additionalInfo.migrationOfProducts || 'N/A'}</p>
+                ${
+                  supportedModels.length > 0
+                    ? `<h3>Supported Models</h3>
+                    <ul>${supportedModels || '<li>N/A</li>'}</ul>`
+                    : ''
+                }
+
+${
+  productIds.length > 0
+    ? `<h3>Product PIDs</h3>
+                    <ul>${productIds || '<li>N/A</li>'}</ul>`
+    : ''
+}
+                ${
+                  internalLinks.length > 0
+                    ? ` <h3>Internal Links</h3>
+                    ${internalLinks || '<p>No links available</p>'}`
+                    : ''
+                }
+                </div>
+            `;
+          })
+          .join('');
+      }
+
       async function callApi() {
         const input = document.getElementById('inputBox').value;
         const password = document.getElementById('passwordBox').value;
@@ -189,7 +335,7 @@
         responseDiv.style.display = 'none';
 
         try {
-          const response = await fetch('/scraper/product-query', {
+          const response = await fetch('/api/products/product-query', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -202,11 +348,11 @@
           // Hide spinner and show response
           spinner.style.display = 'none';
           responseDiv.style.display = 'block';
-
           // Format response for better readability
-          responseDiv.innerText = data.response
-            .replace(/;/g, '\n')
-            .replace(/,/g, ', ');
+          // responseDiv.innerText = data.response;
+
+          const htmlContent = generateHTML(data.response);
+          document.getElementById('responseDiv').innerHTML = htmlContent;
         } catch (error) {
           spinner.style.display = 'none';
           responseDiv.style.display = 'block';

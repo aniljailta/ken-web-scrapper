@@ -666,8 +666,9 @@ export class ScraperService implements OnModuleInit {
   async scrapeSupportProductsDataLinks(): Promise<void> {
     this.scrapedData = [];
     const categories = await this.scrapeCategories();
+    const filterCat = categories.filter((i) => i.categoryName === 'Switches');
 
-    for (const category of categories) {
+    for (const category of filterCat) {
       const { categoryName, categoryLink: link } = category;
       console.log(`Scrapping products of category: ${categoryName}`);
 
@@ -722,28 +723,61 @@ export class ScraperService implements OnModuleInit {
 
       await page.goto(url, { waitUntil: 'networkidle2' });
 
-      const categories = await page.evaluate(() => {
+      const categories = await page.evaluate((baseUrl) => {
         const categoryList: any[] = [];
         const categoryElements = document.querySelectorAll(
           '#productCategories table',
         );
+
+        function sanitizeUrl(url: string): string | null {
+          if (!url) return null;
+
+          // If URL starts with 'www', prepend 'https://'
+          if (url.startsWith('//www')) {
+            return `https:${url}`;
+          }
+
+          // Handle URLs already starting with base URL
+          if (url.startsWith(baseUrl)) {
+            // Remove duplicate base URLs
+            const occurrences =
+              url.match(new RegExp(baseUrl, 'g'))?.length || 0;
+            if (occurrences > 1) {
+              return baseUrl + url.split(baseUrl).pop();
+            }
+            return url; // Already valid
+          }
+
+          // Handle relative URLs
+          if (url.startsWith('/')) {
+            return baseUrl + url;
+          }
+
+          // Handle malformed URLs
+          if (url.startsWith('http')) {
+            return url; // Valid absolute URL
+          }
+
+          return null; // Invalid URL
+        }
 
         categoryElements.forEach((categoryElement) => {
           const links = categoryElement.querySelectorAll('li a');
           links.forEach((link) => {
             const categoryName = link.textContent?.trim();
             const categoryLink = link.getAttribute('href');
+            const sanitizedLink = sanitizeUrl(categoryLink);
             if (categoryName && categoryLink) {
               categoryList.push({
                 categoryName,
-                categoryLink: `https:${categoryLink}`,
+                categoryLink: sanitizedLink,
               });
             }
           });
         });
 
         return categoryList;
-      });
+      }, this.baseURL);
 
       return categories;
     } catch (error) {
@@ -917,8 +951,42 @@ export class ScraperService implements OnModuleInit {
         } else {
           tableData['pIds'] = [];
         }
+
+        // Check for the presence of the special <tr> with id="microLifecycleBlade"
+        const microLifecycleBladeRow = document.querySelector(
+          '#microLifecycleBlade',
+        );
+        if (microLifecycleBladeRow) {
+          const migrationOfProductsText =
+            microLifecycleBladeRow.textContent?.trim() || '';
+          tableData['migrationOfProducts'] = migrationOfProductsText
+            .replace(/\s+/g, ' ')
+            .trim();
+        }
+
         return tableData;
       });
+
+      const supportModalInfo = await page.evaluate(() => {
+        const tableHeading = document.querySelector('#drawertab-tab-extra');
+
+        const headerText = tableHeading?.textContent?.trim();
+
+        const supportModalTable = document.querySelector('#info-extra');
+        if (supportModalTable) {
+          const liElements = Array.from(
+            supportModalTable.querySelectorAll('ul li'),
+          );
+          return {
+            header: headerText.replace(/\s+/g, '_').trim(),
+            elements: liElements.map((li) => li.textContent?.trim() || ''),
+          };
+        }
+      });
+
+      if (supportModalInfo?.elements?.length && supportModalInfo?.header) {
+        data[supportModalInfo?.header] = supportModalInfo.elements;
+      }
 
       return data;
     } catch (error) {
