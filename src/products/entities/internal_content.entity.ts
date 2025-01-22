@@ -28,59 +28,59 @@ export class SupportProductInternalContent {
   productData: Product;
 
   @Column('jsonb', { nullable: true })
-  software?: any;
+  introduction?: any;
 
   @Column('jsonb', { nullable: true })
   overview?: any;
 
   @Column('jsonb', { nullable: true })
-  introduction?: any;
-
-  @Column('jsonb', { nullable: true })
-  power_supply?: any;
-
-  @Column('jsonb', { nullable: true })
-  intelligent?: any;
-
-  @Column('jsonb', { nullable: true })
-  warranty?: any;
-
-  @Column('jsonb', { nullable: true })
-  licensing?: any;
-
-  @Column('jsonb', { nullable: true })
-  stacking?: any;
-
-  @Column('jsonb', { nullable: true })
-  highlights?: any;
-
-  @Column('jsonb', { nullable: true })
-  platform?: any;
-
-  @Column('jsonb', { nullable: true })
-  status?: any;
-
-  @Column('jsonb', { nullable: true })
-  scalability?: any;
+  configurations?: any;
 
   @Column('jsonb', { nullable: true })
   features?: any;
 
   @Column('jsonb', { nullable: true })
-  specifications?: any;
+  highlights?: any;
 
   @Column('jsonb', { nullable: true })
-  ordering?: any;
+  intelligent?: any;
 
   @Column('jsonb', { nullable: true })
-  configurations?: any;
-
-  @Column('jsonb', { nullable: true })
-  part_numbers?: any;
+  licensing?: any;
 
   @Column('jsonb', { nullable: true })
   milestones?: any;
 
   @Column('jsonb', { nullable: true })
+  ordering?: any;
+
+  @Column('jsonb', { nullable: true })
+  part_numbers?: any;
+
+  @Column('jsonb', { nullable: true })
   performance?: any;
+
+  @Column('jsonb', { nullable: true })
+  platform?: any;
+
+  @Column('jsonb', { nullable: true })
+  power_supply?: any;
+
+  @Column('jsonb', { nullable: true })
+  scalability?: any;
+
+  @Column('jsonb', { nullable: true })
+  specifications?: any;
+
+  @Column('jsonb', { nullable: true })
+  stacking?: any;
+
+  @Column('jsonb', { nullable: true })
+  status?: any;
+
+  @Column('jsonb', { nullable: true })
+  software?: any;
+
+  @Column('jsonb', { nullable: true })
+  warranty?: any;
 }

@@ -968,17 +968,24 @@ export class ScraperService implements OnModuleInit {
       });
 
       const supportModalInfo = await page.evaluate(() => {
+        const tableHeading = document.querySelector('#drawertab-tab-extra');
+
+        const headerText = tableHeading?.textContent?.trim();
+
         const supportModalTable = document.querySelector('#info-extra');
         if (supportModalTable) {
           const liElements = Array.from(
             supportModalTable.querySelectorAll('ul li'),
           );
-          return liElements.map((li) => li.textContent?.trim() || '');
+          return {
+            header: headerText.replace(/\s+/g, '_').trim(),
+            elements: liElements.map((li) => li.textContent?.trim() || ''),
+          };
         }
       });
 
-      if (supportModalInfo?.length) {
-        data.supportedModals = supportModalInfo;
+      if (supportModalInfo?.elements?.length && supportModalInfo?.header) {
+        data[supportModalInfo?.header] = supportModalInfo.elements;
       }
 
       return data;

@@ -190,8 +190,8 @@ export const headerVariations = [
   'Part Number',
   'Product Number',
   'SKU',
-  'Model',
-  'Part #',
+  // 'Model',
+  // 'Part #',
 ];
 
 export const excludeVariation = [

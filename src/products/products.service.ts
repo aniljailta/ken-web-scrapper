@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as puppeteer from 'puppeteer';
 import * as fs from 'fs';
 import OpenAI from 'openai';
 import { Repository } from 'typeorm';
@@ -7,14 +6,9 @@ import { ConfigService } from '@nestjs/config';
 import { Product } from './entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
-import {
-  sanitizeFileName,
-  cleanHtml,
-  refineTable,
-  extractAndStorePIds,
-} from 'src/scraper/utils';
-import { sectionTitles } from './constants';
+import { sanitizeFileName, extractAndStorePIds } from 'src/scraper/utils';
 import { SupportProductInternalContent } from './entities/internal_content.entity';
+import { scrapeInternalSection } from './utils';
 
 @Injectable()
 export class ProductsService {
@@ -53,7 +47,7 @@ export class ProductsService {
     const jsonFilePath = this.productListFile;
     const outputDirectory = this.outputDirectory;
     // const selectors = ['.WordSection1', '#eot-doc-wrapper'];
-    const maxProductsPerFile = 40;
+    const maxProductsPerFile = 50;
 
     // Ensure output directory exists
     try {
@@ -140,14 +134,14 @@ export class ProductsService {
             //   internalLink.content = content || null;
             // }
 
-            // if (link.endsWith('.html')) {
-            //   const content = await extractPIDsFromLinks(link);
-            //   internalLink.pIds = content || null;
-            // }
+            if (link.endsWith('.html')) {
+              // const content = await extractPIDsFromLinks(link);
+              // internalLink.pIds = content || null;
+              const { content, pidData } = await scrapeInternalSection(link);
 
-            // Extract Software Section
-            const contentData = await this.scrapeInternalSection(link);
-            internalLink.contentData = contentData;
+              internalLink.contentData = content;
+              internalLink.pIds = pidData || null;
+            }
           }
           product.internalLinks = product.internalLinks.filter(
             (link) => link.contentData,
@@ -209,168 +203,6 @@ export class ProductsService {
             console.error(`Error creating new file: ${error.message}`);
           }
         }
-      }
-    }
-  }
-
-  async scrapeInternalSection(
-    link: string,
-  ): Promise<Record<string, { text: string; tables: string[] }>> {
-    let browser: puppeteer.Browser | null = null;
-    const initialTimeout = 20000; // Initial timeout in milliseconds
-    const extendedTimeout = 50000; // Extended timeout in milliseconds
-
-    const scrapeData = async (timeout: number) => {
-      try {
-        browser = await puppeteer.launch({
-          headless: true,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        });
-        const page = await browser.newPage();
-
-        await page.goto(link, { waitUntil: 'domcontentloaded', timeout });
-
-        // Collect all <p> elements and their text
-        const paragraphsData = await page.evaluate(() => {
-          const paragraphs = Array.from(document.querySelectorAll('p'));
-          return paragraphs.map((p) => ({
-            className: p.className,
-            text: p.textContent?.trim() || '',
-            id: p.id || null,
-          }));
-        });
-
-        const results: Record<string, { text: string; tables: string[] }> = {};
-
-        for (const title of sectionTitles) {
-          const targetParagraph = paragraphsData.find(
-            (p) =>
-              new RegExp(`\\b${title.replace(/\s+/g, '\\s*')}\\b`, 'i').test(
-                p.text.toLowerCase(),
-              ) &&
-              (p.className.includes('pSubhead2CMT') ||
-                p.className.includes('pSubhead1CMT') ||
-                p.className.includes('pToC_Subhead1')),
-          );
-
-          if (targetParagraph) {
-            const sectionHTML = await page.evaluate((startText) => {
-              const extractContentUntilBoundary = (
-                startElement: HTMLElement,
-              ): string => {
-                let fullHTML = '';
-                let current = startElement.nextElementSibling;
-
-                while (current) {
-                  const id = current.getAttribute('id');
-                  const classList = Array.from(current.classList);
-
-                  // Stop if we encounter a boundary element
-                  if (
-                    (current.tagName.toLowerCase() === 'p' ||
-                      current.tagName.toLowerCase() === 'div') &&
-                    (id ||
-                      classList.includes('pToC_Subhead1') ||
-                      classList.includes('pSubhead2CMT') ||
-                      classList.includes('pSubhead1CMT'))
-                  ) {
-                    break;
-                  }
-
-                  fullHTML += current.outerHTML + '\n';
-                  current = current.nextElementSibling;
-                }
-
-                return fullHTML.trim();
-              };
-
-              // Find the starting element
-              const paragraphs = Array.from(
-                document.querySelectorAll(
-                  'p.pSubhead2CMT, p.pSubhead1CMT, p.pToC_Subhead1, div',
-                ),
-              );
-              for (const p of paragraphs) {
-                if (p.textContent?.trim() === startText) {
-                  return extractContentUntilBoundary(p as HTMLElement);
-                }
-              }
-
-              return null;
-            }, targetParagraph.text);
-            if (sectionHTML) {
-              const processContent = (
-                html: string,
-              ): { text: string; tables: string[] } => {
-                const container = document.createElement('div');
-                container.innerHTML = html;
-
-                const tables: string[] = [];
-                const tableElements = container.querySelectorAll('table');
-
-                tableElements.forEach((table) => {
-                  tables.push(table?.outerHTML);
-                  table.remove();
-                });
-
-                const text = container.textContent?.trim() || '';
-                return { text, tables };
-              };
-
-              const pageSectionData = await page.evaluate(
-                processContent,
-                sectionHTML,
-              );
-
-              const sectionText = cleanHtml(pageSectionData.text);
-              const sectionTables = pageSectionData.tables.map((table) =>
-                refineTable(table),
-              );
-
-              const formattedKey = title.toLowerCase().replace(/\s+/g, '_');
-              results[formattedKey] = {
-                text: sectionText,
-                tables: sectionTables,
-              };
-            }
-          }
-        }
-
-        return Object.keys(results).length > 0 ? results : null;
-      } catch (error) {
-        console.error('Error scraping sections:', error.message);
-        return null;
-      } finally {
-        if (browser) {
-          await browser.close();
-        }
-      }
-    };
-
-    try {
-      // Attempt with initial timeout
-      return await scrapeData(initialTimeout);
-    } catch (error) {
-      if (error?.message?.includes('Navigation timeout')) {
-        console.warn(
-          `Navigation timeout with ${initialTimeout}ms exceeded. Retrying with ${extendedTimeout}ms...`,
-        );
-        try {
-          // Retry with extended timeout
-          return await scrapeData(extendedTimeout);
-        } catch (retryError) {
-          console.error(
-            'Error during retry with extended timeout:',
-            retryError.message,
-          );
-          return null;
-        }
-      } else {
-        console.error(
-          'Unexpected error during scraping process:',
-          error.message,
-        );
-        return null;
       }
     }
   }
@@ -444,19 +276,14 @@ export class ProductsService {
     try {
       const data = { ...productData };
       delete data?.internalLinks; // Remove internal links before saving
-      // Step 1: Flatten and prepare text
+      //  Flatten and prepare text
       const textContent = data;
 
       const productIds = data?.info?.pIds || [];
 
       delete textContent?.info?.pIds; // Remove internal links before saving
-      // Step 2: Build vocabulary (static or dynamic per use case)
-      // const vocabulary = buildVocabulary([textContent]); // You can save and reuse this for consistency
 
-      // Step 3: Generate vector
-      // const vector = vectorize(textContent, vocabulary);
-      // console.log({ productIds });
-      // Step 4: Save data to database
+      //  Save data to database
       const scraperData = this.productDataRepository.create({
         url: data.link,
         // content: textContent,
@@ -501,165 +328,126 @@ export class ProductsService {
       return false;
     }
   }
+
+  async queryProduct(query: string, password: string) {
+    if (!password || !query) {
+      return 'Bad request!';
+    }
+    const decodedPassword = Buffer.from(password, 'hex').toString('utf8');
+
+    if (decodedPassword !== this.chatBotQueryPassword) {
+      return 'Invalid Password!';
+    }
+    // const tools: any = [findDevToolFunction];
+    // const response = await this.openai.chat.completions.create({
+    //   model: 'gpt-3.5-turbo',
+    //   messages: [
+    //     {
+    //       role: 'user',
+    //       content: query,
+    //     },
+    //   ],
+    //   tools,
+    // });
+    // this.logger.log(`The user is Asking "${query}"`);
+    // if (response.choices[0].message.tool_calls) {
+    //   const functionCall = response.choices[0].message.tool_calls[0].function;
+
+    //   if (functionCall.name === 'fetch_sku_details') {
+    //     const parsedArguments = JSON.parse(functionCall.arguments);
+    //     if (parsedArguments.name) {
+    //       return await this.queryByName(parsedArguments.name);
+    //     }
+    //   }
+    // } else {
+    return await this.queryByName(query);
+    // }
+  }
+
+  private async queryByName(name: string) {
+    const result = await this.getProductData(name);
+
+    const data = result
+      .map((i) => {
+        return {
+          productName: i.productName,
+          link: i.url,
+          additionalInfo: i.jsonData.info,
+          internalLinks: i.internalContents,
+          productData: i?.productData || [],
+          productIds: i?.productIds.slice(0, 1000) || [],
+        };
+      })
+      .slice(0, 2);
+
+    if (!data.length) {
+      return 'No Relevant Product Found!';
+    }
+
+    return data;
+    // const response = await this.openai.chat.completions.create({
+    //   model: 'gpt-3.5-turbo',
+    //   messages: [
+    //     {
+    //       role: 'system',
+    //       content: CHATGPT_RESPONSE_PROMPT,
+    //     },
+    //     {
+    //       role: 'user',
+    //       content: `Here is the JSON data you need to process:
+    //   ${JSON.stringify(data, null, 2)}`,
+    //     },
+    //   ],
+    // });
+
+    // return response.choices[0].message.content;
+  }
+
+  async getProductData(name: string): Promise<any> {
+    try {
+      const trimmedName = name.trim();
+      // Fetch support data
+      const supportData = await this.productDataRepository
+        .createQueryBuilder('data')
+        .leftJoinAndSelect('data.internalContents', 'internalContents')
+        .where('data.productName ILIKE :productName', {
+          productName: `%${trimmedName}%`,
+        })
+        .orWhere(
+          `EXISTS (
+              SELECT 1 
+              FROM jsonb_array_elements_text(data.productIds) AS elem 
+              WHERE elem ILIKE :trimmedNamePattern
+            )`,
+          {
+            trimmedNamePattern: `%${trimmedName}%`,
+          },
+        )
+        .getMany();
+      // Map over additionalData with asynchronous operations
+      // const data = await Promise.all(
+      //   supportData.map(async (item) => {
+      //     // Fetch matching product data
+      //     const productData = await this.scrapperDataRepository.find({
+      //       where: {
+      //         productName: ILike(`%${item.productName}%`),
+      //       },
+      //       select: ['jsonData', 'productName', 'createdAt', 'content', 'url'],
+      //     });
+
+      //     // Return the transformed object
+      //     return {
+      //       productName: item.productName,
+      //       ...item, // Include all other properties of additionalItem
+      //       productData: productData.length > 0 ? productData : null, // Include productData or null
+      //     };
+      //   }),
+      // );
+
+      return supportData;
+    } catch (error) {
+      this.logger.warn('Error fetching product data:', error?.message);
+      return [];
+    }
+  }
 }
-
-// async scrapeInternalSection(
-//   link: string,
-// ): Promise<Record<string, string | null>> {
-//   const sectionTitles = [
-//     // 'software',
-//     // 'overview',
-//     // 'introduction',
-//     // 'power supply',
-//     // 'intelligent',
-//     // 'warranty',
-//     // 'licensing',
-//     // 'stacking',
-//     // 'highlights',
-//     'platform',
-//     'status',
-//     'features',
-//     'specifications',
-//     'ordering',
-//     'configurations',
-//     'part numbers',
-//     'milestones',
-//   ];
-//   let browser: puppeteer.Browser | null = null;
-//   const initialTimeout = 20000; // Initial timeout in milliseconds
-//   const extendedTimeout = 50000; // Extended timeout in milliseconds
-
-//   const scrapeData = async (timeout: number) => {
-//     try {
-//       browser = await puppeteer.launch({
-//         headless: true,
-//         args: ['--no-sandbox', '--disable-setuid-sandbox'],
-//       });
-//       const page = await browser.newPage();
-
-//       await page.goto(link, { waitUntil: 'domcontentloaded', timeout });
-
-//       // Collect all <p> elements and their text
-//       const paragraphsData = await page.evaluate(() => {
-//         const paragraphs = Array.from(document.querySelectorAll('p'));
-//         return paragraphs.map((p) => ({
-//           className: p.className,
-//           text: p.textContent?.trim(),
-//           id: p.id || null,
-//         }));
-//       });
-
-//       const results: Record<string, string | null> = {};
-
-//       for (const title of sectionTitles) {
-//         const targetParagraph = paragraphsData.find(
-//           (p) =>
-//             new RegExp(`\\b${title.replace(/\s+/g, '\\s*')}\\b`, 'i').test(
-//               p.text?.toLowerCase() || '',
-//             ) &&
-//             (p.className.includes('pSubhead2CMT') ||
-//               p.className.includes('pSubhead1CMT') ||
-//               p.className.includes('pToC_Subhead1')),
-//         );
-
-//         if (targetParagraph) {
-//           const sectionContent = await page.evaluate((startText) => {
-//             const extractContentUntilBoundary = (
-//               startElement: HTMLElement,
-//             ): string => {
-//               let content = '';
-//               let current = startElement.nextElementSibling;
-
-//               while (current) {
-//                 const id = current.getAttribute('id');
-//                 const classList = Array.from(current.classList);
-
-//                 if (
-//                   current.tagName.toLowerCase() === 'p' &&
-//                   (id ||
-//                     classList.includes('pToC_Subhead1') ||
-//                     classList.includes('pSubhead2CMT') ||
-//                     classList.includes('pSubhead1CMT'))
-//                 ) {
-//                   break;
-//                 }
-
-//                 if (current.tagName.toLowerCase() === 'table') {
-//                   // Add the table as HTML
-//                   content += current.outerHTML + '\n';
-//                 } else {
-//                   // Add text content of other elements
-//                   content += current.textContent + '\n';
-//                 }
-//                 current = current.nextElementSibling;
-//               }
-
-//               return content.trim();
-//             };
-
-//             const paragraphs = Array.from(
-//               document.querySelectorAll('p.pSubhead2CMT'),
-//             );
-//             for (const p of paragraphs) {
-//               if (p.textContent?.trim() === startText) {
-//                 return extractContentUntilBoundary(p as any);
-//               }
-//             }
-
-//             const secondParagraphs = Array.from(
-//               document.querySelectorAll('p.pSubhead1CMT'),
-//             );
-//             for (const p of secondParagraphs) {
-//               if (p.textContent?.trim() === startText) {
-//                 return extractContentUntilBoundary(p as any);
-//               }
-//             }
-
-//             return null;
-//           }, targetParagraph.text);
-
-//           if (sectionContent) {
-//             const formattedKey = title.toLowerCase().replace(/\s+/g, '_');
-//             results[formattedKey] = cleanHtml(sectionContent);
-//           }
-//         }
-//       }
-
-//       return results;
-//     } catch (error) {
-//       console.error('Error scraping sections:', error.message);
-//       return {};
-//     } finally {
-//       if (browser) {
-//         await browser.close();
-//       }
-//     }
-//   };
-
-//   try {
-//     // Attempt with initial timeout
-//     return await scrapeData(initialTimeout);
-//   } catch (error) {
-//     if (error?.message?.includes('Navigation timeout')) {
-//       console.warn(
-//         `Navigation timeout with ${initialTimeout}ms exceeded. Retrying with ${extendedTimeout}ms...`,
-//       );
-//       try {
-//         // Retry with extended timeout
-//         return await scrapeData(extendedTimeout);
-//       } catch (retryError) {
-//         console.error(
-//           'Error during retry with extended timeout:',
-//           retryError.message,
-//         );
-//         return {};
-//       }
-//     } else {
-//       console.error(
-//         'Unexpected error during scraping process:',
-//         error.message,
-//       );
-//       return {};
-//     }
-//   }
-// }
