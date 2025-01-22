@@ -202,13 +202,16 @@
         return data
           .map((product) => {
             // Map the Supported Models
-            const supportedModels = product.additionalInfo.Supported_Models.map(
-              (model) => `<li>${model}</li>`,
-            ).join('');
+            const supportedModels = product?.additionalInfo?.Supported_Models
+              ?.length
+              ? product.additionalInfo.Supported_Models.map(
+                  (model) => `<li>${model}</li>`,
+                ).join('')
+              : [];
 
-            const productIds = product.productIds
-              .map((model) => `<li>${model}</li>`)
-              .join('');
+            const productIds = product?.productIds?.length
+              ? product.productIds.map((model) => `<li>${model}</li>`).join('')
+              : [];
 
             // Map the Internal Links
             const internalLinks =
@@ -283,11 +286,11 @@
                 <div class="product">
                     <h2>${product.productName}</h2>
                     <p>Link: <a href="${product.link}" target="_blank">${product.link}</a></p>
-                    <p>Status: ${product.additionalInfo.Status || 'N/A'}</p>
+                    <p>Status: ${product.additionalInfo?.Status || 'N/A'}</p>
                     <p>End-of-Sale Date: ${product.additionalInfo['End-of-Sale_Date'] || 'N/A'}</p>
                     <p>End-of-Support Date: ${product.additionalInfo['End-of-Support_Date'] || 'N/A'}</p>
                     <p>Series Release Date: ${product.additionalInfo.Series_Release_Date || 'N/A'}</p>
-                    <p>Migration Info: ${product.additionalInfo.migrationOfProducts || 'N/A'}</p>
+                    <p>Migration Info: ${product.additionalInfo?.migrationOfProducts || 'N/A'}</p>
                 ${
                   supportedModels.length > 0
                     ? `<h3>Supported Models</h3>
@@ -354,6 +357,7 @@ ${
           const htmlContent = generateHTML(data.response);
           document.getElementById('responseDiv').innerHTML = htmlContent;
         } catch (error) {
+          console.error({ error });
           spinner.style.display = 'none';
           responseDiv.style.display = 'block';
           responseDiv.innerText = 'Error: Unable to connect to API';
