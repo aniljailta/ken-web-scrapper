@@ -153,7 +153,7 @@ export const findDevToolFunction = {
           description: 'The name of the product to query',
         },
       },
-      required: ['name'],
+      required: ['name', 'pIds'],
       additionalProperties: false,
     },
   },
