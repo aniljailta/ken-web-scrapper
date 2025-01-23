@@ -9,8 +9,7 @@ import * as path from 'path';
 import { sanitizeFileName, extractAndStorePIds } from 'src/scraper/utils';
 import { SupportProductInternalContent } from './entities/internal_content.entity';
 import { scrapeInternalSection } from './utils';
-import { findDevToolFunction } from 'src/scraper/constant';
-import { findSectionDetailsTool, sectionTitles } from './constants';
+import { findSectionDetailsTool } from './constants';
 
 @Injectable()
 export class ProductsService {
@@ -137,8 +136,6 @@ export class ProductsService {
             // }
 
             if (link.endsWith('.html')) {
-              // const content = await extractPIDsFromLinks(link);
-              // internalLink.pIds = content || null;
               const { content, pidData } = await scrapeInternalSection(link);
 
               internalLink.contentData = content;
@@ -350,7 +347,7 @@ export class ProductsService {
         },
       ],
       tools: findSectionDetailsTool as any,
-      temperature: 0.2,
+      temperature: 0.6,
     });
 
     this.logger.log(`The user is Asking "${query}"`);
@@ -379,16 +376,15 @@ export class ProductsService {
     queries?: any[];
   }) {
     try {
-      console.log({ name, queries });
       const result = await this.getProductData(name);
       const queriesData = [
         'Status',
         'name',
         'link',
-        ...queries.map((i) => i.replace(/\s+/g, '_')),
+        ...(queries && queries.map((i) => i.replace(/\s+/g, '_'))),
       ];
 
-      const filteredData = result.map((product) => {
+      const filteredData = result.map((product: Product) => {
         // Ensure additionalInfo is an object
         const filteredAdditionalInfo = Object.fromEntries(
           Object.entries(product?.jsonData?.info || {}).filter(([key]) =>
@@ -405,7 +401,7 @@ export class ProductsService {
         );
 
         const includeProductIds = queries.some((query) =>
-          ['part numbers', 'Pids'].includes(query),
+          ['part numbers', 'Pids', 'id', 'product numbers'].includes(query),
         );
 
         return {
@@ -425,7 +421,7 @@ export class ProductsService {
 
       return data;
     } catch (error) {
-      console.log({ error });
+      this.logger.warn('Error fetching product data:', error?.message);
       return [];
     }
 
