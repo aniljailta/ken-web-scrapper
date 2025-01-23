@@ -9,6 +9,8 @@ import * as path from 'path';
 import { sanitizeFileName, extractAndStorePIds } from 'src/scraper/utils';
 import { SupportProductInternalContent } from './entities/internal_content.entity';
 import { scrapeInternalSection } from './utils';
+import { findDevToolFunction } from 'src/scraper/constant';
+import { findSectionDetailsTool, sectionTitles } from './constants';
 
 @Injectable()
 export class ProductsService {
@@ -338,53 +340,95 @@ export class ProductsService {
     if (decodedPassword !== this.chatBotQueryPassword) {
       return 'Invalid Password!';
     }
-    // const tools: any = [findDevToolFunction];
-    // const response = await this.openai.chat.completions.create({
-    //   model: 'gpt-3.5-turbo',
-    //   messages: [
-    //     {
-    //       role: 'user',
-    //       content: query,
-    //     },
-    //   ],
-    //   tools,
-    // });
-    // this.logger.log(`The user is Asking "${query}"`);
-    // if (response.choices[0].message.tool_calls) {
-    //   const functionCall = response.choices[0].message.tool_calls[0].function;
 
-    //   if (functionCall.name === 'fetch_sku_details') {
-    //     const parsedArguments = JSON.parse(functionCall.arguments);
-    //     if (parsedArguments.name) {
-    //       return await this.queryByName(parsedArguments.name);
-    //     }
-    //   }
-    // } else {
-    return await this.queryByName(query);
-    // }
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'user',
+          content: query,
+        },
+      ],
+      tools: findSectionDetailsTool as any,
+      temperature: 0.2,
+    });
+
+    this.logger.log(`The user is Asking "${query}"`);
+    if (response.choices[0].message.tool_calls) {
+      const functionCall = response.choices[0].message.tool_calls[0].function;
+
+      if (functionCall.name === 'fetch_section_details') {
+        const parsedArguments = JSON.parse(functionCall.arguments);
+        if (parsedArguments.product) {
+          return await this.queryByName({
+            name: parsedArguments.product,
+            queries: parsedArguments.queries,
+          });
+        }
+      }
+    } else {
+      return await this.queryByName({ name: query });
+    }
   }
 
-  private async queryByName(name: string) {
-    const result = await this.getProductData(name);
+  private async queryByName({
+    name,
+    queries,
+  }: {
+    name: string;
+    queries?: any[];
+  }) {
+    try {
+      console.log({ name, queries });
+      const result = await this.getProductData(name);
+      const queriesData = [
+        'Status',
+        'name',
+        'link',
+        ...queries.map((i) => i.replace(/\s+/g, '_')),
+      ];
 
-    const data = result
-      .map((i) => {
+      const filteredData = result.map((product) => {
+        // Ensure additionalInfo is an object
+        const filteredAdditionalInfo = Object.fromEntries(
+          Object.entries(product?.jsonData?.info || {}).filter(([key]) =>
+            queriesData.includes(key),
+          ),
+        );
+        // Ensure internalLinks is an array
+        const filteredInternalLinks = (product.internalContents || []).map(
+          (link) => {
+            return Object.fromEntries(
+              Object.entries(link).filter(([key]) => queriesData.includes(key)),
+            );
+          },
+        );
+
+        const includeProductIds = queries.some((query) =>
+          ['part numbers', 'Pids'].includes(query),
+        );
+
         return {
-          productName: i.productName,
-          link: i.url,
-          additionalInfo: i.jsonData.info,
-          internalLinks: i.internalContents,
-          productData: i?.productData || [],
-          productIds: i?.productIds.slice(0, 1000) || [],
+          productName: product.productName,
+          link: product.url,
+          additionalInfo: filteredAdditionalInfo,
+          internalLinks: filteredInternalLinks,
+          ...(includeProductIds && { productIds: product.productIds || [] }),
         };
-      })
-      .slice(0, 2);
+      });
 
-    if (!data.length) {
-      return 'No Relevant Product Found!';
+      const data = filteredData.slice(0, 2);
+
+      if (!data.length) {
+        return 'No Relevant Product Found!';
+      }
+
+      return data;
+    } catch (error) {
+      console.log({ error });
+      return [];
     }
 
-    return data;
     // const response = await this.openai.chat.completions.create({
     //   model: 'gpt-3.5-turbo',
     //   messages: [
@@ -405,14 +449,21 @@ export class ProductsService {
 
   async getProductData(name: string): Promise<any> {
     try {
-      const trimmedName = name.trim();
+      const wordsToRemove = ['Catalyst', 'Series', 'Cisco', 'Switches'];
+      const regexPattern = new RegExp(wordsToRemove.join('|'), 'gi');
+
+      const trimmedName = name.replace(regexPattern, '').trim();
       // Fetch support data
       const supportData = await this.productDataRepository
         .createQueryBuilder('data')
         .leftJoinAndSelect('data.internalContents', 'internalContents')
-        .where('data.productName ILIKE :productName', {
-          productName: `%${trimmedName}%`,
-        })
+        .where(
+          'data.productName ILIKE :productName OR data.productName ILIKE :partialName1',
+          {
+            productName: `%${trimmedName}%`,
+            partialName1: `%${trimmedName.split(' ')[0]}%`,
+          },
+        )
         .orWhere(
           `EXISTS (
               SELECT 1 
