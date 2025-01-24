@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import { sanitizeFileName, extractAndStorePIds } from 'src/scraper/utils';
 import { SupportProductInternalContent } from './entities/internal_content.entity';
-import { scrapeInternalSection } from './utils';
+import { filterContentData, scrapeInternalSection } from './utils';
 import { findSectionDetailsTool } from './constants';
 
 @Injectable()
@@ -251,13 +251,15 @@ export class ProductsService {
                 productRecord.id
               ) {
                 for (const link of item.internalLinks) {
-                  if (link.contentData) {
+                  const contentData = filterContentData(link.contentData);
+
+                  if (contentData) {
                     try {
                       const data = this.internalContentDataRepository.create({
                         productDataId: productRecord.id,
                         name: link.name || '',
                         link: link.link || '',
-                        ...link.contentData,
+                        ...contentData,
                       });
 
                       await this.internalContentDataRepository.save(data);
@@ -393,7 +395,6 @@ export class ProductsService {
         'link',
         ...(queries && queries.map((i) => i.replace(/\s+/g, '_'))),
       ];
-
       const filteredData = result.map((product: Product) => {
         // Ensure additionalInfo is an object
         const filteredAdditionalInfo = Object.fromEntries(

@@ -225,3 +225,15 @@ export async function scrapeInternalSection(link: string): Promise<{
     }
   }
 }
+
+export function filterContentData(contentData: any) {
+  const result = {};
+
+  for (const key in contentData) {
+    if (contentData[key].text || contentData[key].tables.length > 0) {
+      result[key] = contentData[key];
+    }
+  }
+
+  return Object.keys(result).length === 0 ? null : result;
+}
