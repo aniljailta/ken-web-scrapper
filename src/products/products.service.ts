@@ -393,7 +393,6 @@ export class ProductsService {
         'link',
         ...(queries && queries.map((i) => i.replace(/\s+/g, '_'))),
       ];
-
       const filteredData = result.map((product: Product) => {
         // Ensure additionalInfo is an object
         const filteredAdditionalInfo = Object.fromEntries(
