@@ -34,17 +34,25 @@ export async function scrapeInternalSection(link: string): Promise<{
       const results: Record<string, { text: string; tables: string[] }> = {};
 
       for (const title of sectionTitles) {
-        const targetParagraph = paragraphsData.find(
-          (p) =>
-            new RegExp(`\\b${title.replace(/\s+/g, '\\s*')}\\b`, 'i').test(
-              p.text.toLowerCase(),
-            ) &&
+        const matchingParagraphs = paragraphsData.filter((p) => {
+          const paragraphText = p.text.trim().toLowerCase(); // Normalize paragraph text
+          const normalizedTitle = title.trim().toLowerCase(); // Normalize title
+          const titleRegex = new RegExp(
+            `\\b${normalizedTitle.replace(/\s+/g, '\\s*')}\\b`,
+          );
+
+          return (
+            titleRegex.test(paragraphText) &&
             (p.className.includes('pSubhead2CMT') ||
               p.className.includes('pSubhead1CMT') ||
-              p.className.includes('pToC_Subhead1')),
-        );
+              p.className.includes('pToC_Subhead1'))
+          );
+        });
 
-        if (targetParagraph) {
+        let combinedText = ''; // To store all text
+        const combinedTables: string[] = []; // To store all table HTML strings
+
+        for (const paragraph of matchingParagraphs) {
           const sectionHTML = await page.evaluate((startText) => {
             const extractContentUntilBoundary = (
               startElement: HTMLElement,
@@ -88,7 +96,8 @@ export async function scrapeInternalSection(link: string): Promise<{
             }
 
             return null;
-          }, targetParagraph.text);
+          }, paragraph.text);
+
           if (sectionHTML) {
             const processContent = (
               html: string,
@@ -113,18 +122,21 @@ export async function scrapeInternalSection(link: string): Promise<{
               sectionHTML,
             );
 
-            const sectionText = cleanHtml(pageSectionData.text);
-            const sectionTables = pageSectionData.tables.map((table) =>
-              refineTable(table),
-            );
+            // Merge text content
+            combinedText += cleanHtml(pageSectionData.text) + '\n';
 
-            const formattedKey = title.toLowerCase().replace(/\s+/g, '_');
-            results[formattedKey] = {
-              text: sectionText,
-              tables: sectionTables,
-            };
+            // Append each table to the combined tables array
+            combinedTables.push(
+              ...pageSectionData.tables.map((table) => refineTable(table)),
+            );
           }
         }
+
+        const formattedKey = title.toLowerCase().replace(/\s+/g, '_');
+        results[formattedKey] = {
+          text: combinedText.trim(), // Final merged text
+          tables: combinedTables, // Array of all table HTML strings
+        };
       }
 
       const pidData = await page.evaluate((headerVariations) => {
