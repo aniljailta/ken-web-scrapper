@@ -206,6 +206,16 @@ export class ProductsService {
     }
   }
 
+  async testLink(link: string) {
+    const { content, pidData } = await scrapeInternalSection(link);
+
+    return {
+      content,
+      pidData,
+      // paragraphsData,
+    };
+  }
+
   async readJsonFilesAndSave() {
     const folderPath = path.join(process.cwd(), this.outputDirectory);
 
@@ -413,7 +423,7 @@ export class ProductsService {
         };
       });
 
-      const data = filteredData.slice(0, 2);
+      const data = filteredData.slice(0, 5);
 
       if (!data.length) {
         return 'No Relevant Product Found!';
@@ -445,7 +455,13 @@ export class ProductsService {
 
   async getProductData(name: string): Promise<any> {
     try {
-      const wordsToRemove = ['Catalyst', 'Series', 'Cisco', 'Switches'];
+      const wordsToRemove = [
+        'Catalyst',
+        'Series',
+        'Cisco',
+        'Switches',
+        'Nexus',
+      ];
       const regexPattern = new RegExp(wordsToRemove.join('|'), 'gi');
 
       const trimmedName = name.replace(regexPattern, '').trim();

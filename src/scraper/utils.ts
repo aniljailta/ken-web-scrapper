@@ -877,6 +877,9 @@ export function extractAndStorePIds(productItem: any) {
         ) {
           allPIds.add(cleanedPid);
         }
+        // if (cleanedPid.includes('-') && validPidRegex.test(cleanedPid)) {
+        //   allPIds.add(cleanedPid);
+        // }
       });
     });
   });
