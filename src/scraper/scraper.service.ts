@@ -7,6 +7,7 @@ import { ILike, Repository } from 'typeorm';
 import { ScraperData } from './entities/scraper_data.entity';
 import {
   buildVocabulary,
+  checkUrlIncludesWords,
   cosineSimilarity,
   extractAndStorePIds,
   extractPIDsFromLinks,
@@ -1055,6 +1056,20 @@ export class ScraperService implements OnModuleInit {
         baseUrl,
       );
 
+      const viewAllLinksData =
+        await this.collectViewAllLinksData(internalLinks);
+
+      const combinedArray = [...internalLinks, ...viewAllLinksData];
+
+      const uniqueArrayLinks = Array.from(
+        new Map(
+          combinedArray
+            .filter((item) => checkUrlIncludesWords(item.link)) // Apply condition here
+            .map((item) => [item.link, item]), // Create key-value pair for de-duplication
+        ).values(),
+      );
+      return uniqueArrayLinks;
+
       // // Dynamic selectors list
       // const selectors = ['.WordSection1', '#eot-doc-wrapper'];
 
@@ -1065,8 +1080,6 @@ export class ScraperService implements OnModuleInit {
       //     link.pIds = pIds || null;
       //   }
       // }
-
-      return internalLinks;
     } catch (error) {
       this.logger.error(
         `Error scraping internal links for product: ${productLink} :${error?.message},`,
@@ -1076,6 +1089,33 @@ export class ScraperService implements OnModuleInit {
     } finally {
       if (browser) await browser.close();
     }
+  }
+
+  async collectViewAllLinksData(internalLinks: any[]): Promise<any[]> {
+    if (!internalLinks.length) return []; // Return an empty array if no links exist
+
+    const scrapingPromises = internalLinks.map(async (link) => {
+      if (link.name === 'View all documentation of this type') {
+        try {
+          const data = await this.scrapeInternalLinksForProduct(
+            link.link,
+            this.baseURL,
+            '.listing li a',
+          );
+          // Return the scraped data (or an empty array if no data)
+          return data && data.length > 0 ? data : [];
+        } catch {
+          return []; // Return an empty array on error
+        }
+      }
+      return []; // If link.name doesn't match, return an empty array
+    });
+
+    // Wait for all scraping tasks to complete
+    const results = await Promise.all(scrapingPromises);
+
+    // Flatten the results and return them
+    return results.flat();
   }
 
   addCategoryToFile(category: any): void {
