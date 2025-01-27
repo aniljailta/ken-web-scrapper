@@ -260,4 +260,8 @@ export const excludeVariation = [
   'chassis',
   'spares',
   'miscellaneous',
+  'Wireless',
+  'frame',
+  'DRAM',
+  'Licenses',
 ];

@@ -403,13 +403,26 @@ export class ProductsService {
           ),
         );
         // Ensure internalLinks is an array
-        const filteredInternalLinks = (product.internalContents || []).map(
-          (link) => {
+        const filteredInternalLinks = (product.internalContents || [])
+          .map((link) => {
             return Object.fromEntries(
               Object.entries(link).filter(([key]) => queriesData.includes(key)),
             );
-          },
-        );
+          })
+          .filter((link) => {
+            // Check if there are any meaningful fields other than `name` and `link`
+            const hasAdditionalFields = Object.entries(link).some(
+              ([key, value]) =>
+                !['name', 'link', 'id', 'productDataId'].includes(key) && // Exclude specific keys
+                value && // Ensure the value exists
+                (typeof value !== 'object' ||
+                  value.text ||
+                  value.tables?.length), // Check for valid content in objects
+            );
+
+            // Include the link only if it has additional fields
+            return hasAdditionalFields;
+          });
 
         const includeProductIds = queries.some((query) =>
           ['part numbers', 'Pids', 'id', 'product numbers'].includes(query),
@@ -466,8 +479,8 @@ export class ProductsService {
       const regexPattern = new RegExp(wordsToRemove.join('|'), 'gi');
 
       const trimmedName = name.replace(regexPattern, '').trim();
-      // Fetch support data
-      const supportData = await this.productDataRepository
+      // Start building the query
+      const queryBuilder = this.productDataRepository
         .createQueryBuilder('data')
         .leftJoinAndSelect('data.internalContents', 'internalContents')
         .where(
@@ -476,18 +489,23 @@ export class ProductsService {
             productName: `%${trimmedName}%`,
             partialName1: `%${trimmedName.split(' ')[0]}%`,
           },
-        )
-        .orWhere(
+        );
+      // Add the 'orWhere' condition only if trimmedName contains a hyphen
+      if (trimmedName.includes('-')) {
+        queryBuilder.orWhere(
           `EXISTS (
-              SELECT 1 
-              FROM jsonb_array_elements_text(data.productIds) AS elem 
-              WHERE elem ILIKE :trimmedNamePattern
-            )`,
+          SELECT 1 
+          FROM jsonb_array_elements_text(data.productIds) AS elem 
+          WHERE elem ILIKE :trimmedNamePattern
+        )`,
           {
             trimmedNamePattern: `%${trimmedName}%`,
           },
-        )
-        .getMany();
+        );
+      }
+
+      // Fetch support data
+      const supportData = await queryBuilder.getMany();
       // Map over additionalData with asynchronous operations
       // const data = await Promise.all(
       //   supportData.map(async (item) => {

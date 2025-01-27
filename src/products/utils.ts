@@ -146,7 +146,9 @@ export async function scrapeInternalSection(link: string): Promise<{
 
           tables.forEach((table) => {
             const headerCells = Array.from(
-              table.querySelectorAll('tr:first-child td, tr:first-child th'),
+              table.querySelectorAll(
+                'tr:first-child td, tr:first-child th , tr .Cellhead1',
+              ),
             );
 
             // Find the relevant column index
