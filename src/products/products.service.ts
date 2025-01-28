@@ -331,7 +331,7 @@ export class ProductsService {
         productName: data?.name || '',
       });
 
-      await this.internalContentDataRepository.delete({ id });
+      await this.internalContentDataRepository.delete({ productDataId: id });
 
       return response;
     } catch (error) {
@@ -340,14 +340,20 @@ export class ProductsService {
     }
   }
 
-  async queryProduct(query: string, password: string) {
-    if (!password || !query) {
-      return 'Bad request!';
+  async queryProduct(userQuery: string, password: string) {
+    if (!password || !userQuery) {
+      return {
+        data: 'Bad request!',
+        isAIResponse: false,
+      };
     }
     const decodedPassword = Buffer.from(password, 'hex').toString('utf8');
 
     if (decodedPassword !== this.chatBotQueryPassword) {
-      return 'Invalid Password!';
+      return {
+        data: 'Invalid Password!',
+        isAIResponse: false,
+      };
     }
 
     const response = await this.openai.chat.completions.create({
@@ -355,14 +361,14 @@ export class ProductsService {
       messages: [
         {
           role: 'user',
-          content: query,
+          content: userQuery,
         },
       ],
       tools: findSectionDetailsTool as any,
       temperature: 0.6,
     });
 
-    this.logger.log(`The user is Asking "${query}"`);
+    // this.logger.log(`The user is Asking "${userQuery}"`);
     if (response.choices[0].message.tool_calls) {
       const functionCall = response.choices[0].message.tool_calls[0].function;
 
@@ -372,20 +378,23 @@ export class ProductsService {
           return await this.queryByName({
             name: parsedArguments.product,
             queries: parsedArguments.queries,
+            userQuery: userQuery,
           });
         }
       }
     } else {
-      return await this.queryByName({ name: query });
+      return await this.queryByName({ name: userQuery, userQuery: userQuery });
     }
   }
 
   private async queryByName({
     name,
     queries,
+    userQuery,
   }: {
     name: string;
     queries?: any[];
+    userQuery: string;
   }) {
     try {
       const result = await this.getProductData(name);
@@ -395,6 +404,7 @@ export class ProductsService {
         'link',
         ...(queries && queries.map((i) => i.replace(/\s+/g, '_'))),
       ];
+
       const filteredData = result.map((product: Product) => {
         // Ensure additionalInfo is an object
         const filteredAdditionalInfo = Object.fromEntries(
@@ -440,31 +450,59 @@ export class ProductsService {
       const data = filteredData.slice(0, 5);
 
       if (!data.length) {
-        return 'No Relevant Product Found!';
+        return {
+          data: 'No Relevant Product Found!',
+          isAIResponse: false,
+        };
       }
 
-      return data;
+      return {
+        data: data,
+        isAIResponse: false,
+      };
+
+      // try {
+      //   const response = await this.openai.chat.completions.create({
+      //     model: 'gpt-3.5-turbo',
+      //     messages: [
+      //       {
+      //         role: 'system',
+      //         content: `You are a helpful assistant who processes JSON data and provides responses based on that data. The JSON data includes keys like ${Chat_GPT_Titles.join(
+      //           ', ',
+      //         )} and links for more information. When the user asks a question, your job is to identify the most relevant item in the JSON data and provide a response, including the information from the URL when applicable.
+      //         Respond directly and informatively without referencing the data source (e.g., avoid saying "the data you provided").
+      //         `,
+      //       },
+      //       {
+      //         role: 'user',
+      //         content: `Here is the JSON data you need to process:
+      //         ${JSON.stringify(data, null, 2)}`,
+      //       },
+      //       {
+      //         role: 'user',
+      //         content: `User asked: ${userQuery}`,
+      //       },
+      //     ],
+      //   });
+
+      //   return {
+      //     data: response.choices[0].message.content,
+      //     isAIResponse: true,
+      //   };
+      // } catch (error) {
+      //   console.log({ error });
+      //   return {
+      //     data: data,
+      //     isAIResponse: false,
+      //   };
+      // }
     } catch (error) {
       this.logger.warn('Error fetching product data:', error?.message);
-      return [];
+      return {
+        data: 'Error fetching product',
+        isAIResponse: false,
+      };
     }
-
-    // const response = await this.openai.chat.completions.create({
-    //   model: 'gpt-3.5-turbo',
-    //   messages: [
-    //     {
-    //       role: 'system',
-    //       content: CHATGPT_RESPONSE_PROMPT,
-    //     },
-    //     {
-    //       role: 'user',
-    //       content: `Here is the JSON data you need to process:
-    //   ${JSON.stringify(data, null, 2)}`,
-    //     },
-    //   ],
-    // });
-
-    // return response.choices[0].message.content;
   }
 
   async getProductData(name: string): Promise<any> {
@@ -475,6 +513,7 @@ export class ProductsService {
         'Cisco',
         'Switches',
         'Nexus',
+        'IE',
       ];
       const regexPattern = new RegExp(wordsToRemove.join('|'), 'gi');
 
@@ -506,6 +545,7 @@ export class ProductsService {
 
       // Fetch support data
       const supportData = await queryBuilder.getMany();
+
       // Map over additionalData with asynchronous operations
       // const data = await Promise.all(
       //   supportData.map(async (item) => {
