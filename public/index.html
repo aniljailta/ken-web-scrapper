@@ -348,16 +348,23 @@ ${
             body: JSON.stringify({ question: input, password: passwordHex }),
           });
 
-          const data = await response.json();
+          const responseData = await response.json();
 
           // Hide spinner and show response
           spinner.style.display = 'none';
           responseDiv.style.display = 'block';
           // Format response for better readability
-          // responseDiv.innerText = data.response;
 
-          const htmlContent = generateHTML(data.response);
-          document.getElementById('responseDiv').innerHTML = htmlContent;
+          if (responseData.isAIResponse) {
+            responseDiv.innerText = responseData.data;
+          } else {
+            if (!responseData.data?.length) {
+              responseDiv.innerText = 'No Relevant Product Found!';
+            } else {
+              const htmlContent = generateHTML(responseData.data);
+              document.getElementById('responseDiv').innerHTML = htmlContent;
+            }
+          }
         } catch (error) {
           console.error({ error });
           spinner.style.display = 'none';
