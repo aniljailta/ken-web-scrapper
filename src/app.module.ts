@@ -7,11 +7,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ProductsModule } from './products/products.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/',
     }),
 
     ConfigModule.forRoot({
@@ -29,6 +32,8 @@ import { ProductsModule } from './products/products.module';
     }),
     ScraperModule,
     ProductsModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

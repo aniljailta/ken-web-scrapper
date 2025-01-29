@@ -10,6 +10,7 @@ import { sanitizeFileName, extractAndStorePIds } from 'src/scraper/utils';
 import { SupportProductInternalContent } from './entities/internal_content.entity';
 import { filterContentData, scrapeInternalSection } from './utils';
 import { AI_RESPONSE_PROMPT, findSectionDetailsTool } from './constants';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ProductsService {
@@ -27,6 +28,8 @@ export class ProductsService {
     private internalContentDataRepository: Repository<SupportProductInternalContent>,
 
     private readonly configService: ConfigService,
+
+    private readonly userService: UsersService,
   ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
 
@@ -525,12 +528,15 @@ export class ProductsService {
     userQuery: string;
     productData: any;
   }): Promise<string> {
+    const data = await this.userService.findUserValueByName('ai_prompt');
+    const aiPrompt = data?.text || AI_RESPONSE_PROMPT;
+
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
-          content: AI_RESPONSE_PROMPT,
+          content: aiPrompt,
         },
         {
           role: 'user',
