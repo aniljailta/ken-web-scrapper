@@ -9,7 +9,7 @@ import * as path from 'path';
 import { sanitizeFileName, extractAndStorePIds } from 'src/scraper/utils';
 import { SupportProductInternalContent } from './entities/internal_content.entity';
 import { filterContentData, scrapeInternalSection } from './utils';
-import { findSectionDetailsTool } from './constants';
+import { AI_RESPONSE_PROMPT, findSectionDetailsTool } from './constants';
 
 @Injectable()
 export class ProductsService {
@@ -244,11 +244,10 @@ export class ProductsService {
                   ifRecordExist.id,
                 );
               }
-
               if (
                 item.internalLinks &&
                 Array.isArray(item.internalLinks) &&
-                productRecord.id
+                productRecord?.id
               ) {
                 for (const link of item.internalLinks) {
                   const contentData = filterContentData(link.contentData);
@@ -277,7 +276,7 @@ export class ProductsService {
       }
       this.logger.log(`All JSON files processed successfully.`);
     } catch (error) {
-      console.error('Error processing JSON files:', error);
+      this.logger.error('Error processing JSON files:', error?.message);
     }
   }
 
@@ -332,8 +331,11 @@ export class ProductsService {
       });
 
       await this.internalContentDataRepository.delete({ productDataId: id });
-
-      return response;
+      if (response) {
+        return { id };
+      } else {
+        return false;
+      }
     } catch (error) {
       this.logger.warn('Error updating scraper data:', error?.message);
       return false;
@@ -456,46 +458,59 @@ export class ProductsService {
         };
       }
 
-      return {
-        data: data,
-        isAIResponse: false,
-      };
+      try {
+        const response = await this.getAiResponseBaseOnQuestion({
+          productData: data,
+          userQuery,
+        });
 
-      // try {
-      //   const response = await this.openai.chat.completions.create({
-      //     model: 'gpt-3.5-turbo',
-      //     messages: [
-      //       {
-      //         role: 'system',
-      //         content: `You are a helpful assistant who processes JSON data and provides responses based on that data. The JSON data includes keys like ${Chat_GPT_Titles.join(
-      //           ', ',
-      //         )} and links for more information. When the user asks a question, your job is to identify the most relevant item in the JSON data and provide a response, including the information from the URL when applicable.
-      //         Respond directly and informatively without referencing the data source (e.g., avoid saying "the data you provided").
-      //         `,
-      //       },
-      //       {
-      //         role: 'user',
-      //         content: `Here is the JSON data you need to process:
-      //         ${JSON.stringify(data, null, 2)}`,
-      //       },
-      //       {
-      //         role: 'user',
-      //         content: `User asked: ${userQuery}`,
-      //       },
-      //     ],
-      //   });
+        return {
+          data: response,
+          isAIResponse: true,
+          productData: data,
+        };
+      } catch (error) {
+        // Handle the specific AI error code
+        if (error.code === 'context_length_exceeded') {
+          let sliceIndex = 1;
+          while (sliceIndex <= data.length) {
+            try {
+              const reducedData = data
+                .map((i) => {
+                  return {
+                    productName: i.productName,
+                    link: i.link,
+                    additionalInfo: i.additionalInfo,
+                  };
+                })
+                .slice(0, sliceIndex);
 
-      //   return {
-      //     data: response.choices[0].message.content,
-      //     isAIResponse: true,
-      //   };
-      // } catch (error) {
-      //   console.log({ error });
-      //   return {
-      //     data: data,
-      //     isAIResponse: false,
-      //   };
-      // }
+              const retryResponse = await this.getAiResponseBaseOnQuestion({
+                productData: reducedData,
+                userQuery,
+              });
+
+              return {
+                data: retryResponse,
+                isAIResponse: true,
+                productData: data,
+              };
+            } catch (retryError) {
+              if (retryError.code !== 'context_length_exceeded') {
+                break; // Exit loop if the error is not related to token length
+              }
+            }
+
+            sliceIndex++; // Increase slice size to retry with fewer tokens
+          }
+        }
+
+        // Fallback to returning the raw product data if retries fail
+        return {
+          data: data,
+          isAIResponse: false,
+        };
+      }
     } catch (error) {
       this.logger.warn('Error fetching product data:', error?.message);
       return {
@@ -503,6 +518,35 @@ export class ProductsService {
         isAIResponse: false,
       };
     }
+  }
+
+  async getAiResponseBaseOnQuestion({
+    userQuery,
+    productData,
+  }: {
+    userQuery: string;
+    productData: any;
+  }): Promise<string> {
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: AI_RESPONSE_PROMPT,
+        },
+        {
+          role: 'user',
+          content: `Here is the JSON data you need to process:
+          ${JSON.stringify(productData, null, 2)}`,
+        },
+        {
+          role: 'user',
+          content: `User asked: ${userQuery}`,
+        },
+      ],
+    });
+
+    return response.choices[0].message.content;
   }
 
   async getProductData(name: string): Promise<any> {
@@ -518,6 +562,7 @@ export class ProductsService {
       const regexPattern = new RegExp(wordsToRemove.join('|'), 'gi');
 
       const trimmedName = name.replace(regexPattern, '').trim();
+
       // Start building the query
       const queryBuilder = this.productDataRepository
         .createQueryBuilder('data')
