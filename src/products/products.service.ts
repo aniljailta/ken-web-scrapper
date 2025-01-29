@@ -467,6 +467,7 @@ export class ProductsService {
         return {
           data: response,
           isAIResponse: true,
+          productData: data,
         };
       } catch (error) {
         // Handle the specific AI error code
@@ -492,6 +493,7 @@ export class ProductsService {
               return {
                 data: retryResponse,
                 isAIResponse: true,
+                productData: data,
               };
             } catch (retryError) {
               if (retryError.code !== 'context_length_exceeded') {
