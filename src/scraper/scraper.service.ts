@@ -667,11 +667,11 @@ export class ScraperService implements OnModuleInit {
   async scrapeSupportProductsDataLinks(): Promise<void> {
     this.scrapedData = [];
     const categories = await this.scrapeCategories();
-    const filterCat = categories.filter((i) => i.categoryName === 'Switches');
+    // const filterCat = categories.filter((i) => i.categoryName === 'Switches');
 
-    for (const category of filterCat) {
+    for (const category of categories) {
       const { categoryName, categoryLink: link } = category;
-      console.log(`Scrapping products of category: ${categoryName}`);
+      // this.logger.log(`Scrapping products of category: ${categoryName}`);
 
       try {
         let products = await this.scrapeProductsForCategory(
@@ -950,7 +950,18 @@ export class ScraperService implements OnModuleInit {
 
           tableData['pIds'] = iDs;
         } else {
-          tableData['pIds'] = [];
+          const modelListWrapper = document.querySelector(
+            '.model-releases-latest',
+          );
+          if (modelListWrapper) {
+            const iDs = Array.from(
+              modelListWrapper.querySelectorAll('li a'),
+            ).map((li) => li.textContent?.trim() || '');
+
+            tableData['pIds'] = iDs;
+          } else {
+            tableData['pIds'] = [];
+          }
         }
 
         // Check for the presence of the special <tr> with id="microLifecycleBlade"
