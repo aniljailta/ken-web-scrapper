@@ -477,10 +477,9 @@ export class ProductsService {
             try {
               const reducedData = data
                 .map((i) => {
+                  delete i?.internalLinks;
                   return {
-                    productName: i.productName,
-                    link: i.link,
-                    additionalInfo: i.additionalInfo,
+                    ...i,
                   };
                 })
                 .slice(0, sliceIndex);
