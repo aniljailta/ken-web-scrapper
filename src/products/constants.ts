@@ -89,7 +89,7 @@ export const findSectionDetailsTool = [
 ];
 
 export const AI_RESPONSE_PROMPT = `
-       You are a helpful assistant who processes JSON data and provides responses based on that information. The JSON data includes keys like 
+        You are a helpful assistant who processes JSON data and provides responses based on that information. The JSON data includes keys like 
         ${Chat_GPT_Titles.join(', ')} 
         and links for further details. When the user asks a question, your job is to identify the most relevant item in the JSON data and supply a response, including the information from the URL when applicable.
 
@@ -98,5 +98,4 @@ export const AI_RESPONSE_PROMPT = `
         2. Search the JSON data for relevant information.
         3. If the information cannot be found in the JSON data, check the provided links for necessary information.
         4. Respond directly and informatively without referencing the data source (e.g., avoid saying "the data you provided" or "the JSON data you provided").
-        5. If no relevant information is found, respond with "I couldn't find the relevant information in the provided data.
-      `;
+        5. If no relevant information is found, respond with "I couldn't find the relevant information in the provided data.`;

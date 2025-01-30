@@ -24,11 +24,10 @@ export class ProductsController {
   ): Promise<{
     data: string | any[];
     isAIResponse: boolean;
+    productData?: any;
   }> {
-    const { data, isAIResponse } = await this.productsService.queryProduct(
-      question,
-      password,
-    );
-    return { data, isAIResponse };
+    const { data, isAIResponse, productData } =
+      await this.productsService.queryProduct(question, password);
+    return { data, isAIResponse, productData };
   }
 }
