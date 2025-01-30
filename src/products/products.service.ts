@@ -473,6 +473,7 @@ export class ProductsService {
           productData: data,
         };
       } catch (error) {
+        this.logger.warn(`Warning: ${error?.message}`);
         // Handle the specific AI error code
         if (error.code === 'context_length_exceeded') {
           let sliceIndex = 1;
@@ -480,10 +481,9 @@ export class ProductsService {
             try {
               const reducedData = data
                 .map((i) => {
+                  delete i?.internalLinks;
                   return {
-                    productName: i.productName,
-                    link: i.link,
-                    additionalInfo: i.additionalInfo,
+                    ...i,
                   };
                 })
                 .slice(0, sliceIndex);
@@ -500,6 +500,7 @@ export class ProductsService {
               };
             } catch (retryError) {
               if (retryError.code !== 'context_length_exceeded') {
+                this.logger.warn('Error fetching AI:', error?.message);
                 break; // Exit loop if the error is not related to token length
               }
             }

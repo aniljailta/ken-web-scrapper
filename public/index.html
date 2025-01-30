@@ -4,195 +4,52 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Product Query</title>
-    <style>
-      /* General styles */
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f4f4f9;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        box-sizing: border-box;
-      }
-
-      /* Card container */
-      .card {
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        max-width: 1100px;
-        width: 90%; /* Ensures the card fits smaller screens */
-        padding: 20px;
-        box-sizing: border-box;
-        margin: 10px;
-      }
-
-      /* Title */
-      h1 {
-        font-size: 24px;
-        margin-bottom: 20px;
-        text-align: center;
-      }
-
-      /* Form groups */
-
-      label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-      }
-
-      input {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-      }
-
-      /* Submit button */
-      button {
-        width: 110px;
-        background-color: #007bff;
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius: 4px;
-        font-size: 16px;
-        cursor: pointer;
-      }
-
-      button:hover {
-        background-color: #0056b3;
-      }
-
-      /* Response box */
-      .response {
-        margin-top: 20px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        max-height: 300px; /* Limit height */
-        overflow-y: auto; /* Make scrollable when content exceeds height */
-      }
-
-      /* Spinner */
-      .spinner {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 20px;
-      }
-
-      .spinner div {
-        width: 20px;
-        height: 20px;
-        margin: 5px;
-        background-color: #007bff;
-        border-radius: 50%;
-        animation: bounce 1.5s infinite ease-in-out;
-      }
-
-      .spinner div:nth-child(2) {
-        animation-delay: -1s;
-      }
-
-      .product {
-        margin-bottom: 20px;
-      }
-
-      .mb-5 {
-        margin-bottom: 20px;
-      }
-
-      @keyframes bounce {
-        0%,
-        80%,
-        100% {
-          transform: scale(0);
-        }
-        40% {
-          transform: scale(1);
-        }
-      }
-
-      /* Responsive styles for smaller devices */
-      @media (max-width: 600px) {
-        h1 {
-          font-size: 20px;
-        }
-
-        button {
-          font-size: 14px;
-          padding: 8px;
-        }
-
-        input {
-          padding: 8px;
-        }
-
-        .card {
-          padding: 15px;
-        }
-
-        .response {
-          max-height: 200px; /* Reduce height for smaller screens */
-        }
-      }
-      .flex {
-        display: flex;
-        justify-content: space-between; /* Space elements evenly */
-        align-items: center; /* Center elements vertically */
-        gap: 10px; /* Optional gap between elements */
-        flex-wrap: wrap;
-      }
-
-      /* Each form group takes equal width */
-      .form-group {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        margin-bottom: 20px;
-      }
-
-      /* Input fields should stretch to fill the width of their parent */
-      .form-group input {
-        width: 100%;
-        padding: 8px;
-        box-sizing: border-box;
-        height: 40px;
-      }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body>
-    <div class="card">
-      <h1>Cisco Product Query</h1>
-      <div class="flex">
-        <div class="form-group">
-          <label for="inputBox">Enter product name or Id</label>
-          <input type="text" id="inputBox" placeholder="Enter text" />
+  <body class="bg-gray-100 flex justify-center items-center min-h-screen">
+    <div class="bg-white rounded-lg shadow-lg max-w-4xl w-11/12 p-6 mx-4">
+      <h1 class="text-2xl font-bold text-center mb-6">Cisco Product Query</h1>
+      <div class="flex flex-col md:flex-row gap-4 mb-6">
+        <div class="flex-1">
+          <label for="inputBox" class="block font-bold mb-2"
+            >Enter product name or Id</label
+          >
+          <input
+            type="text"
+            id="inputBox"
+            placeholder="Enter text"
+            class="w-full p-2 border border-gray-300 rounded-md"
+          />
         </div>
-        <div class="form-group">
-          <label for="passwordBox">Enter Password</label>
+        <div class="flex-1">
+          <label for="passwordBox" class="block font-bold mb-2"
+            >Enter Password</label
+          >
           <input
             type="password"
             id="passwordBox"
             placeholder="Enter your password"
+            class="w-full p-2 border border-gray-300 rounded-md"
           />
         </div>
-
-        <button onclick="callApi()">Submit</button>
+        <button
+          onclick="callApi()"
+          class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors self-end"
+        >
+          Submit
+        </button>
       </div>
-      <div class="spinner" id="spinner" style="display: none">
-        <div></div>
-        <div></div>
+      <div id="spinner" class="hidden justify-center items-center mt-6">
+        <div class="animate-ping w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
+        <div
+          class="animate-ping w-4 h-4 bg-blue-500 rounded-full"
+          style="animation-delay: -1s"
+        ></div>
       </div>
-      <div class="response" id="responseDiv" style="display: none">
+      <div
+        id="responseDiv"
+        class="hidden mt-6 p-4 border border-gray-300 rounded-lg bg-gray-50 max-h-80 overflow-y-auto"
+      >
         Response will appear here...
       </div>
     </div>
@@ -263,7 +120,7 @@
                           const formattedTitle = key
                             .replace(/_/g, ' ') // Replace underscores with spaces
                             .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
-                          const fieldTitle = `<h5>${formattedTitle}</h5>`;
+                          const fieldTitle = `<h5 class="font-bold mt-4">${formattedTitle}</h5>`;
                           return `${fieldTitle}${renderField(field)}`;
                         })
                         .filter(Boolean) // Remove any empty strings from the map
@@ -271,12 +128,12 @@
 
                       // Handle name and link separately
                       const textContent = `
-            <div>
-              <h4>${link.name}</h4>
-              ${link.link ? `<p>Link: <a href="${link.link}" target="_blank">${link.link}</a></p>` : ''}
-              ${dynamicFields}
-            </div>
-          `;
+                        <div class="mb-6">
+                          <h4 class="font-bold text-lg">${link.name}</h4>
+                          ${link.link ? `<p class="mt-2">Link: <a href="${link.link}" target="_blank" class="text-blue-500 hover:underline">${link.link}</a></p>` : ''}
+                          ${dynamicFields}
+                        </div>
+                      `;
 
                       return textContent;
                     })
@@ -284,31 +141,31 @@
                 : '';
 
             return `
-                <div class="product">
-                    <h2>${product.productName}</h2>
-                    <p>Link: <a href="${product.link}" target="_blank">${product.link}</a></p>
-                    <p>Status: ${product.additionalInfo?.Status || 'N/A'}</p>
-                    ${product.additionalInfo['End-of-Sale_Date'] ? `<p>End-of-Sale Date: ${product.additionalInfo['End-of-Sale_Date'] || 'N/A'}</p>` : ''}
-                    ${product.additionalInfo['End-of-Support_Date'] ? `<p>End-of-Support Date: ${product.additionalInfo['End-of-Support_Date'] || 'N/A'}</p>` : ''}
-                    ${product.additionalInfo.Series_Release_Date ? `<p>Series Release Date: ${product.additionalInfo.Series_Release_Date || 'N/A'}</p>` : ''}
-                  ${product.additionalInfo?.migrationOfProducts ? `<p>Migration Info: ${product.additionalInfo?.migrationOfProducts || 'N/A'}</p>` : ''}
+                <div class="product mb-8">
+                    <h2 class="text-xl font-bold">${product.productName}</h2>
+                    <p class="mt-2">Link: <a href="${product.link}" target="_blank" class="text-blue-500 hover:underline">${product.link}</a></p>
+                    <p class="mt-2">Status: ${product.additionalInfo?.Status || 'N/A'}</p>
+                    ${product.additionalInfo['End-of-Sale_Date'] ? `<p class="mt-2">End-of-Sale Date: ${product.additionalInfo['End-of-Sale_Date'] || 'N/A'}</p>` : ''}
+                    ${product.additionalInfo['End-of-Support_Date'] ? `<p class="mt-2">End-of-Support Date: ${product.additionalInfo['End-of-Support_Date'] || 'N/A'}</p>` : ''}
+                    ${product.additionalInfo.Series_Release_Date ? `<p class="mt-2">Series Release Date: ${product.additionalInfo.Series_Release_Date || 'N/A'}</p>` : ''}
+                  ${product.additionalInfo?.migrationOfProducts ? `<p class="mt-2">Migration Info: ${product.additionalInfo?.migrationOfProducts || 'N/A'}</p>` : ''}
                    
                 ${
                   supportedModels.length > 0
-                    ? `<h3>Supported Models</h3>
-                    <ul>${supportedModels || '<li>N/A</li>'}</ul>`
+                    ? `<h3 class="font-bold mt-4">Supported Models</h3>
+                    <ul class="list-disc pl-6 mt-2">${supportedModels || '<li>N/A</li>'}</ul>`
                     : ''
                 }
 
-${
-  productIds.length > 0
-    ? `<h3>Product PIDs</h3>
-                    <ul>${productIds || '<li>N/A</li>'}</ul>`
-    : ''
-}
+                ${
+                  productIds.length > 0
+                    ? `<h3 class="font-bold mt-4">Product PIDs</h3>
+                                    <ul class="list-disc pl-6 mt-2">${productIds || '<li>N/A</li>'}</ul>`
+                    : ''
+                }
                 ${
                   internalLinks.length > 0
-                    ? ` <h3>Data Links</h3>
+                    ? ` <h3 class="font-bold mt-4">Data Links</h3>
                     ${internalLinks || '<p>No links available</p>'}`
                     : ''
                 }
@@ -334,10 +191,11 @@ ${
         }
 
         button.disabled = true;
-        button.style.cursor = 'not-allowed';
+        button.classList.add('cursor-not-allowed');
         // Show loading spinner and hide response box
-        spinner.style.display = 'flex';
-        responseDiv.style.display = 'none';
+        spinner.classList.remove('hidden');
+        spinner.classList.add('flex');
+        responseDiv.classList.add('hidden');
 
         try {
           const response = await fetch('/api/products/product-query', {
@@ -351,8 +209,8 @@ ${
           const responseData = await response.json();
 
           // Hide spinner and show response
-          spinner.style.display = 'none';
-          responseDiv.style.display = 'block';
+          spinner.classList.add('hidden');
+          responseDiv.classList.remove('hidden');
           // Format response for better readability
 
           if (responseData.isAIResponse) {
@@ -361,19 +219,19 @@ ${
             if (!responseData.data?.length) {
               responseDiv.innerText = 'No Relevant Product Found!';
             } else {
-              const htmlContent = generateHTML(responseData.data);
+              const htmlContent = generateHTML(responseData.productData);
               document.getElementById('responseDiv').innerHTML = htmlContent;
             }
           }
         } catch (error) {
           console.error({ error });
-          spinner.style.display = 'none';
-          responseDiv.style.display = 'block';
+          spinner.classList.add('hidden');
+          responseDiv.classList.remove('hidden');
           responseDiv.innerText = 'No Relevant Product Found!';
         } finally {
           // Re-enable the button
           button.disabled = false;
-          button.style.cursor = 'pointer';
+          button.classList.remove('cursor-not-allowed');
         }
       }
     </script>

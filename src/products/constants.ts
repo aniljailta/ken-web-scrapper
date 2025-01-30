@@ -98,4 +98,11 @@ export const AI_RESPONSE_PROMPT = `
         2. Search the JSON data for relevant information.
         3. If the information cannot be found in the JSON data, check the provided links for necessary information.
         4. Respond directly and informatively without referencing the data source (e.g., avoid saying "the data you provided" or "the JSON data you provided").
-        5. If no relevant information is found, respond with "I couldn't find the relevant information in the provided data.`;
+        5. If no relevant information is found, respond with "I couldn't find the relevant information in the provided data.
+        
+
+        Make sure to:
+      - Provide supporting details and links if there is no information related to product in json.
+      - Keep the response clear and concise.
+
+        `;
