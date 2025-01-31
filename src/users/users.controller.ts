@@ -17,16 +17,17 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   @Post('register')
   async register(
-    @Body('username') username: string,
+    @Body('name') name: string,
+    @Body('email') email: string,
     @Body('password') password: string,
     @Body('role') role: string,
   ): Promise<User> {
-    return this.usersService.create(username, password, role);
+    return this.usersService.create(name, email, password, role);
   }
 
-  @Get(':username')
-  async findOne(@Param('username') username: string): Promise<User> {
-    return this.usersService.findOne(username);
+  @Get(':email')
+  async findOne(@Param('email') email: string): Promise<User> {
+    return this.usersService.findOne(email);
   }
 
   @Post('user-values')

@@ -7,10 +7,10 @@ export class AuthController {
 
   @Post('login')
   async login(
-    @Body('username') username: string,
+    @Body('email') email: string,
     @Body('password') password: string,
   ) {
-    const user = await this.authService.validateUser(username, password);
+    const user = await this.authService.validateUser(email, password);
     if (!user) {
       return { message: 'Invalid credentials' };
     }

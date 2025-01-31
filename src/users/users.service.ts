@@ -17,21 +17,23 @@ export class UsersService {
   ) {}
 
   async create(
-    username: string,
+    name: string,
+    email: string,
     password: string,
     role: string,
   ): Promise<User> {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = this.userRepository.create({
-      username,
+      name,
+      email,
       password: hashedPassword,
       role,
     });
     return this.userRepository.save(user);
   }
 
-  async findOne(username: string): Promise<User | undefined> {
-    return this.userRepository.findOne({ where: { username } });
+  async findOne(email: string): Promise<User | undefined> {
+    return this.userRepository.findOne({ where: { email } });
   }
 
   async createUserValue(name: string, text: string): Promise<UserValues> {

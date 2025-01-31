@@ -209,15 +209,15 @@ export class ProductsService {
     }
   }
 
-  async testLink(link: string) {
-    const { content, pidData } = await scrapeInternalSection(link);
+  // async testLink(link: string) {
+  //   const { content, pidData } = await scrapeInternalSection(link);
 
-    return {
-      content,
-      pidData,
-      // paragraphsData,
-    };
-  }
+  //   return {
+  //     content,
+  //     pidData,
+  //     // paragraphsData,
+  //   };
+  // }
 
   async readJsonFilesAndSave() {
     const folderPath = path.join(process.cwd(), this.outputDirectory);
@@ -476,36 +476,30 @@ export class ProductsService {
         this.logger.warn(`Warning: ${error?.message}`);
         // Handle the specific AI error code
         if (error.code === 'context_length_exceeded') {
-          let sliceIndex = 1;
-          while (sliceIndex <= data.length) {
-            try {
-              const reducedData = data
-                .map((i) => {
-                  delete i?.internalLinks;
-                  return {
-                    ...i,
-                  };
-                })
-                .slice(0, sliceIndex);
-
-              const retryResponse = await this.getAiResponseBaseOnQuestion({
-                productData: reducedData,
-                userQuery,
-              });
-
+          const reducedData = data
+            .map((i) => {
+              delete i?.internalLinks;
               return {
-                data: retryResponse,
-                isAIResponse: true,
-                productData: data,
+                ...i,
               };
-            } catch (retryError) {
-              if (retryError.code !== 'context_length_exceeded') {
-                this.logger.warn('Error fetching AI:', error?.message);
-                break; // Exit loop if the error is not related to token length
-              }
-            }
+            })
+            .slice(0, 1);
 
-            sliceIndex++; // Increase slice size to retry with fewer tokens
+          try {
+            const retryResponse = await this.getAiResponseBaseOnQuestion({
+              productData: reducedData,
+              userQuery,
+            });
+
+            return {
+              data: retryResponse,
+              isAIResponse: true,
+              productData: data,
+            };
+          } catch (retryError) {
+            if (retryError.code !== 'context_length_exceeded') {
+              this.logger.warn('Error fetching AI:', error?.message);
+            }
           }
         }
 
