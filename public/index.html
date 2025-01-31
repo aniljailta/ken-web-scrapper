@@ -202,18 +202,22 @@
         return data
           .map((product) => {
             // Map the Supported Models
-            const supportedModels = product.additionalInfo.Supported_Models.map(
-              (model) => `<li>${model}</li>`,
-            ).join('');
+            const supportedModels = product?.additionalInfo?.Supported_Models
+              ?.length
+              ? product.additionalInfo.Supported_Models.map(
+                  (model) => `<li>${model}</li>`,
+                ).join('')
+              : [];
 
-            const productIds = product.productIds
-              .map((model) => `<li>${model}</li>`)
-              .join('');
+            const productIds = product?.productIds?.length
+              ? product.productIds.map((model) => `<li>${model}</li>`).join('')
+              : [];
 
             // Map the Internal Links
             const internalLinks =
               product.internalLinks?.length > 0
                 ? product.internalLinks
+
                     .map((link) => {
                       // Helper function to render fields dynamically
                       const renderField = (field) => {
@@ -283,11 +287,12 @@
                 <div class="product">
                     <h2>${product.productName}</h2>
                     <p>Link: <a href="${product.link}" target="_blank">${product.link}</a></p>
-                    <p>Status: ${product.additionalInfo.Status || 'N/A'}</p>
-                    <p>End-of-Sale Date: ${product.additionalInfo['End-of-Sale_Date'] || 'N/A'}</p>
-                    <p>End-of-Support Date: ${product.additionalInfo['End-of-Support_Date'] || 'N/A'}</p>
-                    <p>Series Release Date: ${product.additionalInfo.Series_Release_Date || 'N/A'}</p>
-                    <p>Migration Info: ${product.additionalInfo.migrationOfProducts || 'N/A'}</p>
+                    <p>Status: ${product.additionalInfo?.Status || 'N/A'}</p>
+                    ${product.additionalInfo['End-of-Sale_Date'] ? `<p>End-of-Sale Date: ${product.additionalInfo['End-of-Sale_Date'] || 'N/A'}</p>` : ''}
+                    ${product.additionalInfo['End-of-Support_Date'] ? `<p>End-of-Support Date: ${product.additionalInfo['End-of-Support_Date'] || 'N/A'}</p>` : ''}
+                    ${product.additionalInfo.Series_Release_Date ? `<p>Series Release Date: ${product.additionalInfo.Series_Release_Date || 'N/A'}</p>` : ''}
+                  ${product.additionalInfo?.migrationOfProducts ? `<p>Migration Info: ${product.additionalInfo?.migrationOfProducts || 'N/A'}</p>` : ''}
+                   
                 ${
                   supportedModels.length > 0
                     ? `<h3>Supported Models</h3>
@@ -303,7 +308,7 @@ ${
 }
                 ${
                   internalLinks.length > 0
-                    ? ` <h3>Internal Links</h3>
+                    ? ` <h3>Data Links</h3>
                     ${internalLinks || '<p>No links available</p>'}`
                     : ''
                 }
@@ -343,20 +348,28 @@ ${
             body: JSON.stringify({ question: input, password: passwordHex }),
           });
 
-          const data = await response.json();
+          const responseData = await response.json();
 
           // Hide spinner and show response
           spinner.style.display = 'none';
           responseDiv.style.display = 'block';
           // Format response for better readability
-          // responseDiv.innerText = data.response;
 
-          const htmlContent = generateHTML(data.response);
-          document.getElementById('responseDiv').innerHTML = htmlContent;
+          if (responseData.isAIResponse) {
+            responseDiv.innerText = responseData.data;
+          } else {
+            if (!responseData.data?.length) {
+              responseDiv.innerText = 'No Relevant Product Found!';
+            } else {
+              const htmlContent = generateHTML(responseData.data);
+              document.getElementById('responseDiv').innerHTML = htmlContent;
+            }
+          }
         } catch (error) {
+          console.error({ error });
           spinner.style.display = 'none';
           responseDiv.style.display = 'block';
-          responseDiv.innerText = 'Error: Unable to connect to API';
+          responseDiv.innerText = 'No Relevant Product Found!';
         } finally {
           // Re-enable the button
           button.disabled = false;

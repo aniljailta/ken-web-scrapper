@@ -7,6 +7,7 @@ import { ILike, Repository } from 'typeorm';
 import { ScraperData } from './entities/scraper_data.entity';
 import {
   buildVocabulary,
+  checkUrlIncludesWords,
   cosineSimilarity,
   extractAndStorePIds,
   extractPIDsFromLinks,
@@ -666,11 +667,11 @@ export class ScraperService implements OnModuleInit {
   async scrapeSupportProductsDataLinks(): Promise<void> {
     this.scrapedData = [];
     const categories = await this.scrapeCategories();
-    const filterCat = categories.filter((i) => i.categoryName === 'Switches');
+    // const filterCat = categories.filter((i) => i.categoryName === 'Switches');
 
-    for (const category of filterCat) {
+    for (const category of categories) {
       const { categoryName, categoryLink: link } = category;
-      console.log(`Scrapping products of category: ${categoryName}`);
+      // this.logger.log(`Scrapping products of category: ${categoryName}`);
 
       try {
         let products = await this.scrapeProductsForCategory(
@@ -949,7 +950,18 @@ export class ScraperService implements OnModuleInit {
 
           tableData['pIds'] = iDs;
         } else {
-          tableData['pIds'] = [];
+          const modelListWrapper = document.querySelector(
+            '.model-releases-latest',
+          );
+          if (modelListWrapper) {
+            const iDs = Array.from(
+              modelListWrapper.querySelectorAll('li a'),
+            ).map((li) => li.textContent?.trim() || '');
+
+            tableData['pIds'] = iDs;
+          } else {
+            tableData['pIds'] = [];
+          }
         }
 
         // Check for the presence of the special <tr> with id="microLifecycleBlade"
@@ -1055,6 +1067,20 @@ export class ScraperService implements OnModuleInit {
         baseUrl,
       );
 
+      const viewAllLinksData =
+        await this.collectViewAllLinksData(internalLinks);
+
+      const combinedArray = [...internalLinks, ...viewAllLinksData];
+
+      const uniqueArrayLinks = Array.from(
+        new Map(
+          combinedArray
+            .filter((item) => checkUrlIncludesWords(item.link)) // Apply condition here
+            .map((item) => [item.link, item]), // Create key-value pair for de-duplication
+        ).values(),
+      );
+      return uniqueArrayLinks;
+
       // // Dynamic selectors list
       // const selectors = ['.WordSection1', '#eot-doc-wrapper'];
 
@@ -1065,8 +1091,6 @@ export class ScraperService implements OnModuleInit {
       //     link.pIds = pIds || null;
       //   }
       // }
-
-      return internalLinks;
     } catch (error) {
       this.logger.error(
         `Error scraping internal links for product: ${productLink} :${error?.message},`,
@@ -1076,6 +1100,33 @@ export class ScraperService implements OnModuleInit {
     } finally {
       if (browser) await browser.close();
     }
+  }
+
+  async collectViewAllLinksData(internalLinks: any[]): Promise<any[]> {
+    if (!internalLinks.length) return []; // Return an empty array if no links exist
+
+    const scrapingPromises = internalLinks.map(async (link) => {
+      if (link.name === 'View all documentation of this type') {
+        try {
+          const data = await this.scrapeInternalLinksForProduct(
+            link.link,
+            this.baseURL,
+            '.listing li a',
+          );
+          // Return the scraped data (or an empty array if no data)
+          return data && data.length > 0 ? data : [];
+        } catch {
+          return []; // Return an empty array on error
+        }
+      }
+      return []; // If link.name doesn't match, return an empty array
+    });
+
+    // Wait for all scraping tasks to complete
+    const results = await Promise.all(scrapingPromises);
+
+    // Flatten the results and return them
+    return results.flat();
   }
 
   addCategoryToFile(category: any): void {

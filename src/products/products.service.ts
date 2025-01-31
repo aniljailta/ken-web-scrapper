@@ -8,7 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import { sanitizeFileName, extractAndStorePIds } from 'src/scraper/utils';
 import { SupportProductInternalContent } from './entities/internal_content.entity';
-import { scrapeInternalSection } from './utils';
+import { filterContentData, scrapeInternalSection } from './utils';
+import { AI_RESPONSE_PROMPT, findSectionDetailsTool } from './constants';
 
 @Injectable()
 export class ProductsService {
@@ -135,8 +136,6 @@ export class ProductsService {
             // }
 
             if (link.endsWith('.html')) {
-              // const content = await extractPIDsFromLinks(link);
-              // internalLink.pIds = content || null;
               const { content, pidData } = await scrapeInternalSection(link);
 
               internalLink.contentData = content;
@@ -207,6 +206,16 @@ export class ProductsService {
     }
   }
 
+  async testLink(link: string) {
+    const { content, pidData } = await scrapeInternalSection(link);
+
+    return {
+      content,
+      pidData,
+      // paragraphsData,
+    };
+  }
+
   async readJsonFilesAndSave() {
     const folderPath = path.join(process.cwd(), this.outputDirectory);
 
@@ -235,20 +244,21 @@ export class ProductsService {
                   ifRecordExist.id,
                 );
               }
-
               if (
                 item.internalLinks &&
                 Array.isArray(item.internalLinks) &&
-                productRecord.id
+                productRecord?.id
               ) {
                 for (const link of item.internalLinks) {
-                  if (link.contentData) {
+                  const contentData = filterContentData(link.contentData);
+
+                  if (contentData) {
                     try {
                       const data = this.internalContentDataRepository.create({
                         productDataId: productRecord.id,
                         name: link.name || '',
                         link: link.link || '',
-                        ...link.contentData,
+                        ...contentData,
                       });
 
                       await this.internalContentDataRepository.save(data);
@@ -266,7 +276,7 @@ export class ProductsService {
       }
       this.logger.log(`All JSON files processed successfully.`);
     } catch (error) {
-      console.error('Error processing JSON files:', error);
+      this.logger.error('Error processing JSON files:', error?.message);
     }
   }
 
@@ -320,110 +330,266 @@ export class ProductsService {
         productName: data?.name || '',
       });
 
-      await this.internalContentDataRepository.delete({ id });
-
-      return response;
+      await this.internalContentDataRepository.delete({ productDataId: id });
+      if (response) {
+        return { id };
+      } else {
+        return false;
+      }
     } catch (error) {
       this.logger.warn('Error updating scraper data:', error?.message);
       return false;
     }
   }
 
-  async queryProduct(query: string, password: string) {
-    if (!password || !query) {
-      return 'Bad request!';
+  async queryProduct(userQuery: string, password: string) {
+    if (!password || !userQuery) {
+      return {
+        data: 'Bad request!',
+        isAIResponse: false,
+      };
     }
     const decodedPassword = Buffer.from(password, 'hex').toString('utf8');
 
     if (decodedPassword !== this.chatBotQueryPassword) {
-      return 'Invalid Password!';
+      return {
+        data: 'Invalid Password!',
+        isAIResponse: false,
+      };
     }
-    // const tools: any = [findDevToolFunction];
-    // const response = await this.openai.chat.completions.create({
-    //   model: 'gpt-3.5-turbo',
-    //   messages: [
-    //     {
-    //       role: 'user',
-    //       content: query,
-    //     },
-    //   ],
-    //   tools,
-    // });
-    // this.logger.log(`The user is Asking "${query}"`);
-    // if (response.choices[0].message.tool_calls) {
-    //   const functionCall = response.choices[0].message.tool_calls[0].function;
 
-    //   if (functionCall.name === 'fetch_sku_details') {
-    //     const parsedArguments = JSON.parse(functionCall.arguments);
-    //     if (parsedArguments.name) {
-    //       return await this.queryByName(parsedArguments.name);
-    //     }
-    //   }
-    // } else {
-    return await this.queryByName(query);
-    // }
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'user',
+          content: userQuery,
+        },
+      ],
+      tools: findSectionDetailsTool as any,
+      temperature: 0.6,
+    });
+
+    // this.logger.log(`The user is Asking "${userQuery}"`);
+    if (response.choices[0].message.tool_calls) {
+      const functionCall = response.choices[0].message.tool_calls[0].function;
+
+      if (functionCall.name === 'fetch_section_details') {
+        const parsedArguments = JSON.parse(functionCall.arguments);
+        if (parsedArguments.product) {
+          return await this.queryByName({
+            name: parsedArguments.product,
+            queries: parsedArguments.queries,
+            userQuery: userQuery,
+          });
+        }
+      }
+    } else {
+      return await this.queryByName({ name: userQuery, userQuery: userQuery });
+    }
   }
 
-  private async queryByName(name: string) {
-    const result = await this.getProductData(name);
+  private async queryByName({
+    name,
+    queries,
+    userQuery,
+  }: {
+    name: string;
+    queries?: any[];
+    userQuery: string;
+  }) {
+    try {
+      const result = await this.getProductData(name);
+      const queriesData = [
+        'Status',
+        'name',
+        'link',
+        ...(queries && queries.map((i) => i.replace(/\s+/g, '_'))),
+      ];
 
-    const data = result
-      .map((i) => {
+      const filteredData = result.map((product: Product) => {
+        // Ensure additionalInfo is an object
+        const filteredAdditionalInfo = Object.fromEntries(
+          Object.entries(product?.jsonData?.info || {}).filter(([key]) =>
+            queriesData.includes(key),
+          ),
+        );
+        // Ensure internalLinks is an array
+        const filteredInternalLinks = (product.internalContents || [])
+          .map((link) => {
+            return Object.fromEntries(
+              Object.entries(link).filter(([key]) => queriesData.includes(key)),
+            );
+          })
+          .filter((link) => {
+            // Check if there are any meaningful fields other than `name` and `link`
+            const hasAdditionalFields = Object.entries(link).some(
+              ([key, value]) =>
+                !['name', 'link', 'id', 'productDataId'].includes(key) && // Exclude specific keys
+                value && // Ensure the value exists
+                (typeof value !== 'object' ||
+                  value.text ||
+                  value.tables?.length), // Check for valid content in objects
+            );
+
+            // Include the link only if it has additional fields
+            return hasAdditionalFields;
+          });
+
+        const includeProductIds = queries.some((query) =>
+          ['part numbers', 'Pids', 'id', 'product numbers'].includes(query),
+        );
+
         return {
-          productName: i.productName,
-          link: i.url,
-          additionalInfo: i.jsonData.info,
-          internalLinks: i.internalContents,
-          productData: i?.productData || [],
-          productIds: i?.productIds.slice(0, 1000) || [],
+          productName: product.productName,
+          link: product.url,
+          additionalInfo: filteredAdditionalInfo,
+          internalLinks: filteredInternalLinks,
+          ...(includeProductIds && { productIds: product.productIds || [] }),
         };
-      })
-      .slice(0, 2);
+      });
 
-    if (!data.length) {
-      return 'No Relevant Product Found!';
+      const data = filteredData.slice(0, 5);
+
+      if (!data.length) {
+        return {
+          data: 'No Relevant Product Found!',
+          isAIResponse: false,
+        };
+      }
+
+      try {
+        const response = await this.getAiResponseBaseOnQuestion({
+          productData: data,
+          userQuery,
+        });
+
+        return {
+          data: response,
+          isAIResponse: true,
+          productData: data,
+        };
+      } catch (error) {
+        // Handle the specific AI error code
+        if (error.code === 'context_length_exceeded') {
+          let sliceIndex = 1;
+          while (sliceIndex <= data.length) {
+            try {
+              const reducedData = data
+                .map((i) => {
+                  delete i?.internalLinks;
+                  return {
+                    ...i,
+                  };
+                })
+                .slice(0, sliceIndex);
+
+              const retryResponse = await this.getAiResponseBaseOnQuestion({
+                productData: reducedData,
+                userQuery,
+              });
+
+              return {
+                data: retryResponse,
+                isAIResponse: true,
+                productData: data,
+              };
+            } catch (retryError) {
+              if (retryError.code !== 'context_length_exceeded') {
+                break; // Exit loop if the error is not related to token length
+              }
+            }
+
+            sliceIndex++; // Increase slice size to retry with fewer tokens
+          }
+        }
+
+        // Fallback to returning the raw product data if retries fail
+        return {
+          data: data,
+          isAIResponse: false,
+        };
+      }
+    } catch (error) {
+      this.logger.warn('Error fetching product data:', error?.message);
+      return {
+        data: 'Error fetching product',
+        isAIResponse: false,
+      };
     }
+  }
 
-    return data;
-    // const response = await this.openai.chat.completions.create({
-    //   model: 'gpt-3.5-turbo',
-    //   messages: [
-    //     {
-    //       role: 'system',
-    //       content: CHATGPT_RESPONSE_PROMPT,
-    //     },
-    //     {
-    //       role: 'user',
-    //       content: `Here is the JSON data you need to process:
-    //   ${JSON.stringify(data, null, 2)}`,
-    //     },
-    //   ],
-    // });
+  async getAiResponseBaseOnQuestion({
+    userQuery,
+    productData,
+  }: {
+    userQuery: string;
+    productData: any;
+  }): Promise<string> {
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: AI_RESPONSE_PROMPT,
+        },
+        {
+          role: 'user',
+          content: `Here is the JSON data you need to process:
+          ${JSON.stringify(productData, null, 2)}`,
+        },
+        {
+          role: 'user',
+          content: `User asked: ${userQuery}`,
+        },
+      ],
+    });
 
-    // return response.choices[0].message.content;
+    return response.choices[0].message.content;
   }
 
   async getProductData(name: string): Promise<any> {
     try {
-      const trimmedName = name.trim();
-      // Fetch support data
-      const supportData = await this.productDataRepository
+      const wordsToRemove = [
+        'Catalyst',
+        'Series',
+        'Cisco',
+        'Switches',
+        'Nexus',
+        'IE',
+      ];
+      const regexPattern = new RegExp(wordsToRemove.join('|'), 'gi');
+
+      const trimmedName = name.replace(regexPattern, '').trim();
+
+      // Start building the query
+      const queryBuilder = this.productDataRepository
         .createQueryBuilder('data')
         .leftJoinAndSelect('data.internalContents', 'internalContents')
-        .where('data.productName ILIKE :productName', {
-          productName: `%${trimmedName}%`,
-        })
-        .orWhere(
+        .where(
+          'data.productName ILIKE :productName OR data.productName ILIKE :partialName1',
+          {
+            productName: `%${trimmedName}%`,
+            partialName1: `%${trimmedName.split(' ')[0]}%`,
+          },
+        );
+      // Add the 'orWhere' condition only if trimmedName contains a hyphen
+      if (trimmedName.includes('-')) {
+        queryBuilder.orWhere(
           `EXISTS (
-              SELECT 1 
-              FROM jsonb_array_elements_text(data.productIds) AS elem 
-              WHERE elem ILIKE :trimmedNamePattern
-            )`,
+          SELECT 1 
+          FROM jsonb_array_elements_text(data.productIds) AS elem 
+          WHERE elem ILIKE :trimmedNamePattern
+        )`,
           {
             trimmedNamePattern: `%${trimmedName}%`,
           },
-        )
-        .getMany();
+        );
+      }
+
+      // Fetch support data
+      const supportData = await queryBuilder.getMany();
+
       // Map over additionalData with asynchronous operations
       // const data = await Promise.all(
       //   supportData.map(async (item) => {

@@ -841,7 +841,7 @@ export const extractPIDsFromLinks = async (link: string) => {
 export function extractAndStorePIds(productItem: any) {
   // Create a Set to store unique pIds
   const allPIds = new Set<string>();
-  const validPidRegex = /^[\w\s-]+[=_]?$/;
+  // const validPidRegex = /^[\w\s-]+[=_]?$/;
   const normalizedHeaders = excludeVariation.map((header) =>
     header.toLowerCase(),
   );
@@ -872,11 +872,14 @@ export function extractAndStorePIds(productItem: any) {
         if (
           !normalizedHeaders.some(
             (header) => cleanedPid.toLowerCase() === header,
-          ) &&
-          validPidRegex.test(cleanedPid)
+          )
+          // &&validPidRegex.test(cleanedPid)
         ) {
           allPIds.add(cleanedPid);
         }
+        // if (cleanedPid.includes('-') && validPidRegex.test(cleanedPid)) {
+        //   allPIds.add(cleanedPid);
+        // }
       });
     });
   });

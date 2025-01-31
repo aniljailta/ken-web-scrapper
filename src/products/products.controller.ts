@@ -21,11 +21,13 @@ export class ProductsController {
   async queryFunctionCalling(
     @Body('question') question: string,
     @Body('password') password: string,
-  ): Promise<{ response: string }> {
-    const response = await this.productsService.queryProduct(
-      question,
-      password,
-    );
-    return { response };
+  ): Promise<{
+    data: string | any[];
+    isAIResponse: boolean;
+    productData?: any;
+  }> {
+    const { data, isAIResponse, productData } =
+      await this.productsService.queryProduct(question, password);
+    return { data, isAIResponse, productData };
   }
 }
