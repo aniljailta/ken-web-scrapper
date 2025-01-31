@@ -10,6 +10,7 @@ import { sanitizeFileName, extractAndStorePIds } from 'src/scraper/utils';
 import { SupportProductInternalContent } from './entities/internal_content.entity';
 import { filterContentData, scrapeInternalSection } from './utils';
 import { AI_RESPONSE_PROMPT, findSectionDetailsTool } from './constants';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ProductsService {
@@ -27,6 +28,8 @@ export class ProductsService {
     private internalContentDataRepository: Repository<SupportProductInternalContent>,
 
     private readonly configService: ConfigService,
+
+    private readonly userService: UsersService,
   ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
 
@@ -206,15 +209,15 @@ export class ProductsService {
     }
   }
 
-  async testLink(link: string) {
-    const { content, pidData } = await scrapeInternalSection(link);
+  // async testLink(link: string) {
+  //   const { content, pidData } = await scrapeInternalSection(link);
 
-    return {
-      content,
-      pidData,
-      // paragraphsData,
-    };
-  }
+  //   return {
+  //     content,
+  //     pidData,
+  //     // paragraphsData,
+  //   };
+  // }
 
   async readJsonFilesAndSave() {
     const folderPath = path.join(process.cwd(), this.outputDirectory);
@@ -470,37 +473,33 @@ export class ProductsService {
           productData: data,
         };
       } catch (error) {
+        this.logger.warn(`Warning: ${error?.message}`);
         // Handle the specific AI error code
         if (error.code === 'context_length_exceeded') {
-          let sliceIndex = 1;
-          while (sliceIndex <= data.length) {
-            try {
-              const reducedData = data
-                .map((i) => {
-                  delete i?.internalLinks;
-                  return {
-                    ...i,
-                  };
-                })
-                .slice(0, sliceIndex);
-
-              const retryResponse = await this.getAiResponseBaseOnQuestion({
-                productData: reducedData,
-                userQuery,
-              });
-
+          const reducedData = data
+            .map((i) => {
+              delete i?.internalLinks;
               return {
-                data: retryResponse,
-                isAIResponse: true,
-                productData: data,
+                ...i,
               };
-            } catch (retryError) {
-              if (retryError.code !== 'context_length_exceeded') {
-                break; // Exit loop if the error is not related to token length
-              }
-            }
+            })
+            .slice(0, 1);
 
-            sliceIndex++; // Increase slice size to retry with fewer tokens
+          try {
+            const retryResponse = await this.getAiResponseBaseOnQuestion({
+              productData: reducedData,
+              userQuery,
+            });
+
+            return {
+              data: retryResponse,
+              isAIResponse: true,
+              productData: data,
+            };
+          } catch (retryError) {
+            if (retryError.code !== 'context_length_exceeded') {
+              this.logger.warn('Error fetching AI:', error?.message);
+            }
           }
         }
 
@@ -526,12 +525,15 @@ export class ProductsService {
     userQuery: string;
     productData: any;
   }): Promise<string> {
+    const data = await this.userService.findUserValueByName('ai_prompt');
+    const aiPrompt = data?.text || AI_RESPONSE_PROMPT;
+
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
-          content: AI_RESPONSE_PROMPT,
+          content: aiPrompt,
         },
         {
           role: 'user',
