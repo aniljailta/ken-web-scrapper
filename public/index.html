@@ -213,21 +213,30 @@
           responseDiv.classList.remove('hidden');
           // Format response for better readability
 
-          if (responseData.isAIResponse) {
-            responseDiv.innerText = responseData.data;
+          if (responseData.code === 'FORBIDDEN') {
+            responseDiv.innerText = responseData.message;
           } else {
-            if (!responseData.data?.length) {
-              responseDiv.innerText = 'No Relevant Product Found!';
+            if (responseData.isAIResponse) {
+              responseDiv.innerText = responseData.data;
             } else {
-              const htmlContent = generateHTML(responseData.productData);
-              document.getElementById('responseDiv').innerHTML = htmlContent;
+              if (!responseData.data?.length) {
+                responseDiv.innerText = 'No Relevant Product Found!';
+              } else {
+                const htmlContent = generateHTML(responseData.productData);
+                document.getElementById('responseDiv').innerHTML = htmlContent;
+              }
             }
           }
         } catch (error) {
-          console.error({ error });
           spinner.classList.add('hidden');
           responseDiv.classList.remove('hidden');
-          responseDiv.innerText = 'No Relevant Product Found!';
+
+          if (error.code === 'FORBIDDEN') {
+            responseDiv.innerText = error.message;
+          } else {
+            responseDiv.innerText =
+              error?.message || 'No Relevant Product Found!';
+          }
         } finally {
           // Re-enable the button
           button.disabled = false;

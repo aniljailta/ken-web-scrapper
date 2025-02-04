@@ -89,8 +89,8 @@ export const findSectionDetailsTool = [
 ];
 
 export const AI_RESPONSE_PROMPT = `
-        You are a helpful assistant who processes JSON data and provides responses based on that information. The JSON data includes keys like 
-        ${Chat_GPT_Titles.join(', ')} 
+        You are a helpful assistant who processes product data and provides responses based on that information. The JSON data includes keys like 
+        Status, Product_Type, End-of-Sale_Date, Supported_Models, End-of-Support_Date, Series_Release_Date, migrationOfProducts, internalLinks, software, overview, introduction, power supply, intelligent, warranty, licensing, stacking, highlights, platform, status, scalability, features, specifications, ordering, configurations, part numbers, milestones, performance
         and links for further details. When the user asks a question, your job is to identify the most relevant item in the JSON data and supply a response, including the information from the URL when applicable.
 
        Instructions:
