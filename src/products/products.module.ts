@@ -5,13 +5,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { SupportProductInternalContent } from './entities/internal_content.entity';
 import { UsersModule } from 'src/users/users.module';
+import { RequestTrackerService } from 'src/request-tracker/request-tracker.service';
+import { RequestTracker } from 'src/request-tracker/entities/request_tracker.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Product, SupportProductInternalContent]),
     UsersModule,
+    TypeOrmModule.forFeature([RequestTracker]),
   ],
   controllers: [ProductsController],
-  providers: [ProductsService, UsersModule],
+  providers: [ProductsService, UsersModule, RequestTrackerService],
 })
 export class ProductsModule {}

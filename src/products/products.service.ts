@@ -455,9 +455,12 @@ export class ProductsService {
       const data = filteredData.slice(0, 5);
 
       if (!data.length) {
+        const fallbackResponse = await this.generateFallbackResponse(userQuery);
+
         return {
-          data: 'No Relevant Product Found!',
-          isAIResponse: false,
+          data: fallbackResponse,
+          isAIResponse: true,
+          productData: data,
         };
       }
 
@@ -474,8 +477,12 @@ export class ProductsService {
         };
       } catch (error) {
         this.logger.warn(`Warning: ${error?.message}`);
+        this.logger.warn(`Warning CODE: ${error?.code}`);
         // Handle the specific AI error code
-        if (error.code === 'context_length_exceeded') {
+        if (
+          error.code === 'context_length_exceeded' ||
+          error.code === 'rate_limit_exceeded'
+        ) {
           const reducedData = data
             .map((i) => {
               delete i?.internalLinks;
@@ -511,10 +518,7 @@ export class ProductsService {
       }
     } catch (error) {
       this.logger.warn('Error fetching product data:', error?.message);
-      return {
-        data: 'Error fetching product',
-        isAIResponse: false,
-      };
+      return this.handleQueryError(error, userQuery);
     }
   }
 
@@ -537,7 +541,7 @@ export class ProductsService {
         },
         {
           role: 'user',
-          content: `Here is the JSON data you need to process:
+          content: `Here is the data you need to process:
           ${JSON.stringify(productData, null, 2)}`,
         },
         {
@@ -617,5 +621,67 @@ export class ProductsService {
       this.logger.warn('Error fetching product data:', error?.message);
       return [];
     }
+  }
+
+  async generateFallbackResponse(userQuery: string) {
+    // Multiple fallback strategies
+    try {
+      // Strategy 1: Use OpenAI to generate a generic helpful response
+      const aiGeneratedFallback = await this.openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a helpful assistant that provides contextual guidance when a specific product query cannot be directly answered.',
+          },
+          {
+            role: 'user',
+            content: `Generate a helpful fallback response for the following query that cannot find a specific product: "${userQuery}". 
+            The response should:
+            - Acknowledge the query
+            - Provide general guidance
+            - Offer alternative ways to find information
+            - Maintain a helpful and supportive tone`,
+          },
+        ],
+        max_tokens: 200,
+        temperature: 0.7,
+      });
+
+      const fallbackText = aiGeneratedFallback.choices[0].message.content;
+
+      // Strategy 2: If AI generation fails, use a predefined fallback
+      if (!fallbackText) {
+        return this.getStaticFallbackResponse(userQuery);
+      }
+
+      return fallbackText;
+    } catch {
+      // Fallback to static response if AI generation fails
+      return this.getStaticFallbackResponse(userQuery);
+    }
+  }
+
+  private getStaticFallbackResponse(userQuery: string): string {
+    const fallbackResponses = [
+      `I couldn't find specific information about your query: "${userQuery}". Could you please provide more details?`,
+      `Thank you for your query. I'm unable to find an exact match for "${userQuery}". Would you like to try a broader search or rephrase your question?`,
+      `I apologize, but I couldn't locate the specific product or information you're looking for. Can you help me understand your request better?`,
+      `It seems the details you're seeking aren't in our current database. Let me help you find the right information. Could you tell me more about what you're looking for?`,
+    ];
+
+    // Randomly select a fallback response for variety
+    return fallbackResponses[
+      Math.floor(Math.random() * fallbackResponses.length)
+    ];
+  }
+
+  private handleQueryError(error: any, userQuery: string) {
+    return {
+      data: this.getStaticFallbackResponse(userQuery),
+      isAIResponse: true,
+      productData: [],
+    };
   }
 }

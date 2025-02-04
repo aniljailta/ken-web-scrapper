@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
+import { LifetimeRequestGuard } from 'src/guards/lifetime-request.guard';
 
 @Controller('products')
 export class ProductsController {
@@ -18,6 +19,7 @@ export class ProductsController {
   }
 
   @Post('product-query')
+  @UseGuards(LifetimeRequestGuard)
   async queryFunctionCalling(
     @Body('question') question: string,
     @Body('password') password: string,
