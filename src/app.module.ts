@@ -7,13 +7,19 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ProductsModule } from './products/products.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+
+import { RequestTrackerService } from './request-tracker/request-tracker.service';
+import { RequestTracker } from './request-tracker/entities/request_tracker.entity';
+import { LifetimeRequestGuard } from './guards/lifetime-request.guard';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/',
     }),
-
     ConfigModule.forRoot({
       isGlobal: true, // Makes ConfigModule available globally
     }),
@@ -32,8 +38,11 @@ import { ProductsModule } from './products/products.module';
     }),
     ScraperModule,
     ProductsModule,
+    UsersModule,
+    AuthModule,
+    TypeOrmModule.forFeature([RequestTracker]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, RequestTrackerService, LifetimeRequestGuard],
 })
 export class AppModule {}

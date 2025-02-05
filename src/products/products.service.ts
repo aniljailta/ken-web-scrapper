@@ -10,6 +10,7 @@ import { sanitizeFileName, extractAndStorePIds } from 'src/scraper/utils';
 import { SupportProductInternalContent } from './entities/internal_content.entity';
 import { filterContentData, scrapeInternalSection } from './utils';
 import { AI_RESPONSE_PROMPT, findSectionDetailsTool } from './constants';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ProductsService {
@@ -27,6 +28,8 @@ export class ProductsService {
     private internalContentDataRepository: Repository<SupportProductInternalContent>,
 
     private readonly configService: ConfigService,
+
+    private readonly userService: UsersService,
   ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
 
@@ -206,15 +209,15 @@ export class ProductsService {
     }
   }
 
-  async testLink(link: string) {
-    const { content, pidData } = await scrapeInternalSection(link);
+  // async testLink(link: string) {
+  //   const { content, pidData } = await scrapeInternalSection(link);
 
-    return {
-      content,
-      pidData,
-      // paragraphsData,
-    };
-  }
+  //   return {
+  //     content,
+  //     pidData,
+  //     // paragraphsData,
+  //   };
+  // }
 
   async readJsonFilesAndSave() {
     const folderPath = path.join(process.cwd(), this.outputDirectory);
@@ -452,9 +455,12 @@ export class ProductsService {
       const data = filteredData.slice(0, 5);
 
       if (!data.length) {
+        const fallbackResponse = await this.generateFallbackResponse(userQuery);
+
         return {
-          data: 'No Relevant Product Found!',
-          isAIResponse: false,
+          data: fallbackResponse,
+          isAIResponse: true,
+          productData: data,
         };
       }
 
@@ -470,37 +476,37 @@ export class ProductsService {
           productData: data,
         };
       } catch (error) {
+        this.logger.warn(`Warning: ${error?.message}`);
+        this.logger.warn(`Warning CODE: ${error?.code}`);
         // Handle the specific AI error code
-        if (error.code === 'context_length_exceeded') {
-          let sliceIndex = 1;
-          while (sliceIndex <= data.length) {
-            try {
-              const reducedData = data
-                .map((i) => {
-                  delete i?.internalLinks;
-                  return {
-                    ...i,
-                  };
-                })
-                .slice(0, sliceIndex);
-
-              const retryResponse = await this.getAiResponseBaseOnQuestion({
-                productData: reducedData,
-                userQuery,
-              });
-
+        if (
+          error.code === 'context_length_exceeded' ||
+          error.code === 'rate_limit_exceeded'
+        ) {
+          const reducedData = data
+            .map((i) => {
+              delete i?.internalLinks;
               return {
-                data: retryResponse,
-                isAIResponse: true,
-                productData: data,
+                ...i,
               };
-            } catch (retryError) {
-              if (retryError.code !== 'context_length_exceeded') {
-                break; // Exit loop if the error is not related to token length
-              }
-            }
+            })
+            .slice(0, 1);
 
-            sliceIndex++; // Increase slice size to retry with fewer tokens
+          try {
+            const retryResponse = await this.getAiResponseBaseOnQuestion({
+              productData: reducedData,
+              userQuery,
+            });
+
+            return {
+              data: retryResponse,
+              isAIResponse: true,
+              productData: data,
+            };
+          } catch (retryError) {
+            if (retryError.code !== 'context_length_exceeded') {
+              this.logger.warn('Error fetching AI:', error?.message);
+            }
           }
         }
 
@@ -512,10 +518,7 @@ export class ProductsService {
       }
     } catch (error) {
       this.logger.warn('Error fetching product data:', error?.message);
-      return {
-        data: 'Error fetching product',
-        isAIResponse: false,
-      };
+      return this.handleQueryError(error, userQuery);
     }
   }
 
@@ -526,16 +529,19 @@ export class ProductsService {
     userQuery: string;
     productData: any;
   }): Promise<string> {
+    const data = await this.userService.findUserValueByName('ai_prompt');
+    const aiPrompt = data?.text || AI_RESPONSE_PROMPT;
+
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
-          content: AI_RESPONSE_PROMPT,
+          content: aiPrompt,
         },
         {
           role: 'user',
-          content: `Here is the JSON data you need to process:
+          content: `Here is the data you need to process:
           ${JSON.stringify(productData, null, 2)}`,
         },
         {
@@ -615,5 +621,67 @@ export class ProductsService {
       this.logger.warn('Error fetching product data:', error?.message);
       return [];
     }
+  }
+
+  async generateFallbackResponse(userQuery: string) {
+    // Multiple fallback strategies
+    try {
+      // Strategy 1: Use OpenAI to generate a generic helpful response
+      const aiGeneratedFallback = await this.openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a helpful assistant that provides contextual guidance when a specific product query cannot be directly answered.',
+          },
+          {
+            role: 'user',
+            content: `Generate a helpful fallback response for the following query that cannot find a specific product: "${userQuery}". 
+            The response should:
+            - Acknowledge the query
+            - Provide general guidance
+            - Offer alternative ways to find information
+            - Maintain a helpful and supportive tone`,
+          },
+        ],
+        max_tokens: 200,
+        temperature: 0.7,
+      });
+
+      const fallbackText = aiGeneratedFallback.choices[0].message.content;
+
+      // Strategy 2: If AI generation fails, use a predefined fallback
+      if (!fallbackText) {
+        return this.getStaticFallbackResponse(userQuery);
+      }
+
+      return fallbackText;
+    } catch {
+      // Fallback to static response if AI generation fails
+      return this.getStaticFallbackResponse(userQuery);
+    }
+  }
+
+  private getStaticFallbackResponse(userQuery: string): string {
+    const fallbackResponses = [
+      `I couldn't find specific information about your query: "${userQuery}". Could you please provide more details?`,
+      `Thank you for your query. I'm unable to find an exact match for "${userQuery}". Would you like to try a broader search or rephrase your question?`,
+      `I apologize, but I couldn't locate the specific product or information you're looking for. Can you help me understand your request better?`,
+      `It seems the details you're seeking aren't in our current database. Let me help you find the right information. Could you tell me more about what you're looking for?`,
+    ];
+
+    // Randomly select a fallback response for variety
+    return fallbackResponses[
+      Math.floor(Math.random() * fallbackResponses.length)
+    ];
+  }
+
+  private handleQueryError(error: any, userQuery: string) {
+    return {
+      data: this.getStaticFallbackResponse(userQuery),
+      isAIResponse: true,
+      productData: [],
+    };
   }
 }
