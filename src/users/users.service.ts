@@ -21,15 +21,26 @@ export class UsersService {
     email: string,
     password: string,
     role: string,
-  ): Promise<User> {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = this.userRepository.create({
-      name,
-      email,
-      password: hashedPassword,
-      role,
-    });
-    return this.userRepository.save(user);
+  ): Promise<{ user: User | null; message: string }> {
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = this.userRepository.create({
+        name,
+        email,
+        password: hashedPassword,
+        role,
+      });
+      return {
+        user: await this.userRepository.save(user),
+        message: 'Register successfully',
+      };
+    } catch (error) {
+      if (error.code === '23505') {
+        // Unique constraint violation for PostgreSQL
+        return { user: null, message: 'User with this email already exists' };
+      }
+      return { user: null, message: 'An unexpected error occurred' };
+    }
   }
 
   async findOne(email: string): Promise<User | undefined> {
