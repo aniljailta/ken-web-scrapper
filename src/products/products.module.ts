@@ -10,11 +10,15 @@ import { RequestTracker } from 'src/request-tracker/entities/request_tracker.ent
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Product, SupportProductInternalContent]),
+    TypeOrmModule.forFeature([
+      Product,
+      SupportProductInternalContent,
+      RequestTracker,
+    ]),
     UsersModule,
-    TypeOrmModule.forFeature([RequestTracker]),
   ],
   controllers: [ProductsController],
   providers: [ProductsService, UsersModule, RequestTrackerService],
+  exports: [ProductsService],
 })
 export class ProductsModule {}

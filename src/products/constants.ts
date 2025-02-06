@@ -78,7 +78,7 @@ export const findSectionDetailsTool = [
           product: {
             type: 'string',
             description:
-              'The product name or PID the user is referencing (e.g., C1-C2960X-24PS-L, 3560-CX, 9000 , 9500, 7000 etc. as these are cisco product series) and if there are multiple product so separate them with space.',
+              'The product name or PID the user is referencing (e.g., C1-C2960X-24PS-L, 3560-CX, 9000 , 9500, 7000 etc. as these are cisco product series) and if there are multiple product so separate them with space. If the user does not explicitly mention a product, return an empty string ("").',
           },
         },
         required: ['queries', 'product'],
