@@ -1,6 +1,5 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { LifetimeRequestGuard } from 'src/guards/lifetime-request.guard';
 
 @Controller('products')
 export class ProductsController {
@@ -18,18 +17,17 @@ export class ProductsController {
     return { message: 'content scrapping started' };
   }
 
-  @Post('product-query')
-  @UseGuards(LifetimeRequestGuard)
-  async queryFunctionCalling(
-    @Body('question') question: string,
-    @Body('password') password: string,
-  ): Promise<{
-    data: string | any[];
-    isAIResponse: boolean;
-    productData?: any;
-  }> {
-    const { data, isAIResponse, productData } =
-      await this.productsService.queryProduct(question, password);
-    return { data, isAIResponse, productData };
-  }
+  // @Post('product-query')
+  // @UseGuards(LifetimeRequestGuard)
+  // async queryFunctionCalling(@Body('question') question: string): Promise<{
+  //   data: string | any[];
+  //   isAIResponse: boolean;
+  //   productData?: any;
+  // }> {
+  //   const { data, isAIResponse, productData } =
+  //     await this.productsService.queryProduct({
+  //       userQuery: question,
+  //     });
+  //   return { data, isAIResponse, productData };
+  // }
 }

@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { RequestTrackerService } from './request-tracker/request-tracker.service';
 import { RequestTracker } from './request-tracker/entities/request_tracker.entity';
 import { LifetimeRequestGuard } from './guards/lifetime-request.guard';
+import { ConversationModule } from './conversation/conversation.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { LifetimeRequestGuard } from './guards/lifetime-request.guard';
     UsersModule,
     AuthModule,
     TypeOrmModule.forFeature([RequestTracker]),
+    ConversationModule,
   ],
   controllers: [AppController],
   providers: [AppService, RequestTrackerService, LifetimeRequestGuard],

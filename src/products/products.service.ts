@@ -15,7 +15,6 @@ import { UsersService } from 'src/users/users.service';
 @Injectable()
 export class ProductsService {
   private openai: OpenAI;
-  private chatBotQueryPassword: string;
   private readonly logger = new Logger(ProductsService.name);
   private readonly outputDirectory = 'products-category-content';
   private productListFile = 'json/products-list.json';
@@ -33,9 +32,6 @@ export class ProductsService {
   ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
 
-    const chatBotQueryPassword =
-      this.configService.get<string>('QUERY_PASSWORD');
-
     if (!apiKey) {
       throw new Error(
         'OPENAI_API_KEY is not defined in the environment variables.',
@@ -43,8 +39,6 @@ export class ProductsService {
     }
 
     this.openai = new OpenAI({ apiKey });
-
-    this.chatBotQueryPassword = chatBotQueryPassword;
   }
 
   async scrapeProductsContent() {
@@ -345,18 +339,66 @@ export class ProductsService {
     }
   }
 
-  async queryProduct(userQuery: string, password: string) {
-    if (!password || !userQuery) {
+  async getProductsByName(productName: string) {
+    const results = await this.getProductData(productName);
+    return results;
+  }
+
+  async filterProductData(productList: Product[], queries?: string[]) {
+    const queriesData = [
+      'Status',
+      'name',
+      'link',
+      ...(queries && queries.map((i) => i.replace(/\s+/g, '_'))),
+    ];
+
+    const filteredData = productList.map((product: Product) => {
+      // Ensure additionalInfo is an object
+      const filteredAdditionalInfo = Object.fromEntries(
+        Object.entries(product?.jsonData?.info || {}).filter(([key]) =>
+          queriesData.includes(key),
+        ),
+      );
+      // Ensure internalLinks is an array
+      const filteredInternalLinks = (product.internalContents || [])
+        .map((link) => {
+          return Object.fromEntries(
+            Object.entries(link).filter(([key]) => queriesData.includes(key)),
+          );
+        })
+        .filter((link) => {
+          // Check if there are any meaningful fields other than `name` and `link`
+          const hasAdditionalFields = Object.entries(link).some(
+            ([key, value]) =>
+              !['name', 'link', 'id', 'productDataId'].includes(key) && // Exclude specific keys
+              value && // Ensure the value exists
+              (typeof value !== 'object' || value.text || value.tables?.length), // Check for valid content in objects
+          );
+
+          // Include the link only if it has additional fields
+          return hasAdditionalFields;
+        });
+
+      const includeProductIds = queries.some((query) =>
+        ['part numbers', 'Pids', 'id', 'product numbers'].includes(query),
+      );
+
+      return {
+        productName: product.productName,
+        link: product.url,
+        additionalInfo: filteredAdditionalInfo,
+        internalLinks: filteredInternalLinks,
+        ...(includeProductIds && { productIds: product.productIds || [] }),
+      };
+    });
+
+    return filteredData.slice(0, 5);
+  }
+
+  async queryProduct({ userQuery }: { userQuery: string }) {
+    if (!userQuery) {
       return {
         data: 'Bad request!',
-        isAIResponse: false,
-      };
-    }
-    const decodedPassword = Buffer.from(password, 'hex').toString('utf8');
-
-    if (decodedPassword !== this.chatBotQueryPassword) {
-      return {
-        data: 'Invalid Password!',
         isAIResponse: false,
       };
     }
@@ -380,19 +422,24 @@ export class ProductsService {
       if (functionCall.name === 'fetch_section_details') {
         const parsedArguments = JSON.parse(functionCall.arguments);
         if (parsedArguments.product) {
-          return await this.queryByName({
+          const aiResponse = await this.queryByName({
             name: parsedArguments.product,
             queries: parsedArguments.queries,
             userQuery: userQuery,
           });
+
+          return aiResponse;
         }
       }
     } else {
-      return await this.queryByName({ name: userQuery, userQuery: userQuery });
+      return {
+        data: 'Error fetching AI response',
+        isAIResponse: false,
+      };
     }
   }
 
-  private async queryByName({
+  async queryByName({
     name,
     queries,
     userQuery,
