@@ -178,8 +178,6 @@ export class ConversationService {
         conversationId,
       });
 
-      console.log({ conversationRecord });
-
       const toolFunction = await this.functionalToolCalling({ userQuery });
 
       const productName =
@@ -407,5 +405,41 @@ export class ConversationService {
 
   private handleQueryError(error: any, userQuery: string) {
     return this.getStaticFallbackResponse(userQuery);
+  }
+
+  async getConversationMessages({
+    userId,
+    conversationId,
+  }: {
+    userId: string;
+    conversationId: string;
+  }): Promise<Conversation | null> {
+    try {
+      const conversation = await this.conversationRepo.findOne({
+        where: { userId, id: conversationId },
+        relations: ['messages'],
+      });
+      return conversation;
+    } catch (error) {
+      this.logger.warn('Error fetching product data:', error?.message);
+      return null;
+    }
+  }
+
+  async getAllConversationChat({
+    userId,
+  }: {
+    userId: string;
+  }): Promise<Conversation[]> {
+    try {
+      const conversation = await this.conversationRepo.find({
+        where: { userId },
+        relations: ['messages'],
+      });
+      return conversation;
+    } catch (error) {
+      this.logger.warn('Error fetching product data:', error?.message);
+      return [];
+    }
   }
 }

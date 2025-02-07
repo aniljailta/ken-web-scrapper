@@ -30,4 +30,7 @@ export class Message {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ type: 'boolean', nullable: true, default: null })
+  reactionStatus: boolean | null;
 }

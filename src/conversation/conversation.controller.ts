@@ -1,6 +1,18 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Post,
+  Query,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 import { LifetimeRequestGuard } from 'src/guards/lifetime-request.guard';
+import { AuthGuard } from '@nestjs/passport';
+import { Conversation } from './entities/conversation.entity';
 
 @Controller('conversation')
 export class ConversationController {
@@ -58,5 +70,49 @@ export class ConversationController {
         conversationId: conversationId,
       });
     return { data, conversationId: conId };
+  }
+
+  @Get('messages')
+  @UseGuards(AuthGuard('jwt'))
+  async getConversationMessage(
+    @Req() req,
+    @Query('conversationId') conversationId: string,
+  ): Promise<Conversation> {
+    const userId = req.user?.id;
+
+    if (!conversationId || !userId) {
+      throw new UnauthorizedException('User or Conversation ID is missing.');
+    }
+
+    const data = await this.conversationService.getConversationMessages({
+      userId,
+      conversationId,
+    });
+
+    if (!data) {
+      throw new NotFoundException('Messages not found');
+    }
+
+    return data;
+  }
+
+  @Get('all-chat')
+  @UseGuards(AuthGuard('jwt'))
+  async getAllConversationChat(@Req() req): Promise<Conversation[]> {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new UnauthorizedException('User or Conversation ID is missing.');
+    }
+
+    const data = await this.conversationService.getAllConversationChat({
+      userId,
+    });
+
+    if (!data) {
+      throw new NotFoundException('Messages not found');
+    }
+
+    return data;
   }
 }
