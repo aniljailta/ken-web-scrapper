@@ -16,7 +16,7 @@ import { UsersService } from 'src/users/users.service';
 export class ConversationService {
   private openai: OpenAI;
   private readonly logger = new Logger(ConversationService.name);
-
+  private openaiModal: string;
   constructor(
     @InjectRepository(Conversation)
     private conversationRepo: Repository<Conversation>,
@@ -37,6 +37,9 @@ export class ConversationService {
     }
 
     this.openai = new OpenAI({ apiKey });
+
+    this.openaiModal =
+      this.configService.get<string>('AI_ASSISTANT_MODAL') || 'gpt-3.5-turbo';
   }
 
   async getOrCreateConversation({
@@ -202,6 +205,7 @@ export class ConversationService {
       const aiResponse = await this.generateAiResponse({
         userQuery,
         productData,
+        messageData: conversationRecord.messages,
       });
 
       if (conversationRecord.id) {
@@ -229,7 +233,7 @@ export class ConversationService {
     productAttributes: string[];
   }> {
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: this.openaiModal,
       messages: [
         {
           role: 'user',
@@ -264,9 +268,11 @@ export class ConversationService {
   async generateAiResponse({
     userQuery,
     productData,
+    messageData,
   }: {
     userQuery: string;
     productData: any[];
+    messageData?: Message[];
   }): Promise<string> {
     if (!productData.length) {
       const fallbackResponse = await this.generateFallbackResponse(userQuery);
@@ -278,6 +284,7 @@ export class ConversationService {
       const response = await this.getAiResponseBaseOnQuestion({
         productData: productData,
         userQuery,
+        messageData,
       });
 
       return response;
@@ -302,6 +309,7 @@ export class ConversationService {
           const retryResponse = await this.getAiResponseBaseOnQuestion({
             productData: reducedData,
             userQuery,
+            messageData,
           });
 
           return retryResponse;
@@ -320,16 +328,19 @@ export class ConversationService {
   async getAiResponseBaseOnQuestion({
     userQuery,
     productData,
+    messageData = [],
   }: {
     userQuery: string;
     productData: any;
+    messageData?: Message[];
   }): Promise<string> {
     const data = await this.userService.findUserValueByName('ai_prompt');
     const aiPrompt = data?.text || AI_RESPONSE_PROMPT;
 
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: this.openaiModal,
       messages: [
+        ...messageData,
         {
           role: 'system',
           content: aiPrompt,
@@ -354,7 +365,7 @@ export class ConversationService {
     try {
       // Strategy 1: Use OpenAI to generate a generic helpful response
       const aiGeneratedFallback = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
+        model: this.openaiModal,
         messages: [
           {
             role: 'system',
