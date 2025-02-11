@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Conversation } from './entities/conversation.entity';
 import { Message } from './entities/message.entity';
@@ -429,6 +434,11 @@ export class ConversationService {
       const conversation = await this.conversationRepo.findOne({
         where: { userId, id: conversationId },
         relations: ['messages'],
+        order: {
+          messages: {
+            createdAt: 'ASC', // Order messages by 'createdAt' in ascending order
+          },
+        },
       });
       return conversation;
     } catch (error) {
@@ -451,6 +461,51 @@ export class ConversationService {
     } catch (error) {
       this.logger.warn('Error fetching product data:', error?.message);
       return [];
+    }
+  }
+
+  async updateMessageReaction({
+    messageId,
+    reactionStatus,
+  }: {
+    messageId: string;
+    reactionStatus: boolean | null;
+  }): Promise<Message> {
+    try {
+      const message = await this.messageRepo.findOne({
+        where: { id: messageId },
+      });
+
+      if (!message) {
+        throw new NotFoundException('Message not found');
+      }
+
+      message.reactionStatus = reactionStatus;
+      await this.messageRepo.save(message);
+
+      return message;
+    } catch (error) {
+      this.logger.warn('Error updating message reaction:', error?.message);
+      throw new InternalServerErrorException(
+        'Failed to update reaction status',
+      );
+    }
+  }
+
+  async deleteConversationChat(chatId: string): Promise<void> {
+    try {
+      const chat = await this.conversationRepo.findOne({
+        where: { id: chatId },
+      });
+
+      if (!chat) {
+        throw new NotFoundException('Chat not found');
+      }
+
+      await this.conversationRepo.delete({ id: chatId });
+    } catch (error) {
+      this.logger.warn('Error deleting chat:', error?.message);
+      throw new InternalServerErrorException('Failed to delete chat');
     }
   }
 }

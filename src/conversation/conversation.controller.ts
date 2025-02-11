@@ -1,8 +1,11 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
+  Param,
   Post,
   Query,
   Req,
@@ -13,6 +16,7 @@ import { ConversationService } from './conversation.service';
 import { LifetimeRequestGuard } from 'src/guards/lifetime-request.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { Conversation } from './entities/conversation.entity';
+import { Message } from './entities/message.entity';
 
 @Controller('conversation')
 export class ConversationController {
@@ -114,5 +118,48 @@ export class ConversationController {
     }
 
     return data;
+  }
+
+  @Post('message/reaction')
+  @UseGuards(AuthGuard('jwt'))
+  async updateMessageReaction(
+    @Body('messageId') messageId: string,
+    @Body('reactionStatus') reactionStatus: boolean | null,
+  ): Promise<{
+    message: string;
+    data: Message;
+  }> {
+    if (!messageId || typeof messageId !== 'string') {
+      throw new BadRequestException('Invalid message ID');
+    }
+
+    if (
+      reactionStatus !== true &&
+      reactionStatus !== false &&
+      reactionStatus !== null
+    ) {
+      throw new BadRequestException('Invalid reaction status');
+    }
+
+    const updatedMessage = await this.conversationService.updateMessageReaction(
+      {
+        messageId,
+        reactionStatus,
+      },
+    );
+
+    return { message: 'Reaction updated successfully', data: updatedMessage };
+  }
+
+  @Delete('chat/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async deleteConversationChat(@Param('id') chatId: string): Promise<any> {
+    if (!chatId) {
+      throw new BadRequestException('Chat ID is required');
+    }
+
+    await this.conversationService.deleteConversationChat(chatId);
+
+    return { message: 'Chat deleted successfully' };
   }
 }
