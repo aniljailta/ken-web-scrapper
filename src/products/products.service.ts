@@ -613,55 +613,60 @@ export class ProductsService {
       ];
       const regexPattern = new RegExp(wordsToRemove.join('|'), 'gi');
 
-      const trimmedName = name.replace(regexPattern, '').trim();
+      // Split by comma, clean each name, and filter out empty values
+      const trimmedNames = name
+        .split(',')
+        .map((item) => item.replace(regexPattern, '').trim())
+        .filter((item) => item.length > 0);
+
+      if (trimmedNames.length === 0) return [];
 
       // Start building the query
       const queryBuilder = this.productDataRepository
         .createQueryBuilder('data')
-        .leftJoinAndSelect('data.internalContents', 'internalContents')
-        .where(
-          'data.productName ILIKE :productName OR data.productName ILIKE :partialName1',
-          {
-            productName: `%${trimmedName}%`,
-            partialName1: `%${trimmedName.split(' ')[0]}%`,
-          },
-        );
-      // Add the 'orWhere' condition only if trimmedName contains a hyphen
-      if (trimmedName.includes('-')) {
-        queryBuilder.orWhere(
-          `EXISTS (
-          SELECT 1 
-          FROM jsonb_array_elements_text(data.productIds) AS elem 
-          WHERE elem ILIKE :trimmedNamePattern
-        )`,
-          {
-            trimmedNamePattern: `%${trimmedName}%`,
-          },
-        );
-      }
+        .leftJoinAndSelect('data.internalContents', 'internalContents');
 
-      // Fetch support data
+      // Handle multiple product names
+      trimmedNames.forEach((trimmedName, index) => {
+        const paramName = `productName${index}`;
+        const partialParamName = `partialName${index}`;
+
+        if (index === 0) {
+          queryBuilder.where(
+            `(data.productName ILIKE :${paramName} OR data.productName ILIKE :${partialParamName})`,
+            {
+              [paramName]: `%${trimmedName}%`,
+              [partialParamName]: `%${trimmedName.split(' ')[0]}%`,
+            },
+          );
+        } else {
+          queryBuilder.orWhere(
+            `(data.productName ILIKE :${paramName} OR data.productName ILIKE :${partialParamName})`,
+            {
+              [paramName]: `%${trimmedName}%`,
+              [partialParamName]: `%${trimmedName.split(' ')[0]}%`,
+            },
+          );
+        }
+
+        // Add JSONB array search if name contains a hyphen
+        if (trimmedName.includes('-')) {
+          const jsonbParamName = `trimmedNamePattern${index}`;
+          queryBuilder.orWhere(
+            `EXISTS (
+              SELECT 1 
+              FROM jsonb_array_elements_text(data.productIds) AS elem 
+              WHERE elem ILIKE :${jsonbParamName}
+            )`,
+            {
+              [jsonbParamName]: `%${trimmedName}%`,
+            },
+          );
+        }
+      });
+
+      // Fetch data
       const supportData = await queryBuilder.getMany();
-
-      // Map over additionalData with asynchronous operations
-      // const data = await Promise.all(
-      //   supportData.map(async (item) => {
-      //     // Fetch matching product data
-      //     const productData = await this.scrapperDataRepository.find({
-      //       where: {
-      //         productName: ILike(`%${item.productName}%`),
-      //       },
-      //       select: ['jsonData', 'productName', 'createdAt', 'content', 'url'],
-      //     });
-
-      //     // Return the transformed object
-      //     return {
-      //       productName: item.productName,
-      //       ...item, // Include all other properties of additionalItem
-      //       productData: productData.length > 0 ? productData : null, // Include productData or null
-      //     };
-      //   }),
-      // );
 
       return supportData;
     } catch (error) {

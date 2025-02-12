@@ -179,7 +179,7 @@ export class ConversationService {
     userQuery: string;
     userId?: string | null;
     conversationId: string;
-  }): Promise<{ data: string; conversationId: string }> {
+  }): Promise<{ data: string; messageId?: string; conversationId: string }> {
     try {
       const conversationRecord = await this.getOrCreateConversation({
         userId,
@@ -188,8 +188,22 @@ export class ConversationService {
 
       const toolFunction = await this.functionalToolCalling({ userQuery });
 
-      const productName =
-        conversationRecord.productName ?? toolFunction.productName;
+      const toolProductName = toolFunction.productName;
+      const conversationProductName = conversationRecord.productName?.trim();
+
+      // Check if toolProductName is valid (not empty and not "C1-C2720X-24PS-L")
+      const isValidToolProduct =
+        toolProductName && toolProductName !== 'C1-C2720X-24PS-L';
+
+      // Set productName from toolProductName if valid, otherwise use conversationProductName
+      const productName = isValidToolProduct
+        ? toolProductName
+        : conversationProductName;
+
+      // Check if we need to update conversationRecord.productName
+      if (isValidToolProduct) {
+        this.updateProductName({ conversationRecord, toolProductName });
+      }
 
       const productList =
         await this.productService.getProductsByName(productName);
@@ -213,17 +227,24 @@ export class ConversationService {
         messageData: conversationRecord.messages,
       });
 
+      const responseData = {
+        data: aiResponse,
+        conversationId: conversationRecord.id,
+      };
+
       if (conversationRecord.id) {
-        await this.saveMessage({
+        const messageData = await this.saveMessage({
           conversationId: conversationRecord.id,
           message: aiResponse,
           role: 'assistant',
         });
+        return {
+          ...responseData,
+          messageId: messageData.id,
+        };
+      } else {
+        return responseData;
       }
-      return {
-        data: aiResponse,
-        conversationId: conversationRecord.id,
-      };
     } catch (error) {
       this.logger.warn('Error fetching product data:', error?.message);
       return {
@@ -295,7 +316,7 @@ export class ConversationService {
       return response;
     } catch (error) {
       this.logger.warn(`Warning: ${error?.message}`);
-      this.logger.warn(`Warning CODE: ${error?.code}`);
+
       // Handle the specific AI error code
       if (
         error.code === 'context_length_exceeded' ||
@@ -456,6 +477,9 @@ export class ConversationService {
       const conversation = await this.conversationRepo.find({
         where: { userId },
         relations: ['messages'],
+        order: {
+          createdAt: 'ASC', // Order messages by 'createdAt' in ascending order
+        },
       });
       return conversation;
     } catch (error) {
@@ -506,6 +530,30 @@ export class ConversationService {
     } catch (error) {
       this.logger.warn('Error deleting chat:', error?.message);
       throw new InternalServerErrorException('Failed to delete chat');
+    }
+  }
+
+  private async updateProductName({
+    conversationRecord,
+    toolProductName,
+  }: {
+    conversationRecord: Conversation;
+    toolProductName: string;
+  }) {
+    try {
+      const existingProducts = conversationRecord.productName
+        ? conversationRecord.productName.split(',')
+        : [];
+
+      if (!existingProducts.includes(toolProductName)) {
+        conversationRecord.productName = existingProducts.length
+          ? `${conversationRecord.productName},${toolProductName}` // Append if existing
+          : toolProductName; // Set if empty
+
+        await this.conversationRepo.save(conversationRecord);
+      }
+    } catch (error) {
+      this.logger.error('Failed to update product name', error?.message);
     }
   }
 }

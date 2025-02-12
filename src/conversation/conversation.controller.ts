@@ -56,6 +56,7 @@ export class ConversationController {
     data: string | any;
     isAIResponse?: boolean;
     conversationId: string;
+    messageId?: string;
   }> {
     if (!question || typeof question !== 'string') {
       throw new Error('Invalid user query.');
@@ -67,13 +68,11 @@ export class ConversationController {
 
     const userId = req.user?.id;
 
-    const { data, conversationId: conId } =
-      await this.conversationService.threadConversation({
-        userQuery: question,
-        userId: userId || null,
-        conversationId: conversationId,
-      });
-    return { data, conversationId: conId };
+    return await this.conversationService.threadConversation({
+      userQuery: question,
+      userId: userId || null,
+      conversationId: conversationId,
+    });
   }
 
   @Get('messages')
@@ -153,7 +152,9 @@ export class ConversationController {
 
   @Delete('chat/:id')
   @UseGuards(AuthGuard('jwt'))
-  async deleteConversationChat(@Param('id') chatId: string): Promise<any> {
+  async deleteConversationChat(
+    @Param('id') chatId: string,
+  ): Promise<{ message: string }> {
     if (!chatId) {
       throw new BadRequestException('Chat ID is required');
     }
