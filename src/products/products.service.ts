@@ -9,7 +9,11 @@ import * as path from 'path';
 import { sanitizeFileName, extractAndStorePIds } from 'src/scraper/utils';
 import { SupportProductInternalContent } from './entities/internal_content.entity';
 import { filterContentData, scrapeInternalSection } from './utils';
-import { AI_RESPONSE_PROMPT, findSectionDetailsTool } from './constants';
+import {
+  ADMIN_USER_VALUES,
+  AI_RESPONSE_PROMPT,
+  findSectionDetailsTool,
+} from './constants';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -576,7 +580,9 @@ export class ProductsService {
     userQuery: string;
     productData: any;
   }): Promise<string> {
-    const data = await this.userService.findUserValueByName('ai_prompt');
+    const data = await this.userService.findUserValueByName(
+      ADMIN_USER_VALUES.AI_PROMPT,
+    );
     const aiPrompt = data?.text || AI_RESPONSE_PROMPT;
 
     const response = await this.openai.chat.completions.create({

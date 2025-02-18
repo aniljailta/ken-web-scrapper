@@ -4,6 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ADMIN_USER_VALUES } from 'src/products/constants';
 import { RequestTrackerService } from 'src/request-tracker/request-tracker.service';
 import { UsersService } from 'src/users/users.service';
 
@@ -33,7 +34,7 @@ export class LifetimeRequestGuard extends AuthGuard('jwt') {
     const requestCount = await this.requestTrackerService.trackRequest(ip);
 
     const userPerDayRequestData = await this.userService.findUserValueByName(
-      'free_request_per_day',
+      ADMIN_USER_VALUES.FREE_REQUEST_PER_DAY,
     );
 
     const userPerDayRequestCount = Number(userPerDayRequestData?.text) || 10;

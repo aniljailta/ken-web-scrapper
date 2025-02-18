@@ -10,6 +10,7 @@ import { Message } from './entities/message.entity';
 import { Repository } from 'typeorm';
 import { ProductsService } from 'src/products/products.service';
 import {
+  ADMIN_USER_VALUES,
   AI_RESPONSE_PROMPT,
   findSectionDetailsTool,
 } from 'src/products/constants';
@@ -121,7 +122,7 @@ export class ConversationService {
 
       if (!productName || typeof productName !== 'string') {
         return {
-          data: 'Unable to identify a valid product from your query.',
+          data: "I wasn't able to find a match for the product you requested. Could you please provide the correct product name, PID, or some more details about the product you're looking for? I’d be happy to assist you further!",
           conversationId: '',
         };
       }
@@ -160,7 +161,7 @@ export class ConversationService {
       }
       return {
         data: aiResponse,
-        conversationId: conversationData.id,
+        conversationId: conversationData.id || '',
       };
     } catch (error) {
       this.logger.warn('Error fetching product data:', error?.message);
@@ -258,8 +259,13 @@ export class ConversationService {
     productName: string;
     productAttributes: string[];
   }> {
+    const userDefineAIModal = await this.userService.findUserValueByName(
+      ADMIN_USER_VALUES.GPT_MODAL,
+    );
+
+    const openAiModal = userDefineAIModal?.text || this.openaiModal;
     const response = await this.openai.chat.completions.create({
-      model: this.openaiModal,
+      model: openAiModal,
       messages: [
         {
           role: 'user',
@@ -360,11 +366,18 @@ export class ConversationService {
     productData: any;
     messageData?: Message[];
   }): Promise<string> {
-    const data = await this.userService.findUserValueByName('ai_prompt');
+    const data = await this.userService.findUserValueByName(
+      ADMIN_USER_VALUES.AI_PROMPT,
+    );
     const aiPrompt = data?.text || AI_RESPONSE_PROMPT;
 
+    const userDefineAIModal = await this.userService.findUserValueByName(
+      ADMIN_USER_VALUES.GPT_MODAL,
+    );
+    const openAiModal = userDefineAIModal?.text || this.openaiModal;
+
     const response = await this.openai.chat.completions.create({
-      model: this.openaiModal,
+      model: openAiModal,
       messages: [
         ...messageData,
         {
@@ -530,6 +543,21 @@ export class ConversationService {
     } catch (error) {
       this.logger.warn('Error deleting chat:', error?.message);
       throw new InternalServerErrorException('Failed to delete chat');
+    }
+  }
+
+  async deleteAllChatsByUserId(userId: string): Promise<void> {
+    try {
+      const chats = await this.conversationRepo.find({
+        where: { userId: userId },
+      });
+      if (!chats || chats.length === 0) {
+        throw new NotFoundException('No chats found for this user');
+      }
+      await this.conversationRepo.delete({ userId: userId });
+    } catch (error) {
+      this.logger.warn('Error deleting chats:', error?.message);
+      throw new Error(error?.message || 'Failed to delete chats');
     }
   }
 

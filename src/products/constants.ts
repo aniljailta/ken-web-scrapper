@@ -106,3 +106,9 @@ export const AI_RESPONSE_PROMPT = `
       - Keep the response clear and concise.
 
         `;
+
+export const ADMIN_USER_VALUES = {
+  AI_PROMPT: 'ai_prompt',
+  GPT_MODAL: 'gpt_modal',
+  FREE_REQUEST_PER_DAY: 'free_request_per_day',
+};

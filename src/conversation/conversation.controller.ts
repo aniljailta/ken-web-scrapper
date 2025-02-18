@@ -163,4 +163,15 @@ export class ConversationController {
 
     return { message: 'Chat deleted successfully' };
   }
+
+  @Delete('all-chats')
+  @UseGuards(AuthGuard('jwt'))
+  async deleteAllUserChats(@Req() req): Promise<{ message: string }> {
+    const userId = req.user.id;
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+    await this.conversationService.deleteAllChatsByUserId(userId);
+    return { message: 'All chats deleted successfully' };
+  }
 }
