@@ -190,7 +190,8 @@ export class ConversationService {
       const toolFunction = await this.functionalToolCalling({ userQuery });
 
       const toolProductName = toolFunction.productName;
-      const conversationProductName = conversationRecord.productName?.trim();
+      const conversationProductName =
+        conversationRecord?.productName?.trim() || '';
 
       // Check if toolProductName is valid (not empty and not "C1-C2720X-24PS-L")
       const isValidToolProduct =
@@ -202,7 +203,7 @@ export class ConversationService {
         : conversationProductName;
 
       // Check if we need to update conversationRecord.productName
-      if (isValidToolProduct) {
+      if (isValidToolProduct && conversationRecord) {
         this.updateProductName({ conversationRecord, toolProductName });
       }
 
