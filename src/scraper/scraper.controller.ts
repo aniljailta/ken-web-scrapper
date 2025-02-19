@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ScraperService } from './scraper.service';
 import { ECommerceService } from './ecommerce.services';
 
@@ -40,12 +40,13 @@ export class ScraperController {
   //   const response = await this.scraperService.scapeToDataBase();
   //   return response;
   // }
-  // // To scrape the product data to products-list.json
-  // @Get('scrape-support-product-links')
-  // async scrapeSupportProductsDataLinks() {
-  //   this.scraperService.scrapeSupportProductsDataLinks();
-  //   return { message: 'scrapping started' };
-  // }
+
+  // To scrape the product data to products-list.json
+  @Get('scrape-support-product-links')
+  async scrapeSupportProductsDataLinks() {
+    this.scraperService.scrapeSupportProductsDataLinks();
+    return { message: 'scrapping started' };
+  }
 
   // // // To merge the product data from products-list.json file to additional-products-list
   // // @Get('merge-all-products')
