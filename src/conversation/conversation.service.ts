@@ -17,6 +17,7 @@ import {
 import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from 'src/users/users.service';
+import { MixpanelService } from 'src/mixpanel/mixpanel.service';
 
 @Injectable()
 export class ConversationService {
@@ -33,6 +34,7 @@ export class ConversationService {
     private readonly productService: ProductsService,
     private readonly configService: ConfigService,
     private readonly userService: UsersService,
+    private readonly mixpanelService: MixpanelService,
   ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
 
@@ -520,6 +522,20 @@ export class ConversationService {
 
       message.reactionStatus = reactionStatus;
       await this.messageRepo.save(message);
+
+      // Track Mixpanel event with message details
+      this.mixpanelService.track('Message Reaction', {
+        distinct_id: message.conversationId,
+        messageId: message.id,
+        reactionStatus:
+          reactionStatus === null
+            ? 'no reaction'
+            : reactionStatus
+              ? 'like'
+              : 'dislike',
+        messageText: message.content,
+        timestamp: new Date().toISOString(),
+      });
 
       return message;
     } catch (error) {

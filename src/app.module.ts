@@ -14,6 +14,7 @@ import { RequestTrackerService } from './request-tracker/request-tracker.service
 import { RequestTracker } from './request-tracker/entities/request_tracker.entity';
 import { LifetimeRequestGuard } from './guards/lifetime-request.guard';
 import { ConversationModule } from './conversation/conversation.module';
+import { MixpanelModule } from './mixpanel/mixpanel.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ConversationModule } from './conversation/conversation.module';
     AuthModule,
     TypeOrmModule.forFeature([RequestTracker]),
     ConversationModule,
+    MixpanelModule,
   ],
   controllers: [AppController],
   providers: [AppService, RequestTrackerService, LifetimeRequestGuard],

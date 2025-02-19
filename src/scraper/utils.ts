@@ -901,7 +901,7 @@ export function extractAndStorePIds(productItem: any) {
 }
 
 export function checkUrlIncludesWords(url: string) {
-  const arr = [
+  const includeArr = [
     'data',
     'sheet',
     'end',
@@ -912,20 +912,22 @@ export function checkUrlIncludesWords(url: string) {
     'data sheet',
     'datasheet',
     'ds',
-    'bulletin',
   ];
+
+  const excludeArr = ['release', 'datacenter', 'release_notes'];
+
   // Normalize the URL by removing special characters and converting to lowercase
-  const normalizedUrl = url
-    .replace(/[^a-zA-Z0-9 ]/g, ' ') // Replace special characters with space
-    .toLowerCase();
+  const normalizedUrl = url.replace(/[^a-zA-Z0-9 ]/g, ' ').toLowerCase();
 
-  // Iterate through each word/phrase in the array 'a'
-  return arr.some((phrase) => {
-    const normalizedPhrase = phrase.toLowerCase();
+  // Exclude URLs that contain any word from excludeArr
+  if (excludeArr.some((word) => normalizedUrl.includes(word))) {
+    return false;
+  }
 
-    // Check if the phrase (or word) exists as a substring in the normalized URL
-    return normalizedUrl.includes(normalizedPhrase);
-  });
+  // Check if any word/phrase from includeArr exists in the normalized URL
+  return includeArr.some((phrase) =>
+    normalizedUrl.includes(phrase.toLowerCase()),
+  );
 }
 
 export function refineTable(html: string) {
