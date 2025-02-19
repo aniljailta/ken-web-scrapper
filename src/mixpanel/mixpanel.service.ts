@@ -10,7 +10,7 @@ export class MixpanelService {
 
     if (!token) {
       this.logger.warn(
-        '⚠️ Mixpanel token is missing! Please set MIXPANEL_TOKEN in your environment variables.',
+        'Mixpanel token is missing! Please set MIXPANEL_TOKEN in your environment variables.',
       );
       return;
     }
@@ -28,7 +28,7 @@ export class MixpanelService {
       }
       this.mixpanel.track(event, data);
     } catch (error) {
-      console.error('Mixpanel tracking error:', error);
+      this.logger.error('Mixpanel tracking error:', error?.message);
     }
   }
 }
