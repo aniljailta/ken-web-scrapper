@@ -9,10 +9,12 @@ import { JwtStrategy } from './jwt.strategy';
 import { UsersService } from 'src/users/users.service';
 import { UserValues } from 'src/users/entities/values.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Conversation } from 'src/conversation/entities/conversation.entity';
+import { Message } from 'src/conversation/entities/message.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, UserValues]),
+    TypeOrmModule.forFeature([User, UserValues, Conversation, Message]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule], // Import ConfigModule here as well

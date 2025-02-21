@@ -6,6 +6,7 @@ import {
   Param,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
@@ -15,6 +16,31 @@ import { UserValues } from './entities/values.entity';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get('admin-reports')
+  @UseGuards(AuthGuard('jwt'))
+  async getAdminReports(@Req() req) {
+    const user = req.user;
+    if (user.role === 'admin') {
+      const data = await this.usersService.getAdminReports();
+      return { message: 'success', data };
+    }
+
+    return { message: 'Unauthorized' };
+  }
+
+  @Get('conversation-by-user-id')
+  @UseGuards(AuthGuard('jwt'))
+  async getAdminReportsByUserId(@Req() req, @Query('userId') userId: string) {
+    const user = req.user;
+    if (user.role === 'admin') {
+      const data = await this.usersService.getConversationByUserId({ userId });
+      return { message: 'success', data };
+    }
+
+    return { message: 'Unauthorized' };
+  }
+
   @Post('register')
   async register(
     @Body('name') name: string,
