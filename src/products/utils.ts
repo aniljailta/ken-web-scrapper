@@ -34,7 +34,6 @@ export async function scrapeInternalSection(link: string): Promise<{
       const results: Record<string, { text: string; tables: string[] }> = {};
 
       for (const title of sectionTitles) {
-        // console.log({ title });
         const matchingParagraphs = paragraphsData.filter((p) => {
           const paragraphText = p.text.trim().toLowerCase(); // Normalize paragraph text
           const normalizedTitle = title.trim().toLowerCase(); // Normalize title
@@ -134,7 +133,6 @@ export async function scrapeInternalSection(link: string): Promise<{
         }
 
         const formattedKey = title.toLowerCase().replace(/\s+/g, '_');
-        // console.log({ formattedKey });
         results[formattedKey] = {
           text: combinedText.trim(), // Final merged text
           tables: combinedTables, // Array of all table HTML strings
