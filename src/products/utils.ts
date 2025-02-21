@@ -8,8 +8,8 @@ export async function scrapeInternalSection(link: string): Promise<{
   pidData: string[];
 }> {
   let browser: puppeteer.Browser | null = null;
-  const initialTimeout = 20000; // Initial timeout in milliseconds
-  const extendedTimeout = 50000; // Extended timeout in milliseconds
+  const initialTimeout = 30000; // Initial timeout in milliseconds
+  const extendedTimeout = 60000; // Extended timeout in milliseconds
 
   const scrapeData = async (timeout: number) => {
     try {

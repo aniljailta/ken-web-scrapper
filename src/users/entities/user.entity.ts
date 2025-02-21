@@ -1,8 +1,10 @@
+import { Conversation } from 'src/conversation/entities/conversation.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity()
@@ -22,6 +24,9 @@ export class User {
   @Column({ type: 'enum', enum: ['admin', 'user'], default: 'user' })
   role: string;
 
+  @Column({ type: 'int', default: 0 })
+  tokensUsed: number;
+
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
@@ -31,4 +36,9 @@ export class User {
     },
   })
   created_date: Date;
+
+  @OneToMany(() => Conversation, (conversation) => conversation.user, {
+    cascade: true, // Deletes conversations when the user is deleted
+  })
+  conversations: Conversation[];
 }

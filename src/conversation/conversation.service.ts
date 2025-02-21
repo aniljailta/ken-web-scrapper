@@ -152,6 +152,7 @@ export class ConversationService {
       const aiResponse = await this.generateAiResponse({
         userQuery,
         productData,
+        userId,
       });
 
       if (conversationData.id) {
@@ -229,6 +230,7 @@ export class ConversationService {
         userQuery,
         productData,
         messageData: conversationRecord.messages,
+        userId,
       });
 
       const responseData = {
@@ -304,10 +306,12 @@ export class ConversationService {
     userQuery,
     productData,
     messageData,
+    userId,
   }: {
     userQuery: string;
     productData: any[];
     messageData?: Message[];
+    userId?: string | null;
   }): Promise<string> {
     if (!productData.length) {
       const fallbackResponse = await this.generateFallbackResponse(userQuery);
@@ -320,6 +324,7 @@ export class ConversationService {
         productData: productData,
         userQuery,
         messageData,
+        userId,
       });
 
       return response;
@@ -345,6 +350,7 @@ export class ConversationService {
             productData: reducedData,
             userQuery,
             messageData,
+            userId,
           });
 
           return retryResponse;
@@ -364,10 +370,12 @@ export class ConversationService {
     userQuery,
     productData,
     messageData = [],
+    userId,
   }: {
     userQuery: string;
     productData: any;
     messageData?: Message[];
+    userId?: string | null;
   }): Promise<string> {
     const data = await this.userService.findUserValueByName(
       ADMIN_USER_VALUES.AI_PROMPT,
@@ -398,6 +406,10 @@ export class ConversationService {
         },
       ],
     });
+    if (userId) {
+      const usedTokens = response.usage?.total_tokens || 0;
+      this.userService.updateUserTokenUsage(userId, usedTokens);
+    }
 
     return response.choices[0].message.content;
   }
