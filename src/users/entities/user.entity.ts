@@ -32,7 +32,7 @@ export class User {
     default: () => 'CURRENT_TIMESTAMP',
     transformer: {
       to: (value) => value,
-      from: (value) => new Date(value.toISOString()), // Ensures the date is returned in UTC
+      from: (value) => (value ? new Date(value.toISOString()) : new Date()), // Ensures the date is returned in UTC
     },
   })
   created_date: Date;

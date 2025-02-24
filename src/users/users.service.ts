@@ -129,15 +129,15 @@ export class UsersService {
         .leftJoinAndSelect('conversation.messages', 'messages')
         .leftJoinAndSelect('conversation.user', 'user')
         .select([
-          "unnest(string_to_array(COALESCE(conversation.productName, ''), ',')) AS productName",
-          'COUNT(DISTINCT conversation.id) AS count',
+          "unnest(string_to_array(conversation.productName, ',')) AS productName", // Split productName into individual names
+          'COUNT(DISTINCT conversation.id) AS count', // Count distinct conversations
           'json_agg(DISTINCT messages) AS messages', // Aggregate messages
-          "jsonb_build_object('id', user.id, 'name', user.name, 'email', user.email) AS user", // User object
+          "json_agg(DISTINCT jsonb_build_object('id', user.id, 'name', user.name, 'email', user.email)) AS users", // Aggregate users
         ])
         .where(
           "conversation.productName IS NOT NULL AND conversation.productName <> ''",
         )
-        .groupBy('productName, user.id, user.name, user.email') // Ensure proper grouping
+        .groupBy('productName') // Group only by productName
         .orderBy('count', 'DESC') // Sort by count in descending order
         .getRawMany()
         .catch((): Conversation[] => []),
