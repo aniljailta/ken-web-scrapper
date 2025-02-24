@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 
 import * as bcrypt from 'bcryptjs';
 import { UserValues } from './entities/values.entity';
@@ -165,13 +165,30 @@ export class UsersService {
     };
   }
 
-  async getConversationByUserId({ userId }): Promise<Conversation[]> {
-    // Define all the promises
-
+  async getConversationByUserId({
+    userId,
+  }: {
+    userId: string;
+  }): Promise<Conversation[]> {
     return await this.conversationRepo
       .find({
         where: { userId: userId },
         relations: ['messages', 'user'],
+        order: { createdAt: 'ASC' },
+      })
+      .catch((): Conversation[] => []);
+  }
+
+  async getConversationByProductName(
+    productName: string,
+  ): Promise<Conversation[]> {
+    return this.conversationRepo
+      .find({
+        where: {
+          productName: ILike(`%${productName}%`),
+        },
+        relations: ['messages', 'user'],
+        order: { createdAt: 'ASC' },
       })
       .catch((): Conversation[] => []);
   }

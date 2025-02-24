@@ -38,7 +38,23 @@ export class UsersController {
       return { message: 'success', data };
     }
 
-    return { message: 'Unauthorized' };
+    return { message: 'Unauthorized', data: [] };
+  }
+
+  @Get('conversation-by-product-name')
+  @UseGuards(AuthGuard('jwt'))
+  async getConversationByProductName(
+    @Req() req,
+    @Query('productName') productName: string,
+  ) {
+    const user = req.user;
+    if (user.role === 'admin') {
+      const data =
+        await this.usersService.getConversationByProductName(productName);
+      return { message: 'success', data };
+    }
+
+    return { message: 'Unauthorized', data: [] };
   }
 
   @Post('register')

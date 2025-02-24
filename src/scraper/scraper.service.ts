@@ -667,9 +667,9 @@ export class ScraperService implements OnModuleInit {
   async scrapeSupportProductsDataLinks(): Promise<void> {
     this.scrapedData = [];
     const categories = await this.scrapeCategories();
-    const filterCat = categories.filter((i) => i.categoryName === 'Switches');
+    // const filterCat = categories.filter((i) => i.categoryName === 'Switches');
 
-    for (const category of filterCat) {
+    for (const category of categories) {
       const { categoryName, categoryLink: link } = category;
       // this.logger.log(`Scrapping products of category: ${categoryName}`);
 
