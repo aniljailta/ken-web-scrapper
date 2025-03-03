@@ -575,6 +575,24 @@ export class ConversationService {
     }
   }
 
+  async getChatById(userId: string, chatId: string): Promise<Conversation> {
+    try {
+      const chat = await this.conversationRepo.findOne({
+        where: { id: chatId, userId },
+        relations: ['messages'],
+      });
+
+      if (!chat) {
+        throw new NotFoundException('Chat not found');
+      }
+
+      return chat;
+    } catch (error) {
+      this.logger.warn('Error While Fetching chat:', error?.message);
+      throw new InternalServerErrorException('Failed to Fetch chat');
+    }
+  }
+
   async deleteAllChatsByUserId(userId: string): Promise<void> {
     try {
       const chats = await this.conversationRepo.find({

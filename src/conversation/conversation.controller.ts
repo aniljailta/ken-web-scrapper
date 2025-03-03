@@ -164,6 +164,29 @@ export class ConversationController {
     return { message: 'Chat deleted successfully' };
   }
 
+  @Get('chat/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async getConversationById(
+    @Param('id') chatId: string,
+    @Req() req,
+  ): Promise<{ data: Conversation; message: string }> {
+    if (!chatId) {
+      throw new BadRequestException('Chat ID is required');
+    }
+
+    const userId = req.user.id;
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+
+    const conversation = await this.conversationService.getChatById(
+      userId,
+      chatId,
+    );
+
+    return { data: conversation, message: 'Fetched User Conversation' };
+  }
+
   @Delete('all-chats')
   @UseGuards(AuthGuard('jwt'))
   async deleteAllUserChats(@Req() req): Promise<{ message: string }> {
