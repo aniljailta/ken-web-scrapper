@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { ILike, Repository } from 'typeorm';
@@ -7,6 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import { UserValues } from './entities/values.entity';
 import { Conversation } from 'src/conversation/entities/conversation.entity';
 import { Message } from 'src/conversation/entities/message.entity';
+import { generateBetaUsername } from './utils';
 
 @Injectable()
 export class UsersService {
@@ -49,6 +50,58 @@ export class UsersService {
       }
       return { user: null, message: 'An unexpected error occurred' };
     }
+  }
+
+  async createBetaUser(
+    email: string,
+    password: string,
+  ): Promise<{ user: User | null; message: string }> {
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const name = generateBetaUsername();
+      const user = this.userRepository.create({
+        name,
+        email,
+        password: hashedPassword,
+        role: 'beta',
+      });
+      return {
+        user: await this.userRepository.save(user),
+        message: 'Beta user Created!',
+      };
+    } catch (error) {
+      console.log('🚀 ~ UsersService ~ error:', error);
+      if (error.code === '23505') {
+        // Unique constraint violation for PostgreSQL
+        return { user: null, message: 'User with this email already exists' };
+      }
+      return { user: null, message: 'An unexpected error occurred' };
+    }
+  }
+
+  async findBetaUsers(): Promise<any> {
+    const data = await this.userRepository.find({ where: { role: 'beta' } });
+    return {
+      data,
+      message: '',
+    };
+  }
+
+  async deleteBetaUser(id: string) {
+    const checkUser = await this.userRepository.findOne({
+      where: { id, role: 'beta' },
+    });
+    if (!checkUser) {
+      throw new NotFoundException('No User Found');
+    }
+
+    await this.userRepository.delete({
+      id: checkUser.id,
+    });
+    return {
+      data: null,
+      message: 'Beta User Deleted',
+    };
   }
 
   async findOne(email: string): Promise<User | undefined> {

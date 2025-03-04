@@ -174,15 +174,7 @@ export class ConversationController {
       throw new BadRequestException('Chat ID is required');
     }
 
-    const userId = req.user.id;
-    if (!userId) {
-      throw new BadRequestException('User ID is required');
-    }
-
-    const conversation = await this.conversationService.getChatById(
-      userId,
-      chatId,
-    );
+    const conversation = await this.conversationService.getChatById(chatId);
 
     return { data: conversation, message: 'Fetched User Conversation' };
   }

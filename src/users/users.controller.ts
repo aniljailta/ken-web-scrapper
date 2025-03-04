@@ -7,6 +7,7 @@ import {
   UseGuards,
   Req,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
@@ -65,6 +66,24 @@ export class UsersController {
     @Body('role') role: string,
   ): Promise<{ user: User | null; message: string }> {
     return this.usersService.create(name, email, password, role);
+  }
+
+  @Post('invite-beta-user')
+  async inviteBetaTester(
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ): Promise<{ user: User | null; message: string }> {
+    return this.usersService.createBetaUser(email, password);
+  }
+
+  @Get('beta-users')
+  async getAllBetaUsers(): Promise<User[]> {
+    return this.usersService.findBetaUsers();
+  }
+
+  @Delete('beta-user/:id')
+  async(@Param('id') id: string): Promise<any> {
+    return this.usersService.deleteBetaUser(id);
   }
 
   @Get(':email')

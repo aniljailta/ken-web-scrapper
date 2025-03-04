@@ -575,10 +575,10 @@ export class ConversationService {
     }
   }
 
-  async getChatById(userId: string, chatId: string): Promise<Conversation> {
+  async getChatById(chatId: string): Promise<Conversation> {
     try {
       const chat = await this.conversationRepo.findOne({
-        where: { id: chatId, userId },
+        where: { id: chatId },
         relations: ['messages'],
       });
 
