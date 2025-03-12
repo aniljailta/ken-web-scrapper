@@ -124,7 +124,7 @@ export class ConversationService {
 
       if (!productName || typeof productName !== 'string') {
         return {
-          data: "I wasn't able to find a match for the product you requested. Could you please provide the correct product name, PID, or some more details about the product you're looking for? I’d be happy to assist you further!",
+          data: "I couldn't find a match for the product you requested. Could you provide the correct product name, PID, or any additional details? I'd be happy to assist you further!",
           conversationId: '',
         };
       }
@@ -293,7 +293,6 @@ export class ConversationService {
       ],
       tools: findSectionDetailsTool as any,
     });
-
     // this.logger.log(`The user is Asking "${userQuery}"`);
     if (response.choices[0].message.tool_calls) {
       const functionCall = response.choices[0].message.tool_calls[0].function;
@@ -473,10 +472,10 @@ export class ConversationService {
 
   private getStaticFallbackResponse(userQuery: string): string {
     const fallbackResponses = [
-      `I couldn't find specific information about your query: "${userQuery}". Could you please provide more details?`,
-      `Thank you for your query. I'm unable to find an exact match for "${userQuery}". Would you like to try a broader search or rephrase your question?`,
-      `I apologize, but I couldn't locate the specific product or information you're looking for. Can you help me understand your request better?`,
-      `It seems the details you're seeking aren't in our current database. Let me help you find the right information. Could you tell me more about what you're looking for?`,
+      `I couldn't find specific information regarding your query: "${userQuery}". Could you provide more details?`,
+      `Thank you for your query. I couldn't find an exact match for "${userQuery}". Would you like to try a broader search or rephrase your question?`,
+      `I apologize, but I couldn't locate the specific product or information you're looking for. Could you clarify your request?`,
+      `It seems the details you're looking for aren't in our current database. Let me help you find the right information. Could you share more details?`,
     ];
 
     // Randomly select a fallback response for variety

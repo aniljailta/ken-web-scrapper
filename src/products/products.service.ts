@@ -723,10 +723,10 @@ export class ProductsService {
 
   private getStaticFallbackResponse(userQuery: string): string {
     const fallbackResponses = [
-      `I couldn't find specific information about your query: "${userQuery}". Could you please provide more details?`,
-      `Thank you for your query. I'm unable to find an exact match for "${userQuery}". Would you like to try a broader search or rephrase your question?`,
-      `I apologize, but I couldn't locate the specific product or information you're looking for. Can you help me understand your request better?`,
-      `It seems the details you're seeking aren't in our current database. Let me help you find the right information. Could you tell me more about what you're looking for?`,
+      `I couldn't find specific information regarding your query: "${userQuery}". Could you provide more details?`,
+      `Thank you for your query. I couldn't find an exact match for "${userQuery}". Would you like to try a broader search or rephrase your question?`,
+      `I apologize, but I couldn't locate the specific product or information you're looking for. Could you clarify your request?`,
+      `It seems the details you're looking for aren't in our current database. Let me help you find the right information. Could you share more details?`,
     ];
 
     // Randomly select a fallback response for variety
