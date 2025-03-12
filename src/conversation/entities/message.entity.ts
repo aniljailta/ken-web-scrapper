@@ -22,6 +22,9 @@ export class Message {
   @Column()
   conversationId: string;
 
+  @Column({ type: 'boolean', default: false })
+  isFlag: boolean;
+
   @ManyToOne(() => Conversation, (conversation) => conversation.id, {
     onDelete: 'CASCADE',
   })

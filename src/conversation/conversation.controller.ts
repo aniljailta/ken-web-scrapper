@@ -150,6 +150,28 @@ export class ConversationController {
     return { message: 'Reaction updated successfully', data: updatedMessage };
   }
 
+  @Post('flag/message/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async markMessageAsFlagged(
+    @Param('id') messageId: string,
+  ): Promise<{ message: string }> {
+    if (!messageId) {
+      throw new BadRequestException('Message ID is required');
+    }
+
+    await this.conversationService.reportMessage(messageId);
+
+    return { message: 'Chat Has Been Reported!' };
+  }
+
+  @Get('flag/messages')
+  @UseGuards(AuthGuard('jwt'))
+  async fetchAllFlagMessages(): Promise<{ message: string; data: Message[] }> {
+    const data = await this.conversationService.fetchFlaggedMessages();
+
+    return { message: '', data };
+  }
+
   @Delete('chat/:id')
   @UseGuards(AuthGuard('jwt'))
   async deleteConversationChat(

@@ -120,7 +120,7 @@ export class ConversationService {
   }): Promise<{ data: string; conversationId: string }> {
     try {
       const { productName, productAttributes } =
-        await this.functionalToolCalling({ userQuery });
+        await this.functionalToolCalling({ userQuery, messages: [] });
 
       if (!productName || typeof productName !== 'string') {
         return {
@@ -190,7 +190,10 @@ export class ConversationService {
         conversationId,
       });
 
-      const toolFunction = await this.functionalToolCalling({ userQuery });
+      const toolFunction = await this.functionalToolCalling({
+        userQuery,
+        messages: conversationRecord?.messages || [],
+      });
 
       const toolProductName = toolFunction.productName;
       const conversationProductName =
@@ -260,7 +263,13 @@ export class ConversationService {
     }
   }
 
-  async functionalToolCalling({ userQuery }: { userQuery: string }): Promise<{
+  async functionalToolCalling({
+    userQuery,
+    messages,
+  }: {
+    userQuery: string;
+    messages: Message[];
+  }): Promise<{
     productName: string;
     productAttributes: string[];
   }> {
@@ -269,16 +278,20 @@ export class ConversationService {
     );
 
     const openAiModal = userDefineAIModal?.text || this.openaiModal;
+    const mappedPreviousChats = messages.map(({ content, role }) => ({
+      role,
+      content,
+    }));
     const response = await this.openai.chat.completions.create({
       model: openAiModal,
       messages: [
+        ...mappedPreviousChats,
         {
           role: 'user',
           content: userQuery,
         },
       ],
       tools: findSectionDetailsTool as any,
-      temperature: 0.6,
     });
 
     // this.logger.log(`The user is Asking "${userQuery}"`);
@@ -288,7 +301,6 @@ export class ConversationService {
       if (functionCall.name === 'fetch_section_details') {
         const parsedArguments = JSON.parse(functionCall.arguments);
         const productName = parsedArguments.product?.trim() || '';
-
         return {
           productName: productName,
           productAttributes: parsedArguments.queries,
@@ -381,16 +393,21 @@ export class ConversationService {
       ADMIN_USER_VALUES.AI_PROMPT,
     );
     const aiPrompt = data?.text || AI_RESPONSE_PROMPT;
-
     const userDefineAIModal = await this.userService.findUserValueByName(
       ADMIN_USER_VALUES.GPT_MODAL,
     );
     const openAiModal = userDefineAIModal?.text || this.openaiModal;
 
+    // Re Fining the Previous Messages
+    const previousChats = messageData.map(({ content, role }) => ({
+      content,
+      role,
+    }));
+
     const response = await this.openai.chat.completions.create({
       model: openAiModal,
       messages: [
-        ...messageData,
+        ...previousChats,
         {
           role: 'system',
           content: aiPrompt,
@@ -572,6 +589,42 @@ export class ConversationService {
     } catch (error) {
       this.logger.warn('Error deleting chat:', error?.message);
       throw new InternalServerErrorException('Failed to delete chat');
+    }
+  }
+
+  async reportMessage(messageId: string): Promise<void> {
+    try {
+      const chat = await this.messageRepo.findOne({
+        where: { id: messageId },
+      });
+
+      if (!chat) {
+        throw new NotFoundException('No Message Found with this ID!');
+      }
+
+      await this.messageRepo.update(
+        { id: chat.id },
+        {
+          isFlag: !chat.isFlag,
+        },
+      );
+    } catch (error) {
+      this.logger.warn('Error while Reporting Message:', error?.message);
+      throw new InternalServerErrorException('Failed to Report Message');
+    }
+  }
+
+  async fetchFlaggedMessages(): Promise<Message[]> {
+    try {
+      const messages = await this.messageRepo.find({
+        where: { isFlag: true },
+        relations: ['conversation', 'conversation.user'],
+      });
+
+      return messages;
+    } catch (error) {
+      this.logger.warn('Error while Fetching Messages:', error?.message);
+      throw new InternalServerErrorException('Failed to Fetch Messages');
     }
   }
 
