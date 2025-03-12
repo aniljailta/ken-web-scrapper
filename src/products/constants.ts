@@ -56,7 +56,7 @@ export const findSectionDetailsTool = [
     function: {
       name: 'fetch_section_details',
       description:
-        'Fetch details about specific sections of a product based on the user query',
+        'Retrieve detailed information about specific product sections based on user queries.',
       parameters: {
         type: 'object',
         properties: {
@@ -64,21 +64,23 @@ export const findSectionDetailsTool = [
             type: 'array',
             items: {
               type: 'string',
-              description: `You are an intelligent chatbot that analyzes user queries and maps them to the most relevant keyword(s) from the following array: ${Chat_GPT_Titles.join(
-                ', ',
-              )}.
-                Instructions:
-                Carefully analyze the user's query and understand the intent.
-                Match the intent of the query with the most relevant keyword(s) from the array.
-                If the query is broad or ambiguous, provide the most general keyword that fits (e.g., 'overview' or 'introduction').
-                If the query is highly specific, choose the keyword that directly relates to the detailed part of the query.
-                Return only the keyword(s) from the list that best match the query, ensuring accuracy and relevance.`,
+              description: `You are an intelligent chatbot that maps user queries to the most relevant keyword(s) from the predefined list: ${Chat_GPT_Titles.join(', ')}.
+            Instructions:
+            - Analyze the user's query intent thoroughly.
+            - Select the most relevant keyword(s) from the list that match the intent.
+            - If the query is broad or unclear, return a general keyword such as 'overview' or 'introduction'.
+            - For specific queries, return the most precise matching keyword(s).
+            - Always prioritize accuracy and relevance.`,
             },
+            minItems: 1,
+            uniqueItems: true,
           },
           product: {
             type: 'string',
-            description:
-              'The product name or PID the user is referencing (e.g., C1-C2720X-24PS-L, 3560-CX, 9000 , 9500, 7000 etc. as these are cisco product series) and if there are multiple product so separate them with space. If the user does not explicitly mention a product, return an empty string ("").',
+            description: `The product name or PID the user is referencing (e.g., C1-C2720X-24PS-L, 3560-CX, 9000, 9500, 7000).
+          - If multiple products are mentioned, separate them with a space.
+          - If the user does not explicitly specify a product, return an empty string ("").`,
+            minLength: 0,
           },
         },
         required: ['queries', 'product'],
