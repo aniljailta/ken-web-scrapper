@@ -18,6 +18,8 @@ import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from 'src/users/users.service';
 import { MixpanelService } from 'src/mixpanel/mixpanel.service';
+import { SocketGateway } from 'src/gateways/socket.gateway';
+import { encoding_for_model } from 'tiktoken';
 
 @Injectable()
 export class ConversationService {
@@ -34,6 +36,7 @@ export class ConversationService {
     private readonly productService: ProductsService,
     private readonly configService: ConfigService,
     private readonly userService: UsersService,
+    private readonly gatewayService: SocketGateway,
     private readonly mixpanelService: MixpanelService,
   ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
@@ -396,6 +399,7 @@ export class ConversationService {
       ADMIN_USER_VALUES.GPT_MODAL,
     );
     const openAiModal = userDefineAIModal?.text || this.openaiModal;
+    let wholeResponse = '';
 
     // Re Fining the Previous Messages
     const previousChats = messageData.map(({ content, role }) => ({
@@ -405,6 +409,7 @@ export class ConversationService {
 
     const response = await this.openai.chat.completions.create({
       model: openAiModal,
+      stream: true,
       messages: [
         ...previousChats,
         {
@@ -422,12 +427,18 @@ export class ConversationService {
         },
       ],
     });
-    if (userId) {
-      const usedTokens = response.usage?.total_tokens || 0;
-      this.userService.updateUserTokenUsage(userId, usedTokens);
+    for await (const chunk of response) {
+      this.gatewayService.sendMessageToUser(userId, chunk.choices[0]);
+      if (chunk.choices[0].finish_reason !== 'stop') {
+        wholeResponse += chunk.choices[0].delta.content;
+      }
     }
 
-    return response.choices[0].message.content;
+    if (userId) {
+      const usedTokens = this.calculateTokens(openAiModal, wholeResponse);
+      this.userService.updateUserTokenUsage(userId, usedTokens);
+    }
+    return wholeResponse;
   }
 
   async generateFallbackResponse(userQuery: string) {
@@ -658,6 +669,12 @@ export class ConversationService {
       this.logger.warn('Error deleting chats:', error?.message);
       throw new Error(error?.message || 'Failed to delete chats');
     }
+  }
+
+  private calculateTokens(openAiModel: string, content?: string) {
+    return content
+      ? encoding_for_model(openAiModel as any).encode(content).length
+      : 0;
   }
 
   private async updateProductName({

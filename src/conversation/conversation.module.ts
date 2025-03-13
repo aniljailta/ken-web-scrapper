@@ -9,6 +9,7 @@ import { ProductsModule } from 'src/products/products.module';
 import { RequestTracker } from 'src/request-tracker/entities/request_tracker.entity';
 import { RequestTrackerService } from 'src/request-tracker/request-tracker.service';
 import { MixpanelModule } from 'src/mixpanel/mixpanel.module';
+import { SocketGateway } from 'src/gateways/socket.gateway';
 
 @Module({
   imports: [
@@ -18,7 +19,12 @@ import { MixpanelModule } from 'src/mixpanel/mixpanel.module';
     MixpanelModule,
   ],
   controllers: [ConversationController],
-  providers: [ConversationService, ProductsModule, RequestTrackerService],
+  providers: [
+    ConversationService,
+    ProductsModule,
+    RequestTrackerService,
+    SocketGateway,
+  ],
   exports: [ConversationService],
 })
 export class ConversationModule {}
