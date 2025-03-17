@@ -117,9 +117,11 @@ export class ConversationService {
   async newConversation({
     userQuery,
     userId,
+    guestToken,
   }: {
     userQuery: string;
     userId?: string | null;
+    guestToken?: string | null;
   }): Promise<{ data: string; conversationId: string }> {
     try {
       const { productName, productAttributes } =
@@ -156,6 +158,7 @@ export class ConversationService {
         userQuery,
         productData,
         userId,
+        token: guestToken,
       });
 
       if (conversationData.id) {
@@ -182,10 +185,12 @@ export class ConversationService {
     userQuery,
     userId,
     conversationId,
+    guestToken,
   }: {
     userQuery: string;
     userId?: string | null;
     conversationId: string;
+    guestToken?: string | null;
   }): Promise<{ data: string; messageId?: string; conversationId: string }> {
     try {
       const conversationRecord = await this.getOrCreateConversation({
@@ -237,6 +242,7 @@ export class ConversationService {
         productData,
         messageData: conversationRecord.messages,
         userId,
+        token: guestToken,
       });
 
       const responseData = {
@@ -321,11 +327,13 @@ export class ConversationService {
     productData,
     messageData,
     userId,
+    token,
   }: {
     userQuery: string;
     productData: any[];
     messageData?: Message[];
     userId?: string | null;
+    token?: string | null;
   }): Promise<string> {
     if (!productData.length) {
       const fallbackResponse = await this.generateFallbackResponse(userQuery);
@@ -339,6 +347,7 @@ export class ConversationService {
         userQuery,
         messageData,
         userId,
+        token,
       });
 
       return response;
@@ -365,6 +374,7 @@ export class ConversationService {
             userQuery,
             messageData,
             userId,
+            token,
           });
 
           return retryResponse;
@@ -385,11 +395,13 @@ export class ConversationService {
     productData,
     messageData = [],
     userId,
+    token,
   }: {
     userQuery: string;
     productData: any;
     messageData?: Message[];
     userId?: string | null;
+    token?: string | null;
   }): Promise<string> {
     const data = await this.userService.findUserValueByName(
       ADMIN_USER_VALUES.AI_PROMPT,
@@ -428,7 +440,10 @@ export class ConversationService {
       ],
     });
     for await (const chunk of response) {
-      this.gatewayService.sendMessageToUser(userId, chunk.choices[0]);
+      this.gatewayService.sendMessageToUser(
+        token ? token : userId,
+        chunk.choices[0],
+      );
       if (chunk.choices[0].finish_reason !== 'stop') {
         wholeResponse += chunk.choices[0].delta.content;
       }

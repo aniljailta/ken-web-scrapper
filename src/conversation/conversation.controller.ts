@@ -27,6 +27,7 @@ export class ConversationController {
   async queryFunctionCalling(
     @Req() req,
     @Body('question') question: string,
+    @Query('token') token: string,
   ): Promise<{
     data: string | any;
     isAIResponse?: boolean;
@@ -42,6 +43,7 @@ export class ConversationController {
       await this.conversationService.newConversation({
         userQuery: question,
         userId: userId || null,
+        guestToken: token || null,
       });
     return { data, conversationId: conId };
   }
@@ -51,6 +53,7 @@ export class ConversationController {
   async chatThreadCalling(
     @Req() req,
     @Body('question') question: string,
+    @Query('token') token: string,
     @Body('conversationId') conversationId?: string,
   ): Promise<{
     data: string | any;
@@ -72,6 +75,7 @@ export class ConversationController {
       userQuery: question,
       userId: userId || null,
       conversationId: conversationId,
+      guestToken: token,
     });
   }
 
