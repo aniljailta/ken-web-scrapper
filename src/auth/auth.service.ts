@@ -1,13 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcryptjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findOne(email);
@@ -31,6 +40,53 @@ export class AuthService {
     return {
       access_token: token,
       ...userDetails,
+    };
+  }
+
+  async resetUserPassword(
+    email: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.usersService.findOne(email);
+    if (!user) {
+      throw new NotFoundException('No User Found with this Email');
+    }
+
+    if (currentPassword === newPassword) {
+      throw new BadRequestException(
+        "New Password Can't be same as Previous One!",
+      );
+    }
+
+    const isPasswordValid = await this.validateUser(email, currentPassword);
+    if (!isPasswordValid) {
+      throw new BadRequestException("Current Password Doesn't Match!");
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.userRepository.update(
+      {
+        id: user.id,
+      },
+      {
+        password: hashedPassword,
+      },
+    );
+
+    const payload = {
+      name: user.name,
+      email: user.email,
+      sub: user.id,
+      role: user.role,
+    };
+    const token = this.jwtService.sign(payload);
+
+    return {
+      access_token: token,
+      ...user,
+      message: 'Password has been reset!',
     };
   }
 }

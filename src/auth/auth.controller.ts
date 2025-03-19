@@ -16,4 +16,17 @@ export class AuthController {
     }
     return this.authService.login(user);
   }
+
+  @Post('reset-password')
+  async resetPassword(
+    @Body('email') email: string,
+    @Body('currentPassword') currentPassword: string,
+    @Body('newPassword') newPassword: string,
+  ) {
+    return this.authService.resetUserPassword(
+      email,
+      currentPassword,
+      newPassword,
+    );
+  }
 }
