@@ -8,6 +8,7 @@ import { UserValues } from './entities/values.entity';
 import { Conversation } from 'src/conversation/entities/conversation.entity';
 import { Message } from 'src/conversation/entities/message.entity';
 import { generateBetaUsername } from './utils';
+import { FilterBy } from 'src/common/type';
 
 @Injectable()
 export class UsersService {
@@ -79,8 +80,24 @@ export class UsersService {
     }
   }
 
-  async findBetaUsers(): Promise<any> {
-    const data = await this.userRepository.find({ where: { role: 'beta' } });
+  async findBetaUsers(filters: FilterBy): Promise<any> {
+    const { orderBy = 'created_date', sortBy = 'ASC' }: FilterBy = filters;
+
+    const validSortDirections = ['ASC', 'DESC'];
+
+    const sortDirection = validSortDirections.includes(sortBy.toUpperCase())
+      ? sortBy.toUpperCase()
+      : 'ASC';
+
+    const orderOptions = orderBy
+      ? { [orderBy]: sortDirection }
+      : { created_date: 'ASC' };
+
+    const data = await this.userRepository.find({
+      where: { role: 'beta' },
+      // @ts-ignore
+      order: orderOptions,
+    });
     return {
       data,
       message: '',
@@ -151,7 +168,7 @@ export class UsersService {
     });
   }
 
-  async getAdminReports(): Promise<{
+  async getAdminReports(filters: FilterBy): Promise<{
     totalChat: number;
     totalThread: number;
     totalRegisterUser: number;
@@ -159,7 +176,18 @@ export class UsersService {
     userList: User[];
     conversationList: Conversation[];
   }> {
-    // Define all the promises
+    const { orderBy = 'created_date', sortBy = 'ASC' }: FilterBy = filters;
+
+    const validSortDirections = ['ASC', 'DESC'];
+
+    const sortDirection = validSortDirections.includes(sortBy.toUpperCase())
+      ? sortBy.toUpperCase()
+      : 'ASC';
+
+    const orderOptions = orderBy
+      ? { [orderBy]: sortDirection }
+      : { created_date: 'ASC' };
+
     const promises: [
       Promise<number>,
       Promise<number>,
@@ -175,6 +203,8 @@ export class UsersService {
       this.userRepository
         .find({
           relations: ['conversations', 'conversations.messages'],
+          // @ts-ignore
+          order: orderOptions,
         })
         .catch((): User[] => []),
       this.conversationRepo
@@ -205,15 +235,12 @@ export class UsersService {
       userList,
       conversationList,
     ] = await Promise.all(promises);
-
     return {
       totalChat,
       totalThread,
       totalRegisterUser,
       totalNonRegisterUser,
-      userList: userList.sort(
-        (a, b) => b.conversations.length - a.conversations.length,
-      ),
+      userList,
       conversationList,
     };
   }

@@ -20,10 +20,14 @@ export class UsersController {
 
   @Get('admin-reports')
   @UseGuards(AuthGuard('jwt'))
-  async getAdminReports(@Req() req) {
+  async getAdminReports(
+    @Req() req,
+    @Query('sortBy') sortBy?: string,
+    @Query('orderBy') orderBy?: string,
+  ) {
     const user = req.user;
     if (user.role === 'admin') {
-      const data = await this.usersService.getAdminReports();
+      const data = await this.usersService.getAdminReports({ sortBy, orderBy });
       return { message: 'success', data };
     }
 
@@ -77,8 +81,11 @@ export class UsersController {
   }
 
   @Get('beta-users')
-  async getAllBetaUsers(): Promise<User[]> {
-    return this.usersService.findBetaUsers();
+  async getAllBetaUsers(
+    @Query('sortBy') sortBy?: string,
+    @Query('orderBy') orderBy?: string,
+  ): Promise<User[]> {
+    return this.usersService.findBetaUsers({ sortBy, orderBy });
   }
 
   @Delete('beta-user/:id')
