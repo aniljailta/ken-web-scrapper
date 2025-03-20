@@ -93,9 +93,20 @@ export class AuthService {
   }
 
   async setBetaPassword(email: string, password: string) {
-    const user = await this.usersService.findOne(email);
+    const user = await this.userRepository.findOne({
+      where: {
+        email,
+        role: 'beta',
+      },
+    });
     if (!user) {
       throw new NotFoundException('No User Found with this Email');
+    }
+
+    if (user.password) {
+      throw new BadRequestException(
+        'Password Is already setup for this account Please Login Instead!',
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
