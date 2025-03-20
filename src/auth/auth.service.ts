@@ -31,6 +31,7 @@ export class AuthService {
       name: user.name,
       email: user.email,
       sub: user.id,
+      password: user.password,
       role: user.role,
     };
     const token = this.jwtService.sign(payload);
@@ -79,6 +80,7 @@ export class AuthService {
       name: user.name,
       email: user.email,
       sub: user.id,
+      password: user.password,
       role: user.role,
     };
     const token = this.jwtService.sign(payload);
@@ -87,6 +89,39 @@ export class AuthService {
       access_token: token,
       ...user,
       message: 'Password has been reset!',
+    };
+  }
+
+  async setBetaPassword(email: string, password: string) {
+    const user = await this.usersService.findOne(email);
+    if (!user) {
+      throw new NotFoundException('No User Found with this Email');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await this.userRepository.update(
+      {
+        id: user.id,
+      },
+      {
+        password: hashedPassword,
+      },
+    );
+
+    const payload = {
+      name: user.name,
+      email: user.email,
+      sub: user.id,
+      password: user.password,
+      role: user.role,
+    };
+    const token = this.jwtService.sign(payload);
+
+    return {
+      access_token: token,
+      ...user,
+      message: 'Password has been set!',
     };
   }
 }

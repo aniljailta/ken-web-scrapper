@@ -29,4 +29,12 @@ export class AuthController {
       newPassword,
     );
   }
+
+  @Post('set-beta-password')
+  async resetBetaPassword(
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ) {
+    return this.authService.setBetaPassword(email, password);
+  }
 }

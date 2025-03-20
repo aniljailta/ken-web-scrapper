@@ -75,9 +75,9 @@ export class UsersController {
   @Post('invite-beta-user')
   async inviteBetaTester(
     @Body('email') email: string,
-    @Body('password') password: string,
+    @Body('firstName') firstName: string,
   ): Promise<{ user: User | null; message: string }> {
-    return this.usersService.createBetaUser(email, password);
+    return this.usersService.createBetaUser(email, firstName);
   }
 
   @Get('beta-users')
