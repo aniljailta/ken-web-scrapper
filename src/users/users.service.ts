@@ -80,7 +80,7 @@ export class UsersService {
       });
       return {
         user: await this.userRepository.save(user),
-        message: 'Beta User Invitation Created',
+        message: 'Beta Account Created',
       };
     } catch (error) {
       if (error.code === '23505') {
