@@ -15,6 +15,7 @@ import {
   findSectionDetailsTool,
 } from './constants';
 import { UsersService } from 'src/users/users.service';
+import { ScrapingLogs } from './entities/scraping-logs.entity';
 
 @Injectable()
 export class ProductsService {
@@ -29,6 +30,9 @@ export class ProductsService {
 
     @InjectRepository(SupportProductInternalContent)
     private internalContentDataRepository: Repository<SupportProductInternalContent>,
+
+    @InjectRepository(ScrapingLogs)
+    private scrapingLogsRepository: Repository<ScrapingLogs>,
 
     private readonly configService: ConfigService,
 
@@ -741,5 +745,20 @@ export class ProductsService {
       isAIResponse: true,
       productData: [],
     };
+  }
+
+  async getScrapingLogs(): Promise<{ data: ScrapingLogs[]; total: number }> {
+    //
+    try {
+      const [data, total] = await this.scrapingLogsRepository.findAndCount({});
+      return { data, total };
+    } catch (error) {
+      this.logger.warn(`Warning: ${error?.message}`);
+      this.logger.warn(`Warning CODE: ${error?.code}`);
+      return {
+        data: [],
+        total: 1,
+      };
+    }
   }
 }

@@ -7,6 +7,7 @@ import { SupportProductInternalContent } from './entities/internal_content.entit
 import { UsersModule } from 'src/users/users.module';
 import { RequestTrackerService } from 'src/request-tracker/request-tracker.service';
 import { RequestTracker } from 'src/request-tracker/entities/request_tracker.entity';
+import { ScrapingLogs } from './entities/scraping-logs.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { RequestTracker } from 'src/request-tracker/entities/request_tracker.ent
       Product,
       SupportProductInternalContent,
       RequestTracker,
+      ScrapingLogs,
     ]),
     UsersModule,
   ],

@@ -17,6 +17,12 @@ export class ProductsController {
     return { message: 'content scrapping started' };
   }
 
+  @Get('scraping-logs')
+  async scrapingLogs() {
+    const { data, total } = await this.productsService.getScrapingLogs();
+    return { message: 'Scraping Logs', data, total };
+  }
+
   // @Post('product-query')
   // @UseGuards(LifetimeRequestGuard)
   // async queryFunctionCalling(@Body('question') question: string): Promise<{
