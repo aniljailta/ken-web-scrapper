@@ -32,6 +32,7 @@ import {
 import { SupportProductData } from './entities/support_product_data.entity';
 import * as path from 'path';
 import { InternalContent } from './entities/internal_content.entity';
+import { ScrapingLogs } from 'src/products/entities/scraping-logs.entity';
 
 @Injectable()
 export class ScraperService implements OnModuleInit {
@@ -54,6 +55,9 @@ export class ScraperService implements OnModuleInit {
 
     @InjectRepository(SupportProductData)
     private supportProductScrapperDataRepository: Repository<SupportProductData>,
+
+    @InjectRepository(ScrapingLogs)
+    private scrapingLogRepository: Repository<ScrapingLogs>,
 
     @InjectRepository(InternalContent)
     private internalContentRepository: Repository<InternalContent>,
@@ -671,7 +675,7 @@ export class ScraperService implements OnModuleInit {
 
     for (const category of categories) {
       const { categoryName, categoryLink: link } = category;
-      // this.logger.log(`Scrapping products of category: ${categoryName}`);
+      this.logger.log(`Scrapping products of category: ${categoryName}`);
 
       try {
         let products = await this.scrapeProductsForCategory(
@@ -795,6 +799,7 @@ export class ScraperService implements OnModuleInit {
     selector: string,
   ): Promise<any[]> {
     let browser;
+    let currentProductName;
     try {
       browser = await this.initBrowser();
       const page = await browser.newPage();
@@ -860,10 +865,12 @@ export class ScraperService implements OnModuleInit {
 
       if (products?.length) {
         for (const product of products) {
+          currentProductName = product.productName;
           let internalLinks = await this.scrapeInternalLinksForProduct(
             product.productLink,
             this.baseURL,
             '#actual-document-listings ul li a',
+            currentProductName,
           );
 
           if (!internalLinks.length) {
@@ -871,10 +878,12 @@ export class ScraperService implements OnModuleInit {
               product.productLink,
               this.baseURL,
               '.dmc-list-dynamic ul li a',
+              currentProductName,
             );
           }
           const productDataInfo = await this.scrapeInternalProductInfo(
             product.productLink,
+            currentProductName,
           );
 
           product.internalLinks = internalLinks; // Assign internal links to each product
@@ -884,6 +893,10 @@ export class ScraperService implements OnModuleInit {
 
       return products;
     } catch (error) {
+      await this.createScrapingLog(
+        currentProductName,
+        'Missing Required Fields',
+      );
       this.logger.error(
         `Error scraping products for category link: ${categoryLink} with selector: ${selector}: ${error?.message}`,
       );
@@ -894,7 +907,10 @@ export class ScraperService implements OnModuleInit {
     }
   }
 
-  async scrapeInternalProductInfo(productLink: string): Promise<any[]> {
+  async scrapeInternalProductInfo(
+    productLink: string,
+    productName: string,
+  ): Promise<any[]> {
     let browser;
     try {
       browser = await this.initBrowser();
@@ -1002,6 +1018,10 @@ export class ScraperService implements OnModuleInit {
 
       return data;
     } catch (error) {
+      await this.createScrapingLog(
+        productName || productLink,
+        'Error while scraping internal product Info',
+      );
       this.logger.error(
         `Error scraping info data: ${productLink} :${error?.message},`,
       );
@@ -1016,6 +1036,7 @@ export class ScraperService implements OnModuleInit {
     productLink: string,
     baseUrl: string,
     selector: string,
+    productName?: string,
   ): Promise<any[]> {
     let browser;
     try {
@@ -1092,6 +1113,10 @@ export class ScraperService implements OnModuleInit {
       //   }
       // }
     } catch (error) {
+      await this.createScrapingLog(
+        productName || productLink,
+        'Error while creating Internal Links',
+      );
       this.logger.error(
         `Error scraping internal links for product: ${productLink} :${error?.message},`,
       );
@@ -1611,5 +1636,12 @@ export class ScraperService implements OnModuleInit {
       this.logger.warn('Error fetching product data:', error?.message);
       return [];
     }
+  }
+
+  private async createScrapingLog(productName: string, error: string) {
+    return await this.scrapingLogRepository.save({
+      productName,
+      error,
+    });
   }
 }

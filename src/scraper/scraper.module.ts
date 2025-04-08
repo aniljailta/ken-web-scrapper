@@ -7,6 +7,7 @@ import { ScraperController } from './scraper.controller';
 import { InternalContent } from './entities/internal_content.entity';
 import { ECommerceService } from './ecommerce.services';
 import { SupportProductData } from './entities/support_product_data.entity';
+import { ScrapingLogs } from 'src/products/entities/scraping-logs.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SupportProductData } from './entities/support_product_data.entity';
       ScraperData,
       SupportProductData,
       InternalContent,
+      ScrapingLogs,
     ]),
   ],
   providers: [ScraperService, ECommerceService],
