@@ -294,6 +294,11 @@ export class ConversationService {
     const response = await this.openai.chat.completions.create({
       model: openAiModal,
       messages: [
+        {
+          role: 'system',
+          content:
+            "Always identify the full product name, e.g., 'Cisco 9500' or 'Nexus 9500', and avoid using generic labels like '9500'.",
+        },
         ...mappedPreviousChats,
         {
           role: 'user',
