@@ -124,23 +124,28 @@ export class ConversationService {
     guestToken?: string | null;
   }): Promise<{ data: string; conversationId: string }> {
     try {
-      const { productName, productAttributes } =
-        await this.functionalToolCalling({ userQuery, messages: [] });
+      let aiResponse;
+      const functionCallResponse = await this.functionalToolCalling({
+        userQuery,
+        messages: [],
+      });
+      let productData = [];
+      let productName = '';
 
-      if (!productName || typeof productName !== 'string') {
-        return {
-          data: "I couldn't find a match for the product you requested. Could you provide the correct product name, PID, or any additional details? I'd be happy to assist you further!",
-          conversationId: '',
-        };
+      if (typeof functionCallResponse !== 'string') {
+        const productAttributes = functionCallResponse.productAttributes;
+        productName = functionCallResponse.productName;
+
+        const productList =
+          await this.productService.getProductsByName(productName);
+
+        productData = await this.productService.filterProductData(
+          productList,
+          productAttributes,
+        );
+      } else {
+        aiResponse = functionCallResponse;
       }
-
-      const productList =
-        await this.productService.getProductsByName(productName);
-
-      const productData = await this.productService.filterProductData(
-        productList,
-        productAttributes,
-      );
 
       const conversationData = await this.getOrCreateConversation({
         userId,
@@ -154,12 +159,14 @@ export class ConversationService {
         });
       }
 
-      const aiResponse = await this.generateAiResponse({
-        userQuery,
-        productData,
-        userId,
-        token: guestToken,
-      });
+      if (!aiResponse) {
+        aiResponse = await this.generateAiResponse({
+          userQuery,
+          productData,
+          userId,
+          token: guestToken,
+        });
+      }
 
       if (conversationData.id) {
         await this.saveMessage({
@@ -197,38 +204,43 @@ export class ConversationService {
         userId,
         conversationId,
       });
+      let productData;
+      let aiResponse;
 
       const toolFunction = await this.functionalToolCalling({
         userQuery,
         messages: conversationRecord?.messages || [],
       });
 
-      const toolProductName = toolFunction.productName;
-      const conversationProductName =
-        conversationRecord?.productName?.trim() || '';
+      if (typeof toolFunction !== 'string') {
+        const toolProductName = toolFunction.productName;
+        const conversationProductName =
+          conversationRecord?.productName?.trim() || '';
 
-      // Check if toolProductName is valid (not empty and not "C1-C2720X-24PS-L")
-      const isValidToolProduct =
-        toolProductName && toolProductName !== 'C1-C2720X-24PS-L';
+        // Check if toolProductName is valid (not empty and not "C1-C2720X-24PS-L")
+        const isValidToolProduct =
+          toolProductName && toolProductName !== 'C1-C2720X-24PS-L';
 
-      // Set productName from toolProductName if valid, otherwise use conversationProductName
-      const productName = isValidToolProduct
-        ? toolProductName
-        : conversationProductName;
+        // Set productName from toolProductName if valid, otherwise use conversationProductName
+        const productName = isValidToolProduct
+          ? toolProductName
+          : conversationProductName;
 
-      // Check if we need to update conversationRecord.productName
-      if (isValidToolProduct && conversationRecord) {
-        this.updateProductName({ conversationRecord, toolProductName });
+        // Check if we need to update conversationRecord.productName
+        if (isValidToolProduct && conversationRecord) {
+          this.updateProductName({ conversationRecord, toolProductName });
+        }
+
+        const productList =
+          await this.productService.getProductsByName(productName);
+
+        productData = await this.productService.filterProductData(
+          productList,
+          toolFunction.productAttributes,
+        );
+      } else {
+        aiResponse = toolFunction;
       }
-
-      const productList =
-        await this.productService.getProductsByName(productName);
-
-      const productData = await this.productService.filterProductData(
-        productList,
-        toolFunction.productAttributes,
-      );
-
       if (conversationRecord.id) {
         await this.saveMessage({
           conversationId: conversationRecord.id,
@@ -236,14 +248,15 @@ export class ConversationService {
           role: 'user',
         });
       }
-
-      const aiResponse = await this.generateAiResponse({
-        userQuery,
-        productData,
-        messageData: conversationRecord.messages,
-        userId,
-        token: guestToken,
-      });
+      if (!aiResponse) {
+        aiResponse = await this.generateAiResponse({
+          userQuery,
+          productData,
+          messageData: conversationRecord.messages,
+          userId,
+          token: guestToken,
+        });
+      }
 
       const responseData = {
         data: aiResponse,
@@ -278,10 +291,13 @@ export class ConversationService {
   }: {
     userQuery: string;
     messages: Message[];
-  }): Promise<{
-    productName: string;
-    productAttributes: string[];
-  }> {
+  }): Promise<
+    | {
+        productName: string;
+        productAttributes: string[];
+      }
+    | string
+  > {
     const userDefineAIModal = await this.userService.findUserValueByName(
       ADMIN_USER_VALUES.GPT_MODAL,
     );
@@ -319,12 +335,10 @@ export class ConversationService {
           productAttributes: parsedArguments.queries,
         };
       }
+    } else {
+      const responseContent = response.choices[0].message.content;
+      return responseContent;
     }
-
-    return {
-      productName: '',
-      productAttributes: [],
-    };
   }
 
   async generateAiResponse({
