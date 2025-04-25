@@ -13,6 +13,7 @@ import {
   ADMIN_USER_VALUES,
   AI_RESPONSE_PROMPT,
   findSectionDetailsTool,
+  functionCallingSystemPrompt,
 } from 'src/products/constants';
 import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
@@ -131,10 +132,14 @@ export class ConversationService {
       });
       let productData = [];
       let productName = '';
+      let intent = '';
+      let queries = [];
 
       if (typeof functionCallResponse !== 'string') {
         const productAttributes = functionCallResponse.productAttributes;
         productName = functionCallResponse.productName;
+        intent = functionCallResponse.intent;
+        queries = functionCallResponse.queries;
 
         const productList =
           await this.productService.getProductsByName(productName);
@@ -165,6 +170,8 @@ export class ConversationService {
           productData,
           userId,
           token: guestToken,
+          intent,
+          queries,
         });
       }
 
@@ -295,6 +302,8 @@ export class ConversationService {
     | {
         productName: string;
         productAttributes: string[];
+        intent: string;
+        queries: string[];
       }
     | string
   > {
@@ -312,8 +321,7 @@ export class ConversationService {
       messages: [
         {
           role: 'system',
-          content:
-            "Always identify the full product name, e.g., 'Cisco 9500' or 'Nexus 9500', and avoid using generic labels like '9500'.",
+          content: functionCallingSystemPrompt,
         },
         ...mappedPreviousChats,
         {
@@ -333,6 +341,8 @@ export class ConversationService {
         return {
           productName: productName,
           productAttributes: parsedArguments.queries,
+          intent: parsedArguments.intent,
+          queries: parsedArguments.queries,
         };
       }
     } else {
@@ -347,12 +357,16 @@ export class ConversationService {
     messageData,
     userId,
     token,
+    intent,
+    queries = [],
   }: {
     userQuery: string;
     productData: any[];
     messageData?: Message[];
     userId?: string | null;
     token?: string | null;
+    intent?: string;
+    queries?: string[];
   }): Promise<string> {
     if (!productData.length) {
       const fallbackResponse = await this.generateFallbackResponse(userQuery);
@@ -367,6 +381,8 @@ export class ConversationService {
         messageData,
         userId,
         token,
+        queries,
+        intent,
       });
 
       return response;
@@ -394,6 +410,8 @@ export class ConversationService {
             messageData,
             userId,
             token,
+            queries,
+            intent,
           });
 
           return retryResponse;
@@ -415,12 +433,16 @@ export class ConversationService {
     messageData = [],
     userId,
     token,
+    queries = [],
+    intent,
   }: {
     userQuery: string;
     productData: any;
     messageData?: Message[];
     userId?: string | null;
     token?: string | null;
+    queries?: string[];
+    intent?: string;
   }): Promise<string> {
     const data = await this.userService.findUserValueByName(
       ADMIN_USER_VALUES.AI_PROMPT,
@@ -438,6 +460,14 @@ export class ConversationService {
       role,
     }));
 
+    console.log(`
+      
+Function call context:
+- Intent: ${intent} 
+- Product: ${productData.length > 0 ? productData[0]?.productName : 'N/A'} 
+- Queried Sections: ${queries.join(', ')}
+      `);
+
     const response = await this.openai.chat.completions.create({
       model: openAiModal,
       stream: true,
@@ -445,7 +475,14 @@ export class ConversationService {
         ...previousChats,
         {
           role: 'system',
-          content: aiPrompt,
+          content: `
+          ${aiPrompt}
+
+Function call context:
+- Intent: ${intent} 
+- Products: ${productData.length > 0 ? productData[0]?.productName : 'N/A'} 
+- Queried Sections: ${queries.join(', ')}
+          `,
         },
         {
           role: 'user',
