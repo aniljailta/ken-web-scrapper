@@ -80,6 +80,14 @@ export class UsersController {
     return this.usersService.createBetaUser(email, firstName);
   }
 
+  @Post('connect-expert')
+  async storeUserEmail(
+    @Body('email') email: string,
+    @Body('conversationId') conversationId: string,
+  ): Promise<{ data: any; message: string }> {
+    return this.usersService.createUserIntentRecord(email, conversationId);
+  }
+
   @Get('beta-users')
   async getAllBetaUsers(
     @Query('sortBy') sortBy?: string,

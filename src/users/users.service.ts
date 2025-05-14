@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,10 +13,17 @@ import { UserValues } from './entities/values.entity';
 import { Conversation } from 'src/conversation/entities/conversation.entity';
 import { Message } from 'src/conversation/entities/message.entity';
 import { FilterBy } from 'src/common/type';
+import { ConfigService } from '@nestjs/config';
+import OpenAI from 'openai';
+import { chatSummaryPrompt } from 'src/products/constants';
 
 @Injectable()
 export class UsersService {
+  private openai: OpenAI;
+  private openaiModal: string;
+  private readonly logger = new Logger(UsersService.name);
   constructor(
+    private readonly configService: ConfigService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
@@ -27,7 +35,20 @@ export class UsersService {
 
     @InjectRepository(Message)
     private messageRepo: Repository<Message>,
-  ) {}
+  ) {
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+
+    if (!apiKey) {
+      throw new Error(
+        'OPENAI_API_KEY is not defined in the environment variables.',
+      );
+    }
+
+    this.openai = new OpenAI({ apiKey });
+
+    this.openaiModal =
+      this.configService.get<string>('AI_ASSISTANT_MODAL') || 'gpt-3.5-turbo';
+  }
 
   async create(
     name: string,
@@ -282,5 +303,51 @@ export class UsersService {
         order: { createdAt: 'ASC' },
       })
       .catch((): Conversation[] => []);
+  }
+
+  async createUserIntentRecord(email: string, conversationId) {
+    try {
+      const conversation = await this.conversationRepo.findOne({
+        where: { id: conversationId },
+        relations: ['messages', 'user'],
+        order: { createdAt: 'ASC' },
+      });
+
+      if (!conversation) {
+        throw new NotFoundException('Conversation not found 🕵️‍♂️');
+      }
+
+      const mappedMessages = conversation.messages.map(({ content, role }) => ({
+        content,
+        role,
+      }));
+
+      const summarizedResponse = await this.openai.chat.completions.create({
+        model: this.openaiModal,
+        messages: [
+          { role: 'system', content: chatSummaryPrompt },
+          ...mappedMessages,
+        ],
+      });
+
+      const summary =
+        summarizedResponse.choices[0]?.message?.content ??
+        'No summary available';
+
+      return {
+        data: {
+          userEmail: email,
+          summary,
+        },
+        message: ' Thanks for your Mail! We will be in touch with you!',
+      };
+    } catch (error) {
+      this.logger.error('Failed to Summarize Chat!', error?.message);
+
+      return {
+        data: null,
+        message: 'Thanks for your Mail! We will be in touch with you!',
+      };
+    }
   }
 }

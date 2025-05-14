@@ -24,7 +24,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (userID) {
       this.connectedClients.set(userID, client.id);
       this.logger.log(
-        `✅ User ${userID} connected with Socket ID: ${client.id}`,
+        `⚡ User ${userID} connected with Socket ID: ${client.id}`,
       );
     } else {
       this.logger.log(
@@ -38,6 +38,16 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (socketID === client.id) {
         this.connectedClients.delete(userID);
         break;
+      }
+    }
+  }
+
+  askUserForEmail(userID: string) {
+    const socketID = this.connectedClients.get(userID);
+    if (socketID) {
+      const socket = this.server.sockets.sockets.get(socketID);
+      if (socket) {
+        socket.emit('intent-email', {});
       }
     }
   }

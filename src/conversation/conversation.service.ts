@@ -127,6 +127,7 @@ export class ConversationService {
     try {
       let aiResponse;
       const functionCallResponse = await this.functionalToolCalling({
+        userId: guestToken ? guestToken : userId,
         userQuery,
         messages: [],
       });
@@ -215,6 +216,7 @@ export class ConversationService {
       let aiResponse;
 
       const toolFunction = await this.functionalToolCalling({
+        userId: guestToken ? guestToken : userId,
         userQuery,
         messages: conversationRecord?.messages || [],
       });
@@ -295,9 +297,11 @@ export class ConversationService {
   async functionalToolCalling({
     userQuery,
     messages,
+    userId,
   }: {
     userQuery: string;
     messages: Message[];
+    userId?: string;
   }): Promise<
     | {
         productName: string;
@@ -337,6 +341,11 @@ export class ConversationService {
 
       if (functionCall.name === 'fetch_section_details') {
         const parsedArguments = JSON.parse(functionCall.arguments);
+        if (parsedArguments?.intent === 'collect_quote_info') {
+          if (userId) {
+            this.gatewayService.askUserForEmail(userId);
+          }
+        }
         const productName = parsedArguments.product?.trim() || '';
         return {
           productName: productName,
