@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Response } from '@nestjs/common';
 import { ChatWidgetService } from './chatWidget.service';
 import { SendMessageDTO } from './dto/sendMessage.dto';
 
@@ -6,6 +6,13 @@ import { SendMessageDTO } from './dto/sendMessage.dto';
 export class ChatWidgetController {
   constructor(private readonly chatWidgetService: ChatWidgetService) {
     //
+  }
+
+  @Get('/demo')
+  async renderDemoPage(@Response() res) {
+    res.sendFile('webinar_demo.html', {
+      root: './public',
+    });
   }
 
   @Post('chat')

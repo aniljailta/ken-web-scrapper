@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Webinar ChatBot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <style>
+    #chatbot-widget {
+      width: 420px;
+      height: 600px;
+      border-radius: 24px;
+      border: 1px solid #ddd;
+      display: none;
+      flex-direction: column;
+    }
+
+    #chatbot-widget.active {
+      display: flex;
+    }
+
+    #chatbot-widget .header {
+      border-radius: 24px 24px 0px 0px;
+      /* border: 1px solid #ddd; */
+      border-bottom: none;
+      background: #c5c5c5;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    #chatbot-widget .main-content {
+      display: flex;
+      flex: 1;
+      padding: 16px;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-start;
+      gap: 16px;
+      overflow: auto;
+    }
+
+    #chatbot-widget .main-content .message {
+      color: #000;
+      font-family: 'Roboto Mono';
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 300;
+      line-height: 1.8;
+      align-self: flex-start;
+    }
+
+    #chatbot-widget .main-content .message.user {
+      font-weight: 400;
+      align-self: flex-end;
+    }
+
+    #chatbot-widget .main-content .message.error {
+      font-weight: 400;
+      color: #e31937;
+      align-self: center;
+    }
+
+    #chatbot-widget .header #close-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    #chatbot-widget .footer .chat-input {
+      border: 1px solid #ddd;
+      border-left: none;
+      border-right: none;
+      background: #f4f4f4;
+      display: flex;
+      align-items: center;
+      justify-content: start;
+      gap: 4px;
+      padding-inline: 16px;
+    }
+
+    #chatbot-widget .footer .chat-input input {
+      outline: none;
+      border: none;
+      background-color: inherit;
+      color: rgba(0, 0, 0, 0.6);
+      font-family: 'Roboto Mono';
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: normal;
+      flex: 1;
+      padding: 8px;
+    }
+
+    #chatbot-widget .footer .chat-input .send-btn {
+      cursor: pointer;
+    }
+
+    #chatbot-widget .footer {
+      background-color: #fff;
+      border-radius: 0 0 24px 24px;
+    }
+    #chatbot-widget .footer .footer-content {
+      color: rgba(0, 0, 0, 0.6);
+      text-align: center;
+      font-family: 'Roboto Mono';
+      font-size: 10px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: normal;
+      margin: 10px;
+    }
+
+    #chatbot-widget .footer .footer-content a {
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    #chatbot-widget-toggler {
+      border-radius: 24px;
+      background: #e31937;
+      width: 279px;
+      height: 48px;
+      color: #fff;
+      font-family: 'Roboto Mono';
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: normal;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    #chatbot-widget-toggler.hidden {
+      display: none;
+    }
+
+    .fix-bottom {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+    }
+
+    #chatbot-widget .loader {
+      align-self: flex-start;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: #e0e1dd;
+      box-shadow:
+        32px 0 #fff,
+        -32px 0 #fff;
+      position: relative;
+      animation: flash 0.5s ease-out infinite alternate;
+    }
+
+    @keyframes flash {
+      0% {
+        background-color: #fff2;
+        box-shadow:
+          32px 0 #fff2,
+          -32px 0 #8d99ae;
+      }
+      50% {
+        background-color: #8d99ae;
+        box-shadow:
+          32px 0 #fff2,
+          -32px 0 #fff2;
+      }
+      100% {
+        background-color: #fff2;
+        box-shadow:
+          32px 0 #8d99ae,
+          -32px 0 #fff2;
+      }
+    }
+  </style>
+  <body>
+    <!-- Widget Toggler -->
+    <div id="chatbot-widget-toggler" class="fix-bottom">
+      Need help with a solution?
+      <span class="icon">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+        >
+          <rect width="20" height="20" fill="url(#pattern0_578_2878)" />
+          <defs>
+            <pattern
+              id="pattern0_578_2878"
+              patternContentUnits="objectBoundingBox"
+              width="1"
+              height="1"
+            >
+              <use xlink:href="#image0_578_2878" transform="scale(0.01)" />
+            </pattern>
+            <image
+              id="image0_578_2878"
+              width="100"
+              height="100"
+              preserveAspectRatio="none"
+              xlink:href="data:image/png;base64,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"
+            />
+          </defs>
+        </svg>
+      </span>
+    </div>
+
+    <!-- Widget -->
+
+    <div id="chatbot-widget" class="fix-bottom">
+      <div class="header">
+        <span id="close-btn">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g clip-path="url(#clip0_578_3209)">
+              <path
+                d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"
+                fill="black"
+              />
+            </g>
+            <defs>
+              <clipPath id="clip0_578_3209">
+                <rect width="24" height="24" fill="white" />
+              </clipPath>
+            </defs>
+          </svg>
+        </span>
+      </div>
+      <div class="main-content"></div>
+      <div class="footer">
+        <!-- ChatInput -->
+        <div class="chat-input">
+          <input
+            placeholder="Ask a question or enter a product ID"
+            id="input-field"
+            type="text"
+          />
+          <span role="button" class="send-btn">
+            <svg
+              width="30"
+              height="20"
+              viewBox="0 0 30 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+            >
+              <rect
+                y="20"
+                width="20"
+                height="30"
+                transform="rotate(-90 0 20)"
+                fill="url(#pattern0_578_3190)"
+                fill-opacity="0.75"
+              />
+              <defs>
+                <pattern
+                  id="pattern0_578_3190"
+                  patternContentUnits="objectBoundingBox"
+                  width="1"
+                  height="1"
+                >
+                  <use
+                    xlink:href="#image0_578_3190"
+                    transform="matrix(0.01 0 0 0.00666667 0 0.166667)"
+                  />
+                </pattern>
+                <image
+                  id="image0_578_3190"
+                  width="100"
+                  height="100"
+                  preserveAspectRatio="none"
+                  xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAACkUlEQVR4nO3cvY9NQRjH8a/XeCmIiEbjpdsE1dLSiIREJKbSiYROTcPaRs9foKUgoZHQCI14idBQ2QaJl5KEGJnk3kRks/bee86dmXO+n+Sp93ny27M7Z86cA5IkSZIkSZIkSZIkSZJUhXXAZeA18AqYA9bnbqrPbgHxn3oB7MrdWB/NLBLGsL4CR3M32Dcnlggk1W/gCrAyd6N9Ef4TyLAeAttyN9sHYZmBpFoADuRuuOvCCIGk+gGcz910l4URAxnWDWBD7ua7KIwZSKrnLo3LCiTVF+BIC331VpgwkOHS+KpL43ICGdY9YEtDffVWaDCQVO+B2dxD1Sw0HEiq78CZ3IPVKrQQyN9LY3eNCwok1TNgx6hN9VloOZBUn4HD0xwq7YSeAu4PfnjbA8YK6xdwAVjRdhhpB/RRAQPHSuo2sKmtMDYOtg9yDxkrq7fAnjYCmS9guFhppaXx6SbDWDN4xJl7sFh5XQPWNhHI/gKGiR2px8D2SQM5XsAgsUP1EThY+vq9b/UTOGsgFHe/stcrhKLqkoFQVKVjrf4PoZw/WfsMhGL+qZ9z2UsR9Qk4NMmyd7aAIWJH6kkTN4ar3WqniTCuN7V1wmB5lvu3K1ZajW8uMnhe/LSA4WJl9W7cm7/l2Ao8KGDIWEndATbTsvRY8iRwF/gwOMmXe/BY4P3FxWk8wq1d6OIhh5qFKRwD2pl7yJqEFsPwoNwYPEpamNDwVeFh6wn5OkJhQgNXhS/sNMhX2goTJrgyfOmzBb4WXZgw4lXhhwMKCmTBT2u0LywzDD8+U9DnmeaBVdNqqO9mlgjjG3Asd4N9dHORMF4Cu3M31uePYM4BbwZBpLMCvs4sSZIkSZIkSZIkSZIkiRb8AeoeVU60zZiGAAAAAElFTkSuQmCC"
+                />
+              </defs>
+            </svg>
+          </span>
+        </div>
+
+        <div class="footer-content">
+          Powered by
+          <a href="#"> Great Migration </a>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    const togglerBtn = document.querySelector('#chatbot-widget-toggler');
+    const mainContent = document.querySelector('#chatbot-widget .main-content');
+    const closeBtn = document.querySelector('#chatbot-widget #close-btn');
+    const chatInput = document.querySelector('#chatbot-widget #input-field');
+    const sendBtn = document.querySelector('#chatbot-widget .send-btn');
+    const chatBotWidget = document.querySelector('#chatbot-widget');
+
+    const openWidget = () => {
+      togglerBtn.classList.add('hidden');
+      chatBotWidget.classList.add('active');
+    };
+
+    const closeWidget = () => {
+      togglerBtn.classList.remove('hidden');
+      chatBotWidget.classList.remove('active');
+      revokeSessionId();
+      mainContent.innerHTML = ``;
+      chatInput.value = '';
+    };
+
+    const sendMessage = () => {
+      const message = chatInput.value;
+      if (!message) {
+        return;
+      }
+
+      // Appending Message & Resting Message
+      mountMessage(message, 'user');
+      chatInput.value = '';
+      addLoader();
+
+      const sessionId = getSessionId();
+
+      const data = {
+        message,
+      };
+
+      if (sessionId) {
+        data.sessionId = sessionId;
+      }
+
+      apiRequestService('/scraper-api/chatWidget/chat', data, 'POST')
+        .then((data) => {
+          mountMessage(data.message, 'assistant');
+          if (data?.sessionId) {
+            saveSessionId(data.sessionId);
+          }
+        })
+        .catch((error) => {
+          mountMessage(error?.message, 'error');
+        })
+        .finally(() => {
+          removeLoader();
+        });
+    };
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeWidget);
+    }
+
+    if (togglerBtn) {
+      togglerBtn.addEventListener('click', openWidget);
+    }
+
+    if (sendBtn) {
+      sendBtn.addEventListener('click', sendMessage);
+    }
+
+    if (chatInput) {
+      chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+    }
+
+    function mountMessage(message, role = 'user') {
+      const wrapper = document.createElement('div');
+      wrapper.className = `message ${role === 'user' ? 'user' : role === 'error' ? 'error' : ''}`;
+      wrapper.textContent = message;
+
+      mainContent.appendChild(wrapper);
+      scrollToBottom(mainContent);
+    }
+
+    async function apiRequestService(url, data = {}, method = 'POST') {
+      try {
+        const response = await fetch(url, {
+          method: method.toUpperCase(),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: method.toUpperCase() === 'GET' ? null : JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          const response = await response.json();
+          throw new Error(
+            response?.error?.message ||
+              'Something Went Wrong While Getting Response',
+          );
+        }
+
+        const result = await response.json();
+        return result?.data || result;
+      } catch (error) {
+        throw error; // Rethrow to let caller handle it
+      }
+    }
+
+    function addLoader() {
+      if (!mainContent.querySelector('.loader')) {
+        const wrapper = document.createElement('span');
+        wrapper.className = 'loader';
+        mainContent.appendChild(wrapper);
+      }
+    }
+
+    function removeLoader() {
+      const loader = mainContent.querySelector('.loader');
+      if (loader) {
+        mainContent.removeChild(loader);
+      }
+    }
+
+    function getSessionId() {
+      return window.localStorage.getItem('chatbot_session_id');
+    }
+    function saveSessionId(sessionId) {
+      window.localStorage.removeItem('chatbot_session_id');
+      window.localStorage.setItem('chatbot_session_id', sessionId);
+    }
+
+    function revokeSessionId() {
+      window.localStorage.removeItem('chatbot_session_id');
+    }
+
+    function scrollToBottom(container) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  </script>
+</html>

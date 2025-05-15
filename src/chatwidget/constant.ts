@@ -6,7 +6,7 @@ export const intentClassifierSystemPrompt = `You are an intent classifier for a 
 - 'followup_request': The user wants to be contacted, get a quote, or speak with a human for more information.
 - 'general_curiosity': The user's message is vague, exploratory, or does not clearly match another intent.
 
-Respond with the **label only** (e.g. '"resource_request"').
+Respond with the **label only** (e.g. 'resource_request').
 
 ---
 
