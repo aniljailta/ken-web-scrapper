@@ -206,7 +206,7 @@ export class ChatWidgetService {
     previousMessages?: any[],
   ): Promise<intentType> {
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
@@ -248,7 +248,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
 
   private async generateResponse(messages: ChatCompletionMessage[]) {
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo',
       messages,
     });
 
@@ -315,7 +315,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
     intent: string;
   }) {
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
@@ -416,7 +416,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
       console.log("Now we're here...");
       const lastMessages = this.generateCompletionChat(messages);
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
