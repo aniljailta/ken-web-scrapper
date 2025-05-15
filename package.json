@@ -47,7 +47,8 @@
     "rxjs": "^7.8.1",
     "sanitize-html": "^2.14.0",
     "tiktoken": "^1.0.20",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "typesense": "^2.0.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

@@ -15,6 +15,7 @@ import { RequestTracker } from './request-tracker/entities/request_tracker.entit
 import { LifetimeRequestGuard } from './guards/lifetime-request.guard';
 import { ConversationModule } from './conversation/conversation.module';
 import { MixpanelModule } from './mixpanel/mixpanel.module';
+import { ChatWidgetModule } from './chatwidget/chatwidget.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { MixpanelModule } from './mixpanel/mixpanel.module';
     TypeOrmModule.forFeature([RequestTracker]),
     ConversationModule,
     MixpanelModule,
+    ChatWidgetModule,
   ],
   controllers: [AppController],
   providers: [AppService, RequestTrackerService, LifetimeRequestGuard],

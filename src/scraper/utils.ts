@@ -937,3 +937,14 @@ export function refineTable(html: string) {
     '$1',
   );
 }
+
+/**
+ * Extracts the first valid email address from a given string.
+ * @param {string} text - The input message text from the user.
+ * @returns {string|null} - The extracted email or null if none found.
+ */
+export function extractEmail(text: string): string | null {
+  const emailRegex = /[\w.-]+@[\w.-]+\.\w+/gi;
+  const match = text.match(emailRegex);
+  return match ? match[0] : null;
+}
