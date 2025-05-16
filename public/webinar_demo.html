@@ -52,6 +52,7 @@
       font-family: 'Roboto Mono';
       font-size: 14px;
       font-style: normal;
+      text-align: left;
       font-weight: 300;
       line-height: 1.8;
       align-self: flex-start;
@@ -59,6 +60,7 @@
 
     #chatbot-widget .main-content .message.user {
       font-weight: 400;
+      text-align: right;
       align-self: flex-end;
     }
 
@@ -403,9 +405,9 @@
         });
 
         if (!response.ok) {
-          const response = await response.json();
+          const notOkayResponse = await response.json();
           throw new Error(
-            response?.error?.message ||
+            notOkayResponse?.error?.message ||
               'Something Went Wrong While Getting Response',
           );
         }
