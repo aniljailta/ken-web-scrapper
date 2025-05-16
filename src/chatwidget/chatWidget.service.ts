@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import Typesense from 'typesense';
 import { SendMessageDTO } from './dto/sendMessage.dto';
 import {
+  generalAssistantPrompt,
   generateFollowUpSystemPrompt,
   generateResponseSystemPrompt,
   intentClassifierSystemPrompt,
@@ -184,8 +185,6 @@ export class ChatWidgetService {
     });
 
     // @ts-ignore
-    console.log('Results Length', results.results.length);
-    // @ts-ignore
     return results.results[0].hits.map((hit) => hit.document.text);
   }
 
@@ -201,26 +200,22 @@ export class ChatWidgetService {
     });
   }
 
-  private async intentClassifier(
-    userQuery: string,
-    previousMessages?: any[],
-  ): Promise<intentType> {
+  private async intentClassifier(messages: any[]): Promise<intentType> {
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: this.openaiModal,
       messages: [
         {
           role: 'system',
           content: intentClassifierSystemPrompt,
         },
-        // ...(previousMessages || []),
-        {
-          role: 'user',
-          content: userQuery,
-        },
+        ...messages,
       ],
     });
 
-    return completion.choices[0].message.content as intentType;
+    const intent = completion.choices[0].message.content as intentType;
+    this.logger.log(`User Intent: ${intent}`);
+
+    return intent;
   }
 
   private async generateChunkSummary(chunks: string[], userQuestion: string) {
@@ -248,8 +243,14 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
 
   private async generateResponse(messages: ChatCompletionMessage[]) {
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages,
+      model: this.openaiModal,
+      messages: [
+        {
+          role: 'assistant',
+          content: generalAssistantPrompt,
+        },
+        ...messages,
+      ],
     });
 
     return completion.choices[0].message.content;
@@ -314,16 +315,16 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
     assistantReply: string;
     intent: string;
   }) {
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'system',
-          content: generateFollowUpSystemPrompt,
-        },
-        {
-          role: 'user',
-          content: `
+    const completion = await this.generateResponse([
+      {
+        // @ts-ignore
+        role: 'system',
+        content: generateFollowUpSystemPrompt,
+      },
+      {
+        // @ts-ignore
+        role: 'user',
+        content: `
             User Questions: ${userMessage},
 
             Assistants Reply: ${assistantReply},
@@ -331,16 +332,41 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
 
             User's Intent: ${intent}
           `,
-        },
-      ],
-    });
+      },
+    ]);
 
-    return completion.choices[0].message.content;
+    return completion;
+  }
+
+  private async generateResponseMessage({
+    contentChunks,
+    intent,
+    messages,
+  }: {
+    contentChunks: string[];
+    intent: intentType;
+    messages: any[];
+  }) {
+    const responseMessages = [
+      {
+        role: 'system',
+        content: `${generateResponseSystemPrompt}
+    
+                    Intent: ${intent}
+
+                    Context: ${contentChunks.join('\n--\n')}
+    
+                    `,
+      },
+      ...messages,
+    ];
+
+    const assistantResponse = await this.generateResponse(responseMessages);
+    return assistantResponse;
   }
 
   private async contentRelatedQuestion({
     message,
-    conversationId,
   }: {
     message: string;
     conversationId: string;
@@ -363,33 +389,24 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
 
     const messages = await this.getSessionMessages(conversation.id);
     const initialMessages = this.generateCompletionChat(messages);
-    const intent = await this.intentClassifier(data.message, initialMessages);
-    console.log('🚀 ~ ChatWidgetService ~ startChat ~ intent:', intent);
+    const intent = await this.intentClassifier(initialMessages);
 
     let message: WebinarChat | null = null;
     if (intent === 'content_question') {
+      // 1. Pulling Chunks From TypeSense
       const contentResponse = await this.contentRelatedQuestion({
         message: data.message,
         conversationId: conversation.id,
       });
 
-      const previousMessages = this.generateCompletionChat(messages);
+      // 2. Converting Chunks to Human Readable Form. (Only Content related response only)
+      const assistantResponse = await this.generateResponseMessage({
+        contentChunks: contentResponse,
+        intent,
+        messages: initialMessages,
+      });
 
-      const responseMessages = [
-        {
-          role: 'system',
-          content: `${generateResponseSystemPrompt}
-    
-                    Context: ${contentResponse.join('\n--\n')}
-    
-                    `,
-        },
-        ...previousMessages,
-      ];
-
-      // @ts-ignore
-      const assistantResponse = await this.generateResponse(responseMessages);
-
+      // 3. Generating The Follow UP Question. (e.g "You want me to send you the summary of this chat via Email?")
       const followUpQuestion = await this.generateFollowUpQuestion({
         assistantReply: assistantResponse,
         intent,
@@ -398,8 +415,8 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
 
       // Combining Message
       const combineResponse = `${assistantResponse}
-    
-            ${followUpQuestion}
+
+      ${followUpQuestion}
             `;
 
       // Saving Response
@@ -413,83 +430,42 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
         intent,
       )
     ) {
-      console.log("Now we're here...");
-      const lastMessages = this.generateCompletionChat(messages);
-      const completion = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: generateFollowUpSystemPrompt,
-          },
-          ...lastMessages,
-          {
-            role: 'user',
-            content: `
-              User Questions: ${data.message},
-              User's Intent: ${intent}
-            `,
-          },
-        ],
-      });
-
-      // if (intent === 'resource_request') {
-      //   const gotUserEmail = await this.gatherUserDetail({
-      //     conversationId: conversation.id,
-      //     intent,
-      //     userMessage: data.message,
-      //   });
-      //   console.log(
-      //     '🚀 ~ ChatWidgetService ~ startChat ~ gotUserEmail:',
-      //     gotUserEmail,
-      //   );
-      // }
-
-      const anotherFollowUpMessage = completion.choices[0].message.content;
+      const completion = await this.generateResponse([
+        {
+          // @ts-ignore
+          role: 'system',
+          content: generateResponseSystemPrompt,
+        },
+        ...initialMessages,
+      ]);
 
       message = await this.createMessageRecord({
         conversationId: conversation.id,
         role: ChatRole.ASSISTANT,
-        message: anotherFollowUpMessage,
+        message: completion,
       });
-
-      return {
-        data: {
-          intent,
-          sessionId: session.id,
-          message: anotherFollowUpMessage,
-        },
-      };
     } else if (intent === 'general_curiosity') {
-      const lastMessages = this.generateCompletionChat(messages);
-      const assistantResponse = await this.generateResponse(lastMessages);
-
-      const followUpQuestion = await this.generateFollowUpQuestion({
-        assistantReply: assistantResponse,
-        intent,
-        userMessage: data.message,
-      });
-
-      // Combining Message
-      const combineResponse = `${assistantResponse}
-    
-            ${followUpQuestion}
-            `;
+      const assistantResponse = await this.generateResponse([
+        {
+          // @ts-ignore
+          role: 'system',
+          content: generateResponseSystemPrompt,
+        },
+        ...initialMessages,
+      ]);
 
       // Saving Response
       message = await this.createMessageRecord({
         conversationId: conversation.id,
         role: ChatRole.ASSISTANT,
-        message: combineResponse,
+        message: assistantResponse,
       });
-
-      return {
-        data: {
-          intent,
-          sessionId: session.id,
-          message: message.message,
-        },
-      };
+    } else {
+      message = await this.createMessageRecord({
+        conversationId: conversation.id,
+        role: ChatRole.ASSISTANT,
+        message: intent,
+      });
     }
 
     return {
