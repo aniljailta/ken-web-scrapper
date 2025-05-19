@@ -420,6 +420,7 @@
       </div>
     </div>
   </body>
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
   <script>
     const togglerBtn = document.querySelector('#chatbot-widget-toggler');
     const mainContent = document.querySelector('#chatbot-widget .main-content');
@@ -441,6 +442,14 @@
         sendMessage(content);
       }
     };
+
+    function deIndent(markdownText) {
+      return markdownText
+        .split('\n')
+        .map((line) => line.replace(/^\s{4,}/, ''))
+        .join('\n')
+        .trim();
+    }
 
     const openWidget = () => {
       togglerBtn.classList.add('hidden');
@@ -537,9 +546,12 @@
     }
 
     function mountMessage(message, role = 'user') {
+      const md = window.markdownit();
+      const result = md.render(deIndent(message));
+
       const wrapper = document.createElement('div');
       wrapper.className = `message ${role === 'user' ? 'user' : role === 'error' ? 'error' : ''}`;
-      wrapper.textContent = message;
+      wrapper.innerHTML = result;
 
       mainContent.appendChild(wrapper);
       scrollToBottom(mainContent);
