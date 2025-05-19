@@ -7,7 +7,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown.min.css"
+      integrity="sha512-BrOPA520KmDMqieeM7XFe6a3u3Sb3F1JBaQnrIAmWg3EYrciJ+Qqe6ZcKCdfPv26rGcgTrJnZ/IdQEct8h3Zhw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
       href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
   </head>
@@ -27,13 +38,25 @@
 
     #chatbot-widget .header {
       border-radius: 24px 24px 0px 0px;
-      /* border: 1px solid #ddd; */
       border-bottom: none;
-      background: #c5c5c5;
-      padding: 8px;
+      background: #e31937;
+      color: #fff;
+      padding-inline: 20px;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: space-between;
+      height: 56px;
+    }
+
+    #chatbot-widget .header p {
+      color: #fff;
+      font-family: Roboto;
+      font-size: 18px;
+      font-style: normal;
+      font-weight: 600;
+      margin: 0;
+      line-height: normal;
+      text-align: left;
     }
 
     #chatbot-widget .main-content {
@@ -49,19 +72,25 @@
 
     #chatbot-widget .main-content .message {
       color: #000;
-      font-family: 'Roboto Mono';
-      font-size: 14px;
+      font-family: Roboto;
+      font-size: 16px;
       font-style: normal;
       text-align: left;
-      font-weight: 300;
+      font-weight: 400;
       line-height: 1.8;
       align-self: flex-start;
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: #f7f7f7;
+      max-width: 358px;
     }
 
     #chatbot-widget .main-content .message.user {
       font-weight: 400;
       text-align: right;
       align-self: flex-end;
+      color: #222;
+      background: #ededed;
     }
 
     #chatbot-widget .main-content .message.error {
@@ -79,14 +108,14 @@
 
     #chatbot-widget .footer .chat-input {
       border: 1px solid #ddd;
-      border-left: none;
-      border-right: none;
-      background: #f4f4f4;
+      background: #f9f9f9;
+      border-radius: 999px;
       display: flex;
       align-items: center;
       justify-content: start;
       gap: 4px;
       padding-inline: 16px;
+      height: 48px;
     }
 
     #chatbot-widget .footer .chat-input input {
@@ -110,6 +139,9 @@
     #chatbot-widget .footer {
       background-color: #fff;
       border-radius: 0 0 24px 24px;
+      border-top: 1px solid #dddddd;
+      padding-top: 14px;
+      padding-inline: 16px;
     }
     #chatbot-widget .footer .footer-content {
       color: rgba(0, 0, 0, 0.6);
@@ -129,7 +161,7 @@
     #chatbot-widget-toggler {
       border-radius: 24px;
       background: #e31937;
-      width: 279px;
+      width: 236px;
       height: 48px;
       color: #fff;
       font-family: 'Roboto Mono';
@@ -153,6 +185,63 @@
       bottom: 24px;
       right: 24px;
       z-index: 9999;
+    }
+
+    #chatbot-widget .suggestions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      align-self: center;
+      gap: 20px;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    #chatbot-widget .suggestions .title {
+      color: #000;
+      font-family: Roboto;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: normal;
+    }
+
+    #chatbot-widget .suggestion-list {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 16px;
+    }
+
+    #chatbot-widget .suggestion-list.row {
+      flex-direction: row;
+      overflow: auto;
+      padding-bottom: 14px;
+      display: none;
+    }
+
+    #chatbot-widget .suggestion-list.row.active {
+      display: flex;
+    }
+
+    #chatbot-widget .suggestion-list .suggestion {
+      border-radius: 999px;
+      background: #f7f7f7;
+      padding: 12px 16px;
+      color: rgba(0, 0, 0, 0.8);
+      font-family: Roboto;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: normal;
+      min-width: fit-content;
+      cursor: pointer;
+    }
+
+    #chatbot-widget .suggestion-list .suggestion:hover {
+      background: #d8d8d8;
     }
 
     #chatbot-widget .loader {
@@ -192,7 +281,7 @@
   <body>
     <!-- Widget Toggler -->
     <div id="chatbot-widget-toggler" class="fix-bottom">
-      Need help with a solution?
+      What's in the report?
       <span class="icon">
         <svg
           width="20"
@@ -228,6 +317,7 @@
 
     <div id="chatbot-widget" class="fix-bottom">
       <div class="header">
+        <p>Explore the 2025 Cybersecurity Report ✨</p>
         <span id="close-btn">
           <svg
             width="24"
@@ -239,7 +329,7 @@
             <g clip-path="url(#clip0_578_3209)">
               <path
                 d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"
-                fill="black"
+                fill="#fff"
               />
             </g>
             <defs>
@@ -250,15 +340,38 @@
           </svg>
         </span>
       </div>
-      <div class="main-content"></div>
+      <div class="main-content">
+        <div class="suggestions">
+          <span class="title"> Start with a question: </span>
+          <div class="suggestion-list">
+            <span class="suggestion" onclick="triggerSuggestion(this)"
+              >What's the main takeaway?
+            </span>
+            <span class="suggestion" onclick="triggerSuggestion(this)"
+              >Is this relevant to IT managers?</span
+            >
+            <span class="suggestion" onclick="triggerSuggestion(this)"
+              >Send me a summary 📩</span
+            >
+          </div>
+        </div>
+      </div>
       <div class="footer">
+        <!-- Suggestion List -->
+        <div class="suggestion-list row">
+          <span class="suggestion" onclick="triggerSuggestion(this)">
+            What's the main takeaway?
+          </span>
+          <span class="suggestion" onclick="triggerSuggestion(this)"
+            >Is this relevant to IT managers?</span
+          >
+          <span class="suggestion" onclick="triggerSuggestion(this)"
+            >Send me a summary 📩</span
+          >
+        </div>
         <!-- ChatInput -->
         <div class="chat-input">
-          <input
-            placeholder="Ask a question or enter a product ID"
-            id="input-field"
-            type="text"
-          />
+          <input placeholder="Ask a question" id="input-field" type="text" />
           <span role="button" class="send-btn">
             <svg
               width="30"
@@ -314,6 +427,20 @@
     const chatInput = document.querySelector('#chatbot-widget #input-field');
     const sendBtn = document.querySelector('#chatbot-widget .send-btn');
     const chatBotWidget = document.querySelector('#chatbot-widget');
+    const suggestionContainer = document.querySelector(
+      '#chatbot-widget .suggestions',
+    );
+    const suggestionElements = document.querySelectorAll(
+      '#chatbot-widget .suggestion-list .suggestion',
+    );
+    const bottomSuggestionList = document.querySelector('.suggestion-list.row');
+
+    const triggerSuggestion = (event) => {
+      const content = event.textContent;
+      if (content) {
+        sendMessage(content);
+      }
+    };
 
     const openWidget = () => {
       togglerBtn.classList.add('hidden');
@@ -324,21 +451,45 @@
       togglerBtn.classList.remove('hidden');
       chatBotWidget.classList.remove('active');
       revokeSessionId();
-      mainContent.innerHTML = ``;
+
+      // Putting Suggestion Back in the Main Content
+      mainContent.innerHTML = `
+      <div class="suggestions">
+          <span class="title"> Start with a question: </span>
+          <div class="suggestion-list">
+            <span class="suggestion" onclick="triggerSuggestion(this)"
+              >What's the main takeaway?
+            </span>
+            <span class="suggestion" onclick="triggerSuggestion(this)"
+              >Is this relevant to IT managers?</span
+            >
+            <span class="suggestion" onclick="triggerSuggestion(this)"
+              >Send me a summary 📩</span
+            >
+          </div>
+        </div>
+      `;
       chatInput.value = '';
     };
 
-    const sendMessage = () => {
-      const message = chatInput.value;
+    const sendMessage = (suggestion = '') => {
+      const message = chatInput.value || suggestion;
       if (!message) {
         return;
       }
 
-      // Appending Message & Resting Message
+      if (suggestionContainer && mainContent.querySelector('.suggestions')) {
+        mainContent.removeChild(suggestionContainer);
+      }
+
       mountMessage(message, 'user');
       chatInput.value = '';
       addLoader();
 
+      // Rendering Suggestion List in the footer
+      if (bottomSuggestionList) {
+        bottomSuggestionList.classList.add('active');
+      }
       const sessionId = getSessionId();
 
       const data = {
