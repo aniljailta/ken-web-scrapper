@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { WebinarChat } from './entities/webinar_chat.entity';
 import { WebinarConversation } from './entities/webinar_conversation.entity';
 import { WebinarSession } from './entities/webinar_session.entity';
+import { ChatWidgetHelperService } from './chatWidgetHelper.service';
 
 @Module({
   controllers: [ChatWidgetController],
@@ -15,6 +16,6 @@ import { WebinarSession } from './entities/webinar_session.entity';
       WebinarSession,
     ]),
   ],
-  providers: [ChatWidgetService],
+  providers: [ChatWidgetService, ChatWidgetHelperService],
 })
 export class ChatWidgetModule {}

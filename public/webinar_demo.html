@@ -122,8 +122,8 @@
       outline: none;
       border: none;
       background-color: inherit;
-      color: rgba(0, 0, 0, 0.6);
-      font-family: 'Roboto Mono';
+      color: #000;
+      font-family: Roboto;
       font-size: 14px;
       font-style: normal;
       font-weight: 400;
@@ -428,7 +428,7 @@
     const chatInput = document.querySelector('#chatbot-widget #input-field');
     const sendBtn = document.querySelector('#chatbot-widget .send-btn');
     const chatBotWidget = document.querySelector('#chatbot-widget');
-    const suggestionContainer = document.querySelector(
+    let suggestionContainer = document.querySelector(
       '#chatbot-widget .suggestions',
     );
     const suggestionElements = document.querySelectorAll(
@@ -454,11 +454,17 @@
     const openWidget = () => {
       togglerBtn.classList.add('hidden');
       chatBotWidget.classList.add('active');
+      if (bottomSuggestionList) {
+        bottomSuggestionList.classList.remove('active');
+      }
     };
 
     const closeWidget = () => {
       togglerBtn.classList.remove('hidden');
       chatBotWidget.classList.remove('active');
+      if (bottomSuggestionList) {
+        bottomSuggestionList.classList.remove('active');
+      }
       revokeSessionId();
 
       // Putting Suggestion Back in the Main Content
@@ -487,8 +493,10 @@
         return;
       }
 
-      if (suggestionContainer && mainContent.querySelector('.suggestions')) {
+      const existingSuggestion = mainContent.querySelector('.suggestions');
+      if (suggestionContainer && existingSuggestion) {
         mainContent.removeChild(suggestionContainer);
+        suggestionContainer = null;
       }
 
       mountMessage(message, 'user');
