@@ -5,11 +5,11 @@ import Typesense from 'typesense';
 import { SendMessageDTO } from './dto/sendMessage.dto';
 import {
   captureLeadInfo,
-  generalAssistantPrompt,
   generateFollowUpSystemPrompt,
   generateResponseSystemPrompt,
   intentClassifierSystemPrompt,
   summarizeSystemPrompt,
+  unifiedSystemPrompt,
 } from './constant';
 import { intentType } from './type';
 import { WebinarSession } from './entities/webinar_session.entity';
@@ -241,20 +241,50 @@ export class ChatWidgetService {
     messages: any[],
     conversationId: string,
   ): Promise<intentType> {
-    const intent = await this.generateResponse(
-      [
-        {
-          role: 'system',
-          content: intentClassifierSystemPrompt,
-        },
+    const completion = await this.openai.chat.completions.create({
+      model: this.openaiModal,
+      messages: [
+        { role: 'system', content: intentClassifierSystemPrompt },
         ...messages,
       ],
-      conversationId,
-    );
+      tools: [
+        {
+          type: 'function',
+          function: {
+            name: 'classify_intent',
+            description: "Classify the user's intent",
+            parameters: {
+              type: 'object',
+              properties: {
+                intent: {
+                  type: 'string',
+                  enum: [
+                    'content_question',
+                    'resource_request',
+                    'product_lead_in',
+                    'followup_request',
+                    'general_curiosity',
+                  ],
+                },
+              },
+              required: ['intent'],
+            },
+          },
+        },
+      ],
+      tool_choice: { type: 'function', function: { name: 'classify_intent' } },
+    });
 
-    this.logger.log(`User Intent: ${intent}`);
+    if (completion.choices[0].message.tool_calls) {
+      const functionCall = completion.choices[0].message.tool_calls[0].function;
+      if (functionCall.name === 'classify_intent') {
+        const intent = JSON.parse(functionCall.arguments)?.intent;
+        this.logger.log(`User Intent: ${intent}`);
+        return intent;
+      }
+    }
 
-    return intent as intentType;
+    return 'general_curiosity';
   }
 
   private async generateChunkSummary(chunks: string[], userQuestion: string) {
@@ -295,22 +325,24 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
       const functionCall = completion.choices[0].message.tool_calls[0].function;
       if (functionCall.name === 'captureLeadInfo') {
         const parsedArguments = JSON.parse(functionCall.arguments);
+        this.logger.debug(
+          `captureLeadArguments: ${JSON.stringify(parsedArguments)}`,
+        );
 
         if (parsedArguments) {
           await this.logLead({
             ...parsedArguments,
             conversationId,
           });
+          const message = await this.generateFollowUpQuestion({
+            userMessage: messages[messages.length - 1].content,
+            assistantReply: messages[messages.length - 2].content,
+            intent: 'resource_request',
+            conversationId,
+          });
+
+          return message;
         }
-
-        const message = await this.generateFollowUpQuestion({
-          userMessage: messages[messages.length - 1].content,
-          assistantReply: messages[messages.length - 2].content,
-          intent: 'resource_request',
-          conversationId,
-        });
-
-        return message;
       }
     }
 
@@ -336,7 +368,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
       }
       const summary = await this.generateConversationSummary(conversationId);
       const formattedRow = [
-        moment().format('MMM Do YY'),
+        moment().format('MMMM Do YYYY, h:mm:ss a'),
         name ?? 'N/A',
         email ?? 'N/A',
         company ?? 'N/A',
@@ -496,6 +528,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
 
     let message: WebinarChat | null = null;
     if (intent === 'content_question') {
+      this.logger.debug('Triggering content_question Bucket');
       // 1. Pulling Chunks From TypeSense
       const contentResponse = await this.contentRelatedQuestion({
         message: data.message,
@@ -535,23 +568,14 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
         intent,
       )
     ) {
+      this.logger.debug(
+        `Triggering 'product_lead_in', 'followup_request', 'resource_request' Buckets`,
+      );
       const completion = await this.generateResponse(
         [
           {
             role: 'system',
-            content: `You are a helpful assistant that talks to users after cybersecurity webinars.
-
-Behavior Rules:
-1. The user's question shows interest in a product, follow-up, or resource—so offer helpful next steps.
-2. If the user has NOT provided an email, name, or company:
-   - Politely ask if they'd like a checklist, setup review, or follow-up resource.
-   - If they accept, ask for their name, email, and company (or trigger tool to extract it).
-3. If the user gives just their email, assume they are responding to a previous offer.
-4. If the user has already provided contact info, thank them and confirm what you'll send.
-5. Be friendly, professional, and concise—avoid sounding pushy or robotic.
-6. Always ground your responses in the context from the webinar transcript.
-7. Ask only for info not already given. Be context-aware.
-`,
+            content: unifiedSystemPrompt,
           },
           ...initialMessages,
         ],
@@ -564,16 +588,24 @@ Behavior Rules:
         message: completion,
       });
     } else if (intent === 'general_curiosity') {
+      this.logger.debug(`Triggering general_curiosity Bucket`);
       const assistantResponse = await this.generateResponse(
         [
           {
             role: 'system',
-            content: generalAssistantPrompt,
+            content: unifiedSystemPrompt,
           },
           ...initialMessages,
         ],
         conversation.id,
       );
+
+      // const followUpQuestion = await this.generateFollowUpQuestion({
+      //   assistantReply: assistantResponse,
+      //   intent,
+      //   userMessage: data.message,
+      //   conversationId: conversation.id,
+      // });
 
       // Saving Response
       message = await this.createMessageRecord({
@@ -582,6 +614,7 @@ Behavior Rules:
         message: assistantResponse,
       });
     } else {
+      this.logger.debug(`Inside Else Block block`);
       message = await this.createMessageRecord({
         conversationId: conversation.id,
         role: ChatRole.ASSISTANT,

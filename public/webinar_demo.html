@@ -437,7 +437,7 @@
       bottomSuggestionList: '.suggestion-list.row',
     };
 
-    const SESSION_CLOSING_THRESHOLD = 20000;
+    const SESSION_CLOSING_THRESHOLD = 2 * 60 * 1000;
     const SESSION_TIMER_KEY = 'session_timer_id';
 
     const dom = {};
