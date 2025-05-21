@@ -247,7 +247,9 @@
     #chatbot-widget .loader {
       align-self: flex-start;
       width: 16px;
+      min-width: 16px;
       height: 16px;
+      min-height: 16px;
       border-radius: 50%;
       background-color: #e0e1dd;
       box-shadow:
@@ -415,213 +417,214 @@
 
         <div class="footer-content">
           Powered by
-          <a href="#"> Great Migration </a>
+          <a href="https://greatmigration.io/"> Great Migration </a>
         </div>
       </div>
     </div>
   </body>
   <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
   <script>
-    const togglerBtn = document.querySelector('#chatbot-widget-toggler');
-    const mainContent = document.querySelector('#chatbot-widget .main-content');
-    const closeBtn = document.querySelector('#chatbot-widget #close-btn');
-    const chatInput = document.querySelector('#chatbot-widget #input-field');
-    const sendBtn = document.querySelector('#chatbot-widget .send-btn');
-    const chatBotWidget = document.querySelector('#chatbot-widget');
-    let suggestionContainer = document.querySelector(
-      '#chatbot-widget .suggestions',
-    );
-    const suggestionElements = document.querySelectorAll(
-      '#chatbot-widget .suggestion-list .suggestion',
-    );
-    const bottomSuggestionList = document.querySelector('.suggestion-list.row');
-
-    const triggerSuggestion = (event) => {
-      const content = event.textContent;
-      if (content) {
-        sendMessage(content);
-      }
+    // DOM Elements
+    const selectors = {
+      togglerBtn: '#chatbot-widget-toggler',
+      mainContent: '#chatbot-widget .main-content',
+      closeBtn: '#chatbot-widget #close-btn',
+      chatInput: '#chatbot-widget #input-field',
+      sendBtn: '#chatbot-widget .send-btn',
+      chatBotWidget: '#chatbot-widget',
+      suggestionContainer: '#chatbot-widget .suggestions',
+      suggestionElements: '#chatbot-widget .suggestion-list .suggestion',
+      bottomSuggestionList: '.suggestion-list.row',
     };
 
-    function deIndent(markdownText) {
-      return markdownText
+    const SESSION_CLOSING_THRESHOLD = 20000;
+    const SESSION_TIMER_KEY = 'session_timer_id';
+
+    const dom = {};
+    for (const [key, selector] of Object.entries(selectors)) {
+      dom[key] = document.querySelector(selector);
+    }
+
+    // Core Functions
+    const triggerSuggestion = (event) => {
+      const content = event.textContent;
+      if (content) sendMessage(content);
+    };
+
+    const deIndent = (markdownText) =>
+      markdownText
         .split('\n')
         .map((line) => line.replace(/^\s{4,}/, ''))
         .join('\n')
         .trim();
-    }
 
     const openWidget = () => {
-      togglerBtn.classList.add('hidden');
-      chatBotWidget.classList.add('active');
-      if (bottomSuggestionList) {
-        bottomSuggestionList.classList.remove('active');
-      }
+      dom.togglerBtn?.classList.add('hidden');
+      dom.chatBotWidget?.classList.add('active');
+      dom.bottomSuggestionList?.classList.remove('active');
     };
 
     const closeWidget = () => {
-      togglerBtn.classList.remove('hidden');
-      chatBotWidget.classList.remove('active');
-      if (bottomSuggestionList) {
-        bottomSuggestionList.classList.remove('active');
-      }
+      dom.togglerBtn?.classList.remove('hidden');
+      dom.chatBotWidget?.classList.remove('active');
+      dom.bottomSuggestionList?.classList.remove('active');
       revokeSessionId();
+      revokeSessionTimer();
+      resetSuggestions();
+      dom.chatInput.value = '';
+    };
 
-      // Putting Suggestion Back in the Main Content
-      mainContent.innerHTML = `
-      <div class="suggestions">
-          <span class="title"> Start with a question: </span>
-          <div class="suggestion-list">
-            <span class="suggestion" onclick="triggerSuggestion(this)"
-              >What's the main takeaway?
-            </span>
-            <span class="suggestion" onclick="triggerSuggestion(this)"
-              >Is this relevant to IT managers?</span
-            >
-            <span class="suggestion" onclick="triggerSuggestion(this)"
-              >Send me a summary 📩</span
-            >
-          </div>
-        </div>
-      `;
-      chatInput.value = '';
+    const resetSuggestions = () => {
+      if (!dom.mainContent) return;
+
+      dom.mainContent.innerHTML = `
+    <div class="suggestions">
+      <span class="title">Start with a question:</span>
+      <div class="suggestion-list">
+        <span class="suggestion" onclick="triggerSuggestion(this)">What's the main takeaway?</span>
+        <span class="suggestion" onclick="triggerSuggestion(this)">Is this relevant to IT managers?</span>
+        <span class="suggestion" onclick="triggerSuggestion(this)">Send me a summary 📩</span>
+      </div>
+    </div>
+  `;
     };
 
     const sendMessage = (suggestion = '') => {
-      const message = chatInput.value || suggestion;
-      if (!message) {
-        return;
-      }
+      const message = dom.chatInput.value || suggestion;
+      if (!message) return;
 
-      const existingSuggestion = mainContent.querySelector('.suggestions');
-      if (suggestionContainer && existingSuggestion) {
-        mainContent.removeChild(suggestionContainer);
-        suggestionContainer = null;
+      const existingSuggestion = dom.mainContent.querySelector('.suggestions');
+      if (existingSuggestion) {
+        existingSuggestion.remove();
       }
 
       mountMessage(message, 'user');
-      chatInput.value = '';
+      dom.chatInput.value = '';
       addLoader();
+      dom.bottomSuggestionList?.classList.add('active');
 
-      // Rendering Suggestion List in the footer
-      if (bottomSuggestionList) {
-        bottomSuggestionList.classList.add('active');
-      }
       const sessionId = getSessionId();
+      const payload = sessionId ? { message, sessionId } : { message };
 
-      const data = {
-        message,
-      };
-
-      if (sessionId) {
-        data.sessionId = sessionId;
-      }
-
-      apiRequestService('/scraper-api/chatWidget/chat', data, 'POST')
+      apiRequestService('/scraper-api/chatWidget/chat', payload)
         .then((data) => {
-          mountMessage(data.message, 'assistant');
-          if (data?.sessionId) {
-            saveSessionId(data.sessionId);
+          // Triggering Session Timer when user sent first Message
+          if (!sessionId) {
+            triggerSessionTimer();
           }
+
+          mountMessage(data.message, 'assistant');
+          if (data?.sessionId) saveSessionId(data.sessionId);
         })
-        .catch((error) => {
-          mountMessage(error?.message, 'error');
-        })
-        .finally(() => {
-          removeLoader();
-        });
+        .catch((err) => mountMessage(err.message, 'error'))
+        .finally(removeLoader);
     };
 
-    if (closeBtn) {
-      closeBtn.addEventListener('click', closeWidget);
-    }
-
-    if (togglerBtn) {
-      togglerBtn.addEventListener('click', openWidget);
-    }
-
-    if (sendBtn) {
-      sendBtn.addEventListener('click', sendMessage);
-    }
-
-    if (chatInput) {
-      chatInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          sendMessage();
-        }
-      });
-    }
-
-    function mountMessage(message, role = 'user') {
+    const mountMessage = (message, role = 'user') => {
       const md = window.markdownit();
-      const result = md.render(deIndent(message));
+      const rendered = md.render(deIndent(message));
 
       const wrapper = document.createElement('div');
-      wrapper.className = `message ${role === 'user' ? 'user' : role === 'error' ? 'error' : ''}`;
-      wrapper.innerHTML = result;
+      wrapper.className = `message ${role === 'error' ? 'error' : role}`;
+      wrapper.innerHTML = rendered;
 
-      mainContent.appendChild(wrapper);
-      scrollToBottom(mainContent);
-    }
+      dom.mainContent.appendChild(wrapper);
+      scrollToBottom(dom.mainContent);
+    };
 
-    async function apiRequestService(url, data = {}, method = 'POST') {
+    const apiRequestService = async (url, data = {}, method = 'POST') => {
       try {
-        const response = await fetch(url, {
-          method: method.toUpperCase(),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: method.toUpperCase() === 'GET' ? null : JSON.stringify(data),
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: method === 'GET' ? null : JSON.stringify(data),
         });
 
-        if (!response.ok) {
-          const notOkayResponse = await response.json();
+        if (!res.ok) {
+          const errorData = await res.json();
           throw new Error(
-            notOkayResponse?.error?.message ||
-              'Something Went Wrong While Getting Response',
+            errorData?.error?.message || 'Error getting response',
           );
         }
 
-        const result = await response.json();
+        const result = await res.json();
         return result?.data || result;
-      } catch (error) {
-        throw error; // Rethrow to let caller handle it
+      } catch (err) {
+        throw err;
       }
-    }
+    };
 
-    function addLoader() {
-      if (!mainContent.querySelector('.loader')) {
-        const wrapper = document.createElement('span');
-        wrapper.className = 'loader';
-        mainContent.appendChild(wrapper);
+    // Utility Functions
+    const addLoader = () => {
+      if (!dom.mainContent.querySelector('.loader')) {
+        const loader = document.createElement('span');
+        loader.className = 'loader';
+        dom.mainContent.appendChild(loader);
       }
-    }
+    };
 
-    function removeLoader() {
-      const loader = mainContent.querySelector('.loader');
-      if (loader) {
-        mainContent.removeChild(loader);
+    const removeLoader = () => {
+      dom.mainContent.querySelector('.loader')?.remove();
+    };
+
+    const getSessionId = () => localStorage.getItem('chatbot_session_id');
+    const saveSessionId = (id) =>
+      localStorage.setItem('chatbot_session_id', id);
+    const revokeSessionId = () => localStorage.removeItem('chatbot_session_id');
+
+    const scrollToBottom = (el) => {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    };
+
+    const triggerSessionTimer = () => {
+      revokeSessionTimer();
+      const timerId = setTimeout(
+        triggerSessionClosing,
+        SESSION_CLOSING_THRESHOLD,
+      );
+      window.localStorage.setItem(SESSION_TIMER_KEY, timerId);
+      //
+    };
+
+    const revokeSessionTimer = () => {
+      const timerId = window.localStorage.getItem(SESSION_TIMER_KEY);
+      if (timerId) {
+        clearTimeout(timerId);
+        window.localStorage.removeItem(SESSION_TIMER_KEY);
       }
-    }
+    };
 
-    function getSessionId() {
-      return window.localStorage.getItem('chatbot_session_id');
-    }
-    function saveSessionId(sessionId) {
-      window.localStorage.removeItem('chatbot_session_id');
-      window.localStorage.setItem('chatbot_session_id', sessionId);
-    }
+    const triggerSessionClosing = () => {
+      const sessionId = getSessionId();
 
-    function revokeSessionId() {
-      window.localStorage.removeItem('chatbot_session_id');
-    }
+      if (!sessionId) {
+        console.log('No Session ID Found!');
+        return;
+      }
+      const payload = {};
 
-    function scrollToBottom(container) {
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
+      apiRequestService(
+        `/scraper-api/chatWidget/trigger-session-closing/${sessionId}`,
+        payload,
+      )
+        .then((data) => {
+          mountMessage(data.message, 'assistant');
+          if (data?.sessionId) saveSessionId(data.sessionId);
+        })
+        .catch((err) => mountMessage(err.message, 'error'))
+        .finally(removeLoader);
+    };
+
+    // Event Listeners
+    dom.closeBtn?.addEventListener('click', closeWidget);
+    dom.togglerBtn?.addEventListener('click', openWidget);
+    dom.sendBtn?.addEventListener('click', sendMessage);
+
+    dom.chatInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
   </script>
 </html>

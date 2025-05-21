@@ -66,8 +66,40 @@ export class ChatWidgetService {
       this.configService.get<string>('AI_ASSISTANT_MODAL') || 'gpt-3.5-turbo';
   }
 
-  renderDemoPage() {
-    return {};
+  async triggerSessionClosing(sessionId: string) {
+    const checkSession = await this.webinarConversationRepo.findOne({
+      where: {
+        session: {
+          id: sessionId,
+        },
+      },
+      relations: ['messages'],
+      order: {
+        messages: {
+          sentAt: 'DESC',
+        },
+      },
+    });
+
+    if (!checkSession) {
+      return {};
+    }
+
+    // Create Message Record
+    const message = await this.createMessageRecord({
+      conversationId: checkSession.id,
+      message: `
+        **Would you like to receive a copy of this conversation? Drop your email and we'll send it over.**
+        `,
+      role: ChatRole.ASSISTANT,
+    });
+
+    return {
+      data: {
+        message: message.message,
+        sessionId,
+      },
+    };
   }
 
   private getTypeSenseClient() {
@@ -297,18 +329,26 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
     conversationId: string;
   }) {
     //
-    const summary = await this.generateConversationSummary(conversationId);
-    const formattedRow = [
-      moment().format('MMM Do YY'),
-      name ?? 'N/A',
-      email ?? 'N/A',
-      company ?? 'N/A',
-      summary ?? 'N/A',
-    ];
+    try {
+      if (!email) {
+        this.logger.log('No Email Provided to Log Lead!');
+        return;
+      }
+      const summary = await this.generateConversationSummary(conversationId);
+      const formattedRow = [
+        moment().format('MMM Do YY'),
+        name ?? 'N/A',
+        email ?? 'N/A',
+        company ?? 'N/A',
+        summary ?? 'N/A',
+      ];
 
-    await this.chatWidgetHelperService.writeContentInSheets([formattedRow]);
+      await this.chatWidgetHelperService.writeContentInSheets([formattedRow]);
 
-    this.logger.log('Logging Lead In the Sheets');
+      this.logger.log('Logging Lead In the Sheets');
+    } catch (error) {
+      this.logger.error(`Failed to Log Lead: ${error.message}`);
+    }
   }
 
   private generateCompletionChat(
@@ -346,7 +386,9 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
       messages: [
         {
           role: 'system',
-          content: generateFollowUpSystemPrompt,
+          content: `
+          ${generateFollowUpSystemPrompt}
+          `,
         },
         {
           role: 'user',
@@ -372,7 +414,9 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
       messages: [
         {
           role: 'system',
-          content: summarizeSystemPrompt,
+          content: `
+          ${summarizeSystemPrompt}
+          `,
         },
         {
           role: 'user',
@@ -402,7 +446,8 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
     const responseMessages = [
       {
         role: 'system',
-        content: `${generateResponseSystemPrompt}
+        content: `
+        ${generateResponseSystemPrompt}
 
                     Intent: ${intent}
 

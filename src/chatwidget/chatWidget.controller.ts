@@ -15,6 +15,12 @@ export class ChatWidgetController {
     });
   }
 
+  @Post('trigger-session-closing/:sessionId')
+  async triggerSessionClosing(@Param('sessionId') sessionId: string) {
+    //
+    return this.chatWidgetService.triggerSessionClosing(sessionId);
+  }
+
   @Post('chat')
   async sendMessage(@Body() data: SendMessageDTO) {
     //

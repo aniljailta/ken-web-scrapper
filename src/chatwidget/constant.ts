@@ -138,9 +138,16 @@ You will receive the full back-and-forth between the user and assistant as input
 
 export const captureLeadInfo = {
   name: 'captureLeadInfo',
-  description: `Extracts lead information from a message. 
-  If the company is not provided, it attempts to infer it from the domain part of the user's email address. 
-  If name or company cannot be determined, the user should be prompted to provide the missing information.`,
+  description: `Extracts lead information from a user message. 
+  If the company is not provided, attempt to infer it from the domain of the user's email address. 
+  If name or company cannot be determined, prompt the user to provide the missing info.
+  
+  The field 'sendChatCopy' should be set to true only if:
+  1. The user has provided a valid email, and
+  2. They have clearly expressed they want to receive a copy of the conversation via email (e.g., “Can you send me the chat?” or “Please email me the summary”).
+
+  Otherwise, set 'sendChatCopy' to false.`,
+
   parameters: {
     type: 'object',
     properties: {
@@ -157,7 +164,12 @@ export const captureLeadInfo = {
         description:
           "The user's company name. If not provided, infer from email domain or prompt the user.",
       },
+      sendChatCopy: {
+        type: 'boolean',
+        description:
+          'Set to true only if the user has asked to receive a copy of the chat and has shared a valid email address.',
+      },
     },
-    required: ['email', 'name'],
+    required: [],
   },
 };
