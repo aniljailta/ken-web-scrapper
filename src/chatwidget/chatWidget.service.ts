@@ -310,7 +310,11 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
     return completion.choices[0].message.content;
   }
 
-  private async generateResponse(messages: any[], conversationId: string) {
+  private async generateResponse(
+    messages: any[],
+    conversationId: string,
+    intent: intentType,
+  ) {
     const completion = await this.openai.chat.completions.create({
       model: this.openaiModal,
       messages,
@@ -337,7 +341,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
           const message = await this.generateFollowUpQuestion({
             userMessage: messages[messages.length - 1].content,
             assistantReply: messages[messages.length - 2].content,
-            intent: 'resource_request',
+            intent,
             conversationId,
           });
 
@@ -407,12 +411,15 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
     userMessage,
     assistantReply,
     intent,
+    conversationId,
   }: {
     userMessage: string;
     assistantReply: string;
     intent: string;
     conversationId: string;
   }) {
+    const messages = await this.getSessionMessages(conversationId);
+    const initialMessages = this.generateCompletionChat(messages);
     const completion = await this.openai.chat.completions.create({
       model: this.openaiModal,
       messages: [
@@ -422,6 +429,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
           ${generateFollowUpSystemPrompt}
           `,
         },
+        ...initialMessages,
         {
           role: 'user',
           content: `
@@ -493,6 +501,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
     const assistantResponse = await this.generateResponse(
       responseMessages,
       conversationId,
+      intent,
     );
     return assistantResponse;
   }
@@ -518,6 +527,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
       message: data.message,
       conversationId: conversation.id,
     });
+    this.logger.debug(`User Message:- ${data.message}`);
 
     const messages = await this.getSessionMessages(conversation.id);
     const initialMessages = this.generateCompletionChat(messages);
@@ -580,6 +590,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
           ...initialMessages,
         ],
         conversation.id,
+        intent,
       );
 
       message = await this.createMessageRecord({
@@ -598,6 +609,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
           ...initialMessages,
         ],
         conversation.id,
+        intent,
       );
 
       // const followUpQuestion = await this.generateFollowUpQuestion({
