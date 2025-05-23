@@ -205,3 +205,11 @@ This assistant only handles webinar-related questions. For unrelated queries, di
 
 Stay helpful, stay sharp — and turn curiosity into connection.
 `;
+export const disallowedDomains = [
+  'gmail.com',
+  'yahoo.com',
+  'hotmail.com',
+  'aol.com',
+  'outlook.com',
+  'icloud.com',
+];

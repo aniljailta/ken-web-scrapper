@@ -417,7 +417,7 @@
 
         <div class="footer-content">
           Powered by
-          <a href="https://greatmigration.io/"> Great Migration </a>
+          <a href="#"> Great Migration </a>
         </div>
       </div>
     </div>
@@ -449,6 +449,11 @@
     const triggerSuggestion = (event) => {
       const content = event.textContent;
       if (content) sendMessage(content);
+
+      // Removing Suggestion After Clicking
+      if (event.tagName === 'SPAN' && event.classList.contains('suggestion')) {
+        event.remove();
+      }
     };
 
     const deIndent = (markdownText) =>
@@ -462,6 +467,12 @@
       dom.togglerBtn?.classList.add('hidden');
       dom.chatBotWidget?.classList.add('active');
       dom.bottomSuggestionList?.classList.remove('active');
+
+      dom.bottomSuggestionList.innerHTML = `
+        <span class="suggestion" onclick="triggerSuggestion(this)">What's the main takeaway?</span>
+        <span class="suggestion" onclick="triggerSuggestion(this)">Is this relevant to IT managers?</span>
+        <span class="suggestion" onclick="triggerSuggestion(this)">Send me a summary 📩</span>
+        `;
     };
 
     const closeWidget = () => {
@@ -625,6 +636,11 @@
         e.preventDefault();
         sendMessage();
       }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      revokeSessionId();
+      revokeSessionTimer();
     });
   </script>
 </html>

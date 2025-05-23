@@ -5,6 +5,7 @@ import Typesense from 'typesense';
 import { SendMessageDTO } from './dto/sendMessage.dto';
 import {
   captureLeadInfo,
+  disallowedDomains,
   generateFollowUpSystemPrompt,
   generateResponseSystemPrompt,
   intentClassifierSystemPrompt,
@@ -329,6 +330,16 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
       const functionCall = completion.choices[0].message.tool_calls[0].function;
       if (functionCall.name === 'captureLeadInfo') {
         const parsedArguments = JSON.parse(functionCall.arguments);
+
+        // Checking If Email is not one of the disallowed Domains
+        if (parsedArguments?.email) {
+          const emailDomain = parsedArguments.email.split('@')[1].toLowerCase();
+
+          if (disallowedDomains.includes(emailDomain)) {
+            return "To proceed, we require a professional or company email address—personal emails like Gmail or Yahoo won't work.";
+          }
+        }
+
         this.logger.debug(
           `captureLeadArguments: ${JSON.stringify(parsedArguments)}`,
         );
