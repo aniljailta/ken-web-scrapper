@@ -6,11 +6,11 @@ import { SendMessageDTO } from './dto/sendMessage.dto';
 import {
   captureLeadInfo,
   disallowedDomains,
+  generalAssistantPrompt,
   generateFollowUpSystemPrompt,
   generateResponseSystemPrompt,
   intentClassifierSystemPrompt,
   summarizeSystemPrompt,
-  unifiedSystemPrompt,
 } from './constant';
 import { intentType } from './type';
 import { WebinarSession } from './entities/webinar_session.entity';
@@ -356,6 +356,10 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
             conversationId,
           });
 
+          this.logger.debug(
+            `Generating Follow-Up Message from Function Trigger`,
+          );
+
           return message;
         }
       }
@@ -441,16 +445,16 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
           `,
         },
         ...initialMessages,
-        {
-          role: 'user',
-          content: `
-            User Questions: ${userMessage},
+        // {
+        //   role: 'user',
+        //   content: `
+        //     User Questions: ${userMessage},
 
-            Assistants Reply: ${assistantReply},
+        //     Assistants Reply: ${assistantReply},
 
-            User's Intent: ${intent}
-          `,
-        },
+        //     User's Intent: ${intent}
+        //   `,
+        // },
       ],
     });
 
@@ -596,7 +600,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
         [
           {
             role: 'system',
-            content: unifiedSystemPrompt,
+            content: generalAssistantPrompt,
           },
           ...initialMessages,
         ],
@@ -615,7 +619,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
         [
           {
             role: 'system',
-            content: unifiedSystemPrompt,
+            content: generalAssistantPrompt,
           },
           ...initialMessages,
         ],
