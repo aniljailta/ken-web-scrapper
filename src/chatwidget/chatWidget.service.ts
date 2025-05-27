@@ -67,6 +67,67 @@ export class ChatWidgetService {
       this.configService.get<string>('AI_ASSISTANT_MODAL') || 'gpt-3.5-turbo';
   }
 
+  async sendUserSummary({
+    conversationId,
+    to,
+  }: {
+    to: string;
+    conversationId: string;
+  }) {
+    const messages = await this.webinarChatRepo.find({
+      where: {
+        conversation: {
+          id: conversationId,
+        },
+      },
+    });
+
+    const html = await this.chatWidgetHelperService.render(
+      'chat-summary-template',
+      {
+        subject: 'AI-Powered Webinar Assistant',
+        companyName: 'Awesome VAR Solutions',
+        transcript: messages.map(({ role, message }) => ({ role, message })),
+      },
+    );
+    this.chatWidgetHelperService.sendMail({
+      to,
+      from: 'no-reply@yourdomain.com',
+      subject: 'AI-Powered Webinar Assistant',
+      html,
+    });
+  }
+
+  async sendVarSummary({
+    company = 'Not Provided',
+    email = 'Not Provided',
+    name = 'Not Provided',
+    sessionSummary,
+  }: {
+    name?: string;
+    email?: string;
+    company?: string;
+    sessionSummary: string;
+  }) {
+    const defaultVarMail = this.configService.getOrThrow('DEFAULT_VAR_MAIL');
+    const html = await this.chatWidgetHelperService.render(
+      'log-lead-template',
+      {
+        subject: 'AI-Powered Webinar Assistant',
+        name,
+        email,
+        company,
+        session_summary: sessionSummary,
+      },
+    );
+    this.chatWidgetHelperService.sendMail({
+      to: defaultVarMail,
+      from: 'no-reply@yourdomain.com',
+      subject: 'AI-Powered Webinar Assistant',
+      html,
+    });
+  }
+
   async triggerSessionClosing(sessionId: string) {
     const checkSession = await this.webinarConversationRepo.findOne({
       where: {
@@ -349,6 +410,15 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
             ...parsedArguments,
             conversationId,
           });
+
+          if (parsedArguments.sendChatCopy) {
+            //
+            this.sendUserSummary({
+              to: parsedArguments.email,
+              conversationId,
+            });
+          }
+
           const message = await this.generateFollowUpQuestion({
             userMessage: messages[messages.length - 1].content,
             assistantReply: messages[messages.length - 2].content,
@@ -388,13 +458,20 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
       const summary = await this.generateConversationSummary(conversationId);
       const formattedRow = [
         moment().format('MMMM Do YYYY, h:mm:ss a'),
-        name ?? 'N/A',
-        email ?? 'N/A',
-        company ?? 'N/A',
-        summary ?? 'N/A',
+        name ?? 'Not Provided',
+        email ?? 'Not Provided',
+        company ?? 'Not Provided',
+        summary ?? 'Not Provided',
       ];
 
       await this.chatWidgetHelperService.writeContentInSheets([formattedRow]);
+      // Sending Mail to VAR
+      await this.sendVarSummary({
+        name: name ?? 'Not Provided',
+        email: email ?? 'Not Provided',
+        company: company ?? 'Not Provided',
+        sessionSummary: summary ?? 'Not Provided',
+      });
 
       this.logger.log('Logging Lead In the Sheets');
     } catch (error) {

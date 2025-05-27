@@ -1,0 +1,49 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <title>{{subject}}</title>
+    <style>
+      body { font-family: Arial, sans-serif; background-color: #f9f9f9; padding:
+      0; margin: 0; } .container { width: 90%; max-width: 600px; margin: 30px
+      auto; background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0
+      4px 10px rgba(0, 0, 0, 0.05); } .message-block { margin-bottom: 20px;
+      padding-bottom: 10px; border-bottom: 1px solid #eee; } .role {
+      font-weight: bold; margin-bottom: 4px; } .user { color: #007bff; }
+      .assistant { color: #28a745; } .unknown { color: #6c757d; } .footer {
+      margin-top: 30px; font-size: 14px; line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <p>Hi, 👋</p>
+
+      <p>As requested, here’s a copy of your conversation with our webinar
+        assistant 🤖:</p>
+
+      <div class='transcript'>
+        {{#if transcript.length}}
+          {{#each transcript}}
+            <div class='message-block'>
+              <div class='role {{role}}'>
+                {{#if (eq role 'user')}}User{{else if
+                  (eq role 'assistant')
+                }}Assistant{{else}}Unknown{{/if}}:
+              </div>
+              <div class='message'>{{message}}</div>
+            </div>
+          {{/each}}
+        {{else}}
+          <p><em>No conversation transcript available.</em></p>
+        {{/if}}
+      </div>
+
+      <div class='footer'>
+        Let us know if you’d like help reviewing your setup or have more
+        questions 🙋‍♂️🙋‍♀️.<br /><br />
+        -
+        <strong>{{companyName}}</strong>
+        💼
+      </div>
+    </div>
+  </body>
+</html>

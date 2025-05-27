@@ -1,0 +1,40 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <title>{{subject}}</title>
+    <style>
+      body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding:
+      0; margin: 0; } .container { max-width: 600px; margin: 30px auto;
+      background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px
+      8px rgba(0,0,0,0.05); color: #333; } .section { margin-bottom: 20px; }
+      .heading { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+      .contact-info li { margin-bottom: 5px; } .footer { font-size: 13px; color:
+      #555; margin-top: 30px; }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='section'>
+        <p>You have a new lead from the Webinar Assistant 🚀</p>
+      </div>
+
+      <div class='section'>
+        <div class='heading'>👤 Contact Info:</div>
+        <ul class='contact-info'>
+          <li><strong>Name:</strong> {{name}}</li>
+          <li><strong>Email:</strong> {{email}}</li>
+          <li><strong>Company:</strong> {{company}}</li>
+        </ul>
+      </div>
+
+      <div class='section'>
+        <div class='heading'>📝 Session Summary:</div>
+        <p>{{session_summary}}</p>
+      </div>
+
+      <div class='footer'>
+        This lead was generated automatically based on a high-intent session. 💡
+      </div>
+    </div>
+  </body>
+</html>
