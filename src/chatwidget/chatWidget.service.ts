@@ -113,7 +113,7 @@ export class ChatWidgetService {
     const html = await this.chatWidgetHelperService.render(
       'log-lead-template',
       {
-        subject: 'AI-Powered Webinar Assistant',
+        subject: 'You have a new lead from the Webinar Assistant',
         name,
         email,
         company,
@@ -123,7 +123,7 @@ export class ChatWidgetService {
     this.chatWidgetHelperService.sendMail({
       to: defaultVarMail,
       from: 'no-reply@yourdomain.com',
-      subject: 'AI-Powered Webinar Assistant',
+      subject: 'You have a new lead from the Webinar Assistant',
       html,
     });
   }
@@ -151,7 +151,7 @@ export class ChatWidgetService {
     const message = await this.createMessageRecord({
       conversationId: checkSession.id,
       message: `
-        **Would you like to receive a copy of this conversation? Drop your email and we'll send it over.**
+        Would you like to receive a copy of this conversation? Drop your email and we'll send it over.
         `,
       role: ChatRole.ASSISTANT,
     });
@@ -391,7 +391,6 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
       const functionCall = completion.choices[0].message.tool_calls[0].function;
       if (functionCall.name === 'captureLeadInfo') {
         const parsedArguments = JSON.parse(functionCall.arguments);
-
         // Checking If Email is not one of the disallowed Domains
         if (parsedArguments?.email) {
           const emailDomain = parsedArguments.email.split('@')[1].toLowerCase();
@@ -522,16 +521,16 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
           `,
         },
         ...initialMessages,
-        // {
-        //   role: 'user',
-        //   content: `
-        //     User Questions: ${userMessage},
+        {
+          role: 'user',
+          content: `
+            User Questions: ${userMessage},
 
-        //     Assistants Reply: ${assistantReply},
+            Assistants Reply: ${assistantReply},
 
-        //     User's Intent: ${intent}
-        //   `,
-        // },
+            User's Intent: ${intent}
+          `,
+        },
       ],
     });
 
