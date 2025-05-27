@@ -15,7 +15,7 @@ import { RequestTracker } from './request-tracker/entities/request_tracker.entit
 import { LifetimeRequestGuard } from './guards/lifetime-request.guard';
 import { ConversationModule } from './conversation/conversation.module';
 import { MixpanelModule } from './mixpanel/mixpanel.module';
-import { ChatWidgetModule } from './chatwidget/chatwidget.module';
+import { ChatWidgetModule } from './chatwidget/chatWidget.module';
 
 @Module({
   imports: [
