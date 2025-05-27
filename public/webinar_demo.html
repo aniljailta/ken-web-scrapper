@@ -87,7 +87,7 @@
 
     #chatbot-widget .main-content .message.user {
       font-weight: 400;
-      text-align: right;
+      text-align: left;
       align-self: flex-end;
       color: #222;
       background: #ededed;
@@ -245,38 +245,65 @@
     }
 
     #chatbot-widget .loader {
+      height: 30px;
       align-self: flex-start;
-      width: 16px;
-      min-width: 16px;
-      height: 16px;
-      min-height: 16px;
-      border-radius: 50%;
-      background-color: #e0e1dd;
-      box-shadow:
-        32px 0 #fff,
-        -32px 0 #fff;
-      position: relative;
-      animation: flash 0.5s ease-out infinite alternate;
+      margin-left: 16px;
+      min-height: 30px;
+      aspect-ratio: 2.5;
+      --_g: no-repeat radial-gradient(farthest-side, #000 90%, #0000);
+      background: var(--_g), var(--_g), var(--_g), var(--_g);
+      background-size: 20% 50%;
+      animation: l43 1s infinite linear;
     }
-
-    @keyframes flash {
+    @keyframes l43 {
       0% {
-        background-color: #fff2;
-        box-shadow:
-          32px 0 #fff2,
-          -32px 0 #8d99ae;
+        background-position:
+          calc(0 * 100% / 3) 50%,
+          calc(1 * 100% / 3) 50%,
+          calc(2 * 100% / 3) 50%,
+          calc(3 * 100% / 3) 50%;
+      }
+      16.67% {
+        background-position:
+          calc(0 * 100% / 3) 0,
+          calc(1 * 100% / 3) 50%,
+          calc(2 * 100% / 3) 50%,
+          calc(3 * 100% / 3) 50%;
+      }
+      33.33% {
+        background-position:
+          calc(0 * 100% / 3) 100%,
+          calc(1 * 100% / 3) 0,
+          calc(2 * 100% / 3) 50%,
+          calc(3 * 100% / 3) 50%;
       }
       50% {
-        background-color: #8d99ae;
-        box-shadow:
-          32px 0 #fff2,
-          -32px 0 #fff2;
+        background-position:
+          calc(0 * 100% / 3) 50%,
+          calc(1 * 100% / 3) 100%,
+          calc(2 * 100% / 3) 0,
+          calc(3 * 100% / 3) 50%;
+      }
+      66.67% {
+        background-position:
+          calc(0 * 100% / 3) 50%,
+          calc(1 * 100% / 3) 50%,
+          calc(2 * 100% / 3) 100%,
+          calc(3 * 100% / 3) 0;
+      }
+      83.33% {
+        background-position:
+          calc(0 * 100% / 3) 50%,
+          calc(1 * 100% / 3) 50%,
+          calc(2 * 100% / 3) 50%,
+          calc(3 * 100% / 3) 100%;
       }
       100% {
-        background-color: #fff2;
-        box-shadow:
-          32px 0 #8d99ae,
-          -32px 0 #fff2;
+        background-position:
+          calc(0 * 100% / 3) 50%,
+          calc(1 * 100% / 3) 50%,
+          calc(2 * 100% / 3) 50%,
+          calc(3 * 100% / 3) 50%;
       }
     }
   </style>
@@ -346,14 +373,23 @@
         <div class="suggestions">
           <span class="title"> Start with a question: </span>
           <div class="suggestion-list">
-            <span class="suggestion" onclick="triggerSuggestion(this)"
+            <span
+              class="suggestion"
+              data-id="suggestion-1"
+              onclick="triggerSuggestion(this)"
               >What's the main takeaway?
             </span>
-            <span class="suggestion" onclick="triggerSuggestion(this)"
+            <span
+              class="suggestion"
+              data-id="suggestion-2"
+              onclick="triggerSuggestion(this)"
               >Is this relevant to IT managers?</span
             >
-            <span class="suggestion" onclick="triggerSuggestion(this)"
-              >Send me a summary 📩</span
+            <span
+              class="suggestion"
+              data-id="suggestion-3"
+              onclick="triggerSuggestion(this)"
+              >Can you email me a summary 📩</span
             >
           </div>
         </div>
@@ -361,14 +397,24 @@
       <div class="footer">
         <!-- Suggestion List -->
         <div class="suggestion-list row">
-          <span class="suggestion" onclick="triggerSuggestion(this)">
+          <span
+            class="suggestion"
+            data-id="suggestion-1"
+            onclick="triggerSuggestion(this)"
+          >
             What's the main takeaway?
           </span>
-          <span class="suggestion" onclick="triggerSuggestion(this)"
+          <span
+            class="suggestion"
+            data-id="suggestion-2"
+            onclick="triggerSuggestion(this)"
             >Is this relevant to IT managers?</span
           >
-          <span class="suggestion" onclick="triggerSuggestion(this)"
-            >Send me a summary 📩</span
+          <span
+            class="suggestion"
+            data-id="suggestion-3"
+            onclick="triggerSuggestion(this)"
+            >Can you email me a summary 📩</span
           >
         </div>
         <!-- ChatInput -->
@@ -452,7 +498,14 @@
 
       // Removing Suggestion After Clicking
       if (event.tagName === 'SPAN' && event.classList.contains('suggestion')) {
+        const id = event.getAttribute('data-id');
         event.remove();
+        if (id) {
+          const elements = document.querySelectorAll(`[data-id="${id}"]`);
+          elements.forEach((item) => {
+            item.remove();
+          });
+        }
       }
     };
 
@@ -469,9 +522,9 @@
       dom.bottomSuggestionList?.classList.remove('active');
 
       dom.bottomSuggestionList.innerHTML = `
-        <span class="suggestion" onclick="triggerSuggestion(this)">What's the main takeaway?</span>
-        <span class="suggestion" onclick="triggerSuggestion(this)">Is this relevant to IT managers?</span>
-        <span class="suggestion" onclick="triggerSuggestion(this)">Send me a summary 📩</span>
+        <span class="suggestion" data-id="suggestion-1" onclick="triggerSuggestion(this)">What's the main takeaway?</span>
+        <span class="suggestion" data-id="suggestion-2" onclick="triggerSuggestion(this)">Is this relevant to IT managers?</span>
+        <span class="suggestion" data-id="suggestion-3" onclick="triggerSuggestion(this)">Can you email me a summary 📩</span>
         `;
     };
 
@@ -492,9 +545,9 @@
     <div class="suggestions">
       <span class="title">Start with a question:</span>
       <div class="suggestion-list">
-        <span class="suggestion" onclick="triggerSuggestion(this)">What's the main takeaway?</span>
-        <span class="suggestion" onclick="triggerSuggestion(this)">Is this relevant to IT managers?</span>
-        <span class="suggestion" onclick="triggerSuggestion(this)">Send me a summary 📩</span>
+        <span class="suggestion" data-id="suggestion-1" onclick="triggerSuggestion(this)">What's the main takeaway?</span>
+        <span class="suggestion" data-id="suggestion-2" onclick="triggerSuggestion(this)">Is this relevant to IT managers?</span>
+        <span class="suggestion" data-id="suggestion-3" onclick="triggerSuggestion(this)">Can you email me a summary 📩</span>
       </div>
     </div>
   `;
@@ -571,6 +624,7 @@
         const loader = document.createElement('span');
         loader.className = 'loader';
         dom.mainContent.appendChild(loader);
+        scrollToBottom(dom.mainContent);
       }
     };
 
