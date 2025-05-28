@@ -120,7 +120,7 @@ export class ChatWidgetService {
     );
     this.chatWidgetHelperService.sendMail({
       payload: {
-        to: defaultVarMail,
+        to: [defaultVarMail, email],
         from: 'no-reply@yourdomain.com',
         subject: 'You have a new lead from the Webinar Assistant',
         html,
