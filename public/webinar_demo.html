@@ -245,10 +245,10 @@
     }
 
     #chatbot-widget .loader {
-      height: 30px;
+      height: 24px;
       align-self: flex-start;
       margin-left: 16px;
-      min-height: 30px;
+      min-height: 24px;
       aspect-ratio: 2.5;
       --_g: no-repeat radial-gradient(farthest-side, #000 90%, #0000);
       background: var(--_g), var(--_g), var(--_g), var(--_g);
@@ -577,7 +577,11 @@
             triggerSessionTimer();
           }
 
-          mountMessage(data.message, 'assistant');
+          const messages = data?.message || [];
+
+          messages.forEach((content) => {
+            mountMessage(content, 'assistant');
+          });
           if (data?.sessionId) saveSessionId(data.sessionId);
         })
         .catch((err) => mountMessage(err.message, 'error'))

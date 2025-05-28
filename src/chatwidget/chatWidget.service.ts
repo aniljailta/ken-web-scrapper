@@ -74,27 +74,25 @@ export class ChatWidgetService {
     to: string;
     conversationId: string;
   }) {
-    const messages = await this.webinarChatRepo.find({
-      where: {
-        conversation: {
-          id: conversationId,
-        },
-      },
-    });
+    const sessionSummary =
+      await this.generateConversationSummary(conversationId);
 
     const html = await this.chatWidgetHelperService.render(
       'chat-summary-template',
       {
         subject: 'AI-Powered Webinar Assistant',
         companyName: 'Awesome VAR Solutions',
-        transcript: messages.map(({ role, message }) => ({ role, message })),
+        session_summary: sessionSummary,
       },
     );
     this.chatWidgetHelperService.sendMail({
-      to,
-      from: 'no-reply@yourdomain.com',
-      subject: 'AI-Powered Webinar Assistant',
-      html,
+      payload: {
+        to,
+        from: 'no-reply@yourdomain.com',
+        subject: 'AI-Powered Webinar Assistant',
+        html,
+      },
+      includeAttachment: true,
     });
   }
 
@@ -121,10 +119,12 @@ export class ChatWidgetService {
       },
     );
     this.chatWidgetHelperService.sendMail({
-      to: defaultVarMail,
-      from: 'no-reply@yourdomain.com',
-      subject: 'You have a new lead from the Webinar Assistant',
-      html,
+      payload: {
+        to: defaultVarMail,
+        from: 'no-reply@yourdomain.com',
+        subject: 'You have a new lead from the Webinar Assistant',
+        html,
+      },
     });
   }
 
@@ -627,7 +627,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
       conversation.id,
     );
 
-    let message: WebinarChat | null = null;
+    let message: WebinarChat[] = [];
     if (intent === 'content_question') {
       this.logger.debug('Triggering content_question Bucket');
       // 1. Pulling Chunks From TypeSense
@@ -652,18 +652,23 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
         conversationId: conversation.id,
       });
 
-      // Combining Message
-      const combineResponse = `${assistantResponse}
+      // Saving AI Response
+      message.push(
+        await this.createMessageRecord({
+          conversationId: conversation.id,
+          role: ChatRole.ASSISTANT,
+          message: assistantResponse,
+        }),
+      );
 
-      ${followUpQuestion}
-            `;
-
-      // Saving Response
-      message = await this.createMessageRecord({
-        conversationId: conversation.id,
-        role: ChatRole.ASSISTANT,
-        message: combineResponse,
-      });
+      // Also Sending Follow-up Message
+      message.push(
+        await this.createMessageRecord({
+          conversationId: conversation.id,
+          role: ChatRole.ASSISTANT,
+          message: followUpQuestion,
+        }),
+      );
     } else if (
       ['product_lead_in', 'followup_request', 'resource_request'].includes(
         intent,
@@ -684,11 +689,13 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
         intent,
       );
 
-      message = await this.createMessageRecord({
-        conversationId: conversation.id,
-        role: ChatRole.ASSISTANT,
-        message: completion,
-      });
+      message.push(
+        await this.createMessageRecord({
+          conversationId: conversation.id,
+          role: ChatRole.ASSISTANT,
+          message: completion,
+        }),
+      );
     } else if (intent === 'general_curiosity') {
       this.logger.debug(`Triggering general_curiosity Bucket`);
       const assistantResponse = await this.generateResponse(
@@ -711,25 +718,29 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
       // });
 
       // Saving Response
-      message = await this.createMessageRecord({
-        conversationId: conversation.id,
-        role: ChatRole.ASSISTANT,
-        message: assistantResponse,
-      });
+      message.push(
+        await this.createMessageRecord({
+          conversationId: conversation.id,
+          role: ChatRole.ASSISTANT,
+          message: assistantResponse,
+        }),
+      );
     } else {
       this.logger.debug(`Inside Else Block block`);
-      message = await this.createMessageRecord({
-        conversationId: conversation.id,
-        role: ChatRole.ASSISTANT,
-        message: intent,
-      });
+      message.push(
+        await this.createMessageRecord({
+          conversationId: conversation.id,
+          role: ChatRole.ASSISTANT,
+          message: intent,
+        }),
+      );
     }
 
     return {
       data: {
         intent,
         sessionId: session.id,
-        message: message.message,
+        message: message.map(({ message }) => message),
       },
     };
   }

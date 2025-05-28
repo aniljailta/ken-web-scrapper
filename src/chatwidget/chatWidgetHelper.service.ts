@@ -11,6 +11,8 @@ export class ChatWidgetHelperService {
   private readonly logger = new Logger(ChatWidgetHelperService.name);
 
   private serviceAccountKeyFile = 'integration-service-account.json';
+  private pdfFileName =
+    'Katalyst_2025_Cybersecurity_Annual_Report_Final_v3-6.pdf';
   private sheetId: string;
   private tabName: string;
   private range: string;
@@ -95,14 +97,50 @@ export class ChatWidgetHelperService {
     return sgMail;
   }
 
-  async sendMail(payload: MailDataRequired): Promise<void> {
+  private getPDfFileData() {
+    try {
+      if (!this.pdfFileName) {
+        throw new Error('PDF FILE NAME NOT SPECIFIED');
+      }
+
+      return fs.readFileSync(this.pdfFileName).toString('base64');
+    } catch (error) {
+      this.logger.error(
+        `Failed to Read Content From The File: ${error.message}`,
+      );
+      return undefined;
+    }
+  }
+
+  async sendMail({
+    payload,
+    includeAttachment,
+  }: {
+    payload: MailDataRequired;
+    includeAttachment?: boolean;
+  }): Promise<void> {
     const client = this.getSendGridClient();
 
     try {
-      const data = {
+      const data: MailDataRequired = {
         ...payload,
         from: this.sendGridSenderMail,
       };
+
+      if (includeAttachment) {
+        // Attaching Webinar PDF
+        const fileData = this.getPDfFileData();
+
+        data.attachments = [
+          {
+            content: fileData,
+            filename: this.pdfFileName,
+            type: 'application/pdf',
+            disposition: 'attachment',
+          },
+        ];
+      }
+
       const [response] = await client.send(data);
       this.logger.debug(`Sent Mail to Client: ${response.statusCode}`);
     } catch (error) {
