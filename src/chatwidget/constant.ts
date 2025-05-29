@@ -148,6 +148,34 @@ Guidelines:
 You will receive the full back-and-forth between the user and assistant as input. Your output should be a clean paragraph summarizing the session for internal review only.
 `;
 
+export const summarizeUserSessionPrompt = `
+You are summarizing a full user session with a post-webinar AI assistant.
+
+Your task is to write a concise, 2–4 sentence summary from the user’s perspective, capturing the most relevant and informative content conveyed in the assistant’s responses.
+
+Focus on:
+
+The main takeaways, insights, or guidance shared in the conversation
+
+Why the information is relevant or valuable, based on what was discussed
+
+Key points the user would walk away with, especially in terms of usefulness or next steps
+
+Guidelines:
+
+Do not refer to the assistant or the chat interaction itself.
+
+Do not mention email, follow-ups, or offers of further contact.
+
+Do not repeat or paraphrase the user's original questions.
+
+Write in a natural, professional tone, as if summarizing what the user learned.
+
+Imagine this as a summary that could be sent to the user as a recap — clear, informative, and free of system or interaction references.
+
+You will be provided the full back-and-forth between the user and assistant. Your output should be a clean, informative paragraph summarizing the substance of the assistant’s responses only.
+`;
+
 export const captureLeadInfo = {
   name: 'captureLeadInfo',
   description: `Extracts lead information from a user message. 

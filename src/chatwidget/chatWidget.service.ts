@@ -11,6 +11,7 @@ import {
   generateResponseSystemPrompt,
   intentClassifierSystemPrompt,
   summarizeSystemPrompt,
+  summarizeUserSessionPrompt,
 } from './constant';
 import { intentType } from './type';
 import { WebinarSession } from './entities/webinar_session.entity';
@@ -74,13 +75,15 @@ export class ChatWidgetService {
     to: string;
     conversationId: string;
   }) {
-    const sessionSummary =
-      await this.generateConversationSummary(conversationId);
+    const sessionSummary = await this.generateConversationSummary({
+      conversationId,
+      isSendingToUser: true,
+    });
 
     const html = await this.chatWidgetHelperService.render(
       'chat-summary-template',
       {
-        subject: 'AI-Powered Webinar Assistant',
+        subject: 'Katalyst 2025 Cybersecurity Report',
         companyName: 'Awesome VAR Solutions',
         session_summary: sessionSummary,
       },
@@ -89,7 +92,7 @@ export class ChatWidgetService {
       payload: {
         to,
         from: 'no-reply@yourdomain.com',
-        subject: 'AI-Powered Webinar Assistant',
+        subject: 'Katalyst 2025 Cybersecurity Report',
         html,
       },
       includeAttachment: true,
@@ -454,7 +457,9 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
         this.logger.log('No Email Provided to Log Lead!');
         return;
       }
-      const summary = await this.generateConversationSummary(conversationId);
+      const summary = await this.generateConversationSummary({
+        conversationId,
+      });
       const formattedRow = [
         moment().format('MMMM Do YYYY, h:mm:ss a'),
         name ?? 'Not Provided',
@@ -543,7 +548,13 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
     return completion.choices[0].message.content;
   }
 
-  private async generateConversationSummary(conversationId: string) {
+  private async generateConversationSummary({
+    conversationId,
+    isSendingToUser = false,
+  }: {
+    conversationId: string;
+    isSendingToUser?: boolean;
+  }) {
     const messages = await this.getSessionMessages(conversationId);
     const initialMessages = this.generateCompletionChat(messages);
     const completion = await this.openai.chat.completions.create({
@@ -552,7 +563,7 @@ You're welcome to rephrase or explain it in a friendly, helpful way!
         {
           role: 'system',
           content: `
-          ${summarizeSystemPrompt}
+          ${isSendingToUser ? summarizeUserSessionPrompt : summarizeSystemPrompt}
           `,
         },
         {
