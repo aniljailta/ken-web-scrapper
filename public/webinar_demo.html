@@ -576,16 +576,29 @@
           if (!sessionId) {
             triggerSessionTimer();
           }
-
           const messages = data?.message || [];
 
-          messages.forEach((content) => {
-            mountMessage(content, 'assistant');
-          });
+          if (messages.length > 0) {
+            removeLoader();
+            mountMessage(messages[0], 'assistant');
+          }
+
+          if (messages.length > 1) {
+            addLoader();
+            setTimeout(() => {
+              removeLoader();
+              mountMessage(messages[1], 'assistant');
+            }, 4000);
+          } else {
+            removeLoader();
+          }
+
           if (data?.sessionId) saveSessionId(data.sessionId);
         })
-        .catch((err) => mountMessage(err.message, 'error'))
-        .finally(removeLoader);
+        .catch((err) => {
+          mountMessage(err.message, 'error');
+          removeLoader();
+        });
     };
 
     const mountMessage = (message, role = 'user') => {
