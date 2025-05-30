@@ -576,6 +576,14 @@
           // if (!sessionId) {
           //   triggerSessionTimer();
           // }
+
+          if (
+            document.querySelectorAll('#chatbot-widget .message.user')
+              .length === 2
+          ) {
+            triggerSessionFollowUp();
+          }
+
           const messages = data?.message || [];
 
           if (messages.length > 0) {
@@ -687,6 +695,28 @@
 
       apiRequestService(
         `/scraper-api/chatWidget/trigger-session-closing/${sessionId}`,
+        payload,
+      )
+        .then((data) => {
+          mountMessage(data.message, 'assistant');
+          if (data?.sessionId) saveSessionId(data.sessionId);
+        })
+        .catch((err) => mountMessage(err.message, 'error'))
+        .finally(removeLoader);
+    };
+
+    const triggerSessionFollowUp = () => {
+      const sessionId = getSessionId();
+      console.log('🚀 ~ triggerSessionFollowUp ~ sessionId:', sessionId);
+
+      if (!sessionId) {
+        console.log('No Session ID Found!');
+        return;
+      }
+      const payload = {};
+
+      apiRequestService(
+        `/scraper-api/chatWidget/trigger-session-follow-up/${sessionId}`,
         payload,
       )
         .then((data) => {

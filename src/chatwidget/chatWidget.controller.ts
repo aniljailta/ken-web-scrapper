@@ -21,6 +21,12 @@ export class ChatWidgetController {
     return this.chatWidgetService.triggerSessionClosing(sessionId);
   }
 
+  @Post('trigger-session-follow-up/:sessionId')
+  async triggerSessionFollowUP(@Param('sessionId') sessionId: string) {
+    //
+    return this.chatWidgetService.triggerSessionFollowUp(sessionId);
+  }
+
   @Post('chat')
   async sendMessage(@Body() data: SendMessageDTO) {
     //

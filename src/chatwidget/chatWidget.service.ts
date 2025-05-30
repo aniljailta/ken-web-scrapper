@@ -167,6 +167,40 @@ export class ChatWidgetService {
     };
   }
 
+  async triggerSessionFollowUp(sessionId: string) {
+    const checkSession = await this.webinarConversationRepo.findOne({
+      where: {
+        session: {
+          id: sessionId,
+        },
+      },
+      relations: ['messages'],
+      order: {
+        messages: {
+          sentAt: 'DESC',
+        },
+      },
+    });
+
+    if (!checkSession) {
+      return {};
+    }
+
+    // Create Message Record
+    const message = await this.createMessageRecord({
+      conversationId: checkSession.id,
+      message: `Connect with our expert or receive the Katalyst 2025 Cybersecurity webinar—just share your name, email, and company.`,
+      role: ChatRole.ASSISTANT,
+    });
+
+    return {
+      data: {
+        message: message.message,
+        sessionId,
+      },
+    };
+  }
+
   private getTypeSenseClient() {
     //
     const apiKey = this.configService.get<string>('TYPESENSE_API_KEY');
