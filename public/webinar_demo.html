@@ -573,9 +573,9 @@
       apiRequestService('/scraper-api/chatWidget/chat', payload)
         .then((data) => {
           // Triggering Session Timer when user sent first Message
-          if (!sessionId) {
-            triggerSessionTimer();
-          }
+          // if (!sessionId) {
+          //   triggerSessionTimer();
+          // }
           const messages = data?.message || [];
 
           if (messages.length > 0) {
