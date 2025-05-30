@@ -577,14 +577,15 @@
           //   triggerSessionTimer();
           // }
 
+          const messages = data?.message || [];
+
           if (
             document.querySelectorAll('#chatbot-widget .message.user')
-              .length === 2
+              .length === 2 &&
+            messages.length < 2
           ) {
             triggerSessionFollowUp();
           }
-
-          const messages = data?.message || [];
 
           if (messages.length > 0) {
             removeLoader();
