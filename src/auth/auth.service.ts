@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
@@ -9,6 +10,8 @@ import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
+import { RegisterDTO } from './dto/register.dto';
+import { generateUserName } from 'src/users/utils';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +29,26 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any) {
+  async register(payload: RegisterDTO): Promise<User> {
+    const checkUser = await this.usersService.findOne(payload.email);
+    if (checkUser) {
+      throw new BadRequestException('User with this Email Already Exists');
+    }
+
+    if (payload.password !== payload.confirmPassword) {
+      throw new BadRequestException("Password Doesn't Match");
+    }
+
+    const hashedPassword = await bcrypt.hash(payload.password, 10);
+    const newUser = await this.userRepository.save({
+      email: payload.email,
+      name: generateUserName(),
+      password: hashedPassword,
+    });
+
+    return newUser;
+  }
+  async login(user: User) {
     const payload = {
       name: user.name,
       email: user.email,
@@ -39,8 +61,11 @@ export class AuthService {
     const userDetails = await this.usersService.findOne(user.email);
 
     return {
-      access_token: token,
-      ...userDetails,
+      data: {
+        access_token: token,
+        ...userDetails,
+      },
+      message: 'Login SuccessFull',
     };
   }
 
@@ -134,5 +159,13 @@ export class AuthService {
       ...user,
       message: 'Password has been set!',
     };
+  }
+  async refreshToken(user: User | null | undefined) {
+    if (!user) {
+      throw new UnauthorizedException('Not Authorized');
+    }
+
+    return await this.login(user);
+    //
   }
 }
