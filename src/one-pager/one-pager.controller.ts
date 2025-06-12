@@ -1,5 +1,8 @@
 import {
+  Body,
   Controller,
+  Get,
+  Param,
   Post,
   Req,
   UploadedFile,
@@ -18,5 +21,15 @@ export class OnePagerController {
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req) {
     return this.onePagerService.upload(file, req.user.id);
+  }
+
+  @Post('process')
+  processPdfChunk(@Body('id') id: string, @Req() req) {
+    return this.onePagerService.generateAllOnePagers(id, req.user.id);
+  }
+
+  @Get(':id')
+  getSinglePager(@Param('id') id: string, @Req() req) {
+    return this.onePagerService.findOne(id, req.user.id);
   }
 }

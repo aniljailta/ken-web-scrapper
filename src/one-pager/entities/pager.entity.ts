@@ -27,6 +27,12 @@ export class Pager {
   @Column({ type: 'uuid', nullable: true })
   userId: string;
 
+  @Column({ type: 'json', nullable: true, default: {} })
+  topicCluster: any;
+
+  @Column({ type: 'json', nullable: true, default: [] })
+  topics: any;
+
   @Column({
     type: 'enum',
     enum: PagerStatus,
