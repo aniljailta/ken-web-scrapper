@@ -1,4 +1,5 @@
 import { Conversation } from 'src/conversation/entities/conversation.entity';
+import { Pager } from 'src/one-pager/entities/pager.entity';
 import {
   Entity,
   Column,
@@ -47,6 +48,8 @@ export class User {
     },
   })
   created_date: Date;
+  @OneToMany(() => Pager, (pager) => pager.user)
+  pagers: Pager[];
 
   @OneToMany(() => Conversation, (conversation) => conversation.user, {
     cascade: true, // Deletes conversations when the user is deleted

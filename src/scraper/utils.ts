@@ -1,5 +1,4 @@
 import * as puppeteer from 'puppeteer';
-import * as pdf from 'pdf-parse';
 import axios from 'axios';
 import * as fs from 'fs/promises';
 import sanitizeHtml from 'sanitize-html';
@@ -8,6 +7,7 @@ import * as fuzz from 'fuzzball';
 
 import * as iconv from 'iconv-lite';
 import { excludeVariation, headerVariations } from './constant';
+import PdfParse from 'pdf-parse';
 
 // Tokenize the input text into an array of words
 function tokenize(text: string): string[] {
@@ -531,7 +531,7 @@ async function extractPdfContent(pdfUrl: string): Promise<string | null> {
     });
 
     // Parse PDF content
-    const data = await pdf(response.data);
+    const data = await PdfParse(response.data);
 
     // Post-process text content to add spaces
     const processedContent = data.text.replace(/([a-zA-Z])([A-Z])/g, '$1 $2');

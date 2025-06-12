@@ -16,6 +16,7 @@ import { LifetimeRequestGuard } from './guards/lifetime-request.guard';
 import { ConversationModule } from './conversation/conversation.module';
 import { MixpanelModule } from './mixpanel/mixpanel.module';
 import { ChatWidgetModule } from './chatwidget/chatWidget.module';
+import { OnePagerModule } from './one-pager/one-pager.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ChatWidgetModule } from './chatwidget/chatWidget.module';
     ConversationModule,
     MixpanelModule,
     ChatWidgetModule,
+    OnePagerModule,
   ],
   controllers: [AppController],
   providers: [AppService, RequestTrackerService, LifetimeRequestGuard],
