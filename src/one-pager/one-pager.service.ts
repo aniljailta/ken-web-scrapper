@@ -16,6 +16,12 @@ import {
   detectTopicClusterSystemPrompt,
   generateOnePagerSystemPrompt,
 } from './constants';
+import { PagerPage } from './entities/pager-page.entity';
+import path, { join } from 'path';
+import * as fs from 'fs';
+import * as puppeteer from 'puppeteer';
+
+import * as hbs from 'handlebars';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -28,10 +34,12 @@ export class OnePagerService {
     private pagerRepository: Repository<Pager>,
     @InjectRepository(PagerChunks)
     private pagerChunksRepository: Repository<PagerChunks>,
+    @InjectRepository(PagerPage)
+    private pagerPageRepository: Repository<PagerPage>,
     private readonly config: ConfigService,
   ) {
     this.openai = new OpenAI({
-      apiKey: config.get<string>('OPENAI_API_KEY'),
+      apiKey: this.config.get<string>('OPENAI_API_KEY'),
     });
   }
 
@@ -79,6 +87,57 @@ export class OnePagerService {
     }
   }
 
+  async findAll(userId: string) {
+    const allUserPagers = await this.pagerRepository.find({
+      where: {
+        userId,
+        status: PagerStatus.PROCESSED,
+      },
+    });
+    return {
+      data: allUserPagers,
+      message: '',
+    };
+  }
+
+  async deletePager(pagerId: string, userId: string) {
+    //
+    const checkRecord = await this.pagerRepository.findOne({
+      where: {
+        id: pagerId,
+        userId,
+      },
+    });
+    if (!checkRecord) {
+      throw new NotFoundException('No Pager Found');
+    }
+
+    await this.pagerRepository.delete({
+      id: checkRecord.id,
+    });
+
+    return {
+      data: null,
+      message: 'Pager Deleted',
+    };
+  }
+
+  private async renderTemplate(
+    templateName: string,
+    context: any,
+  ): Promise<string> {
+    const templatePath = join('src', 'views', `${templateName}.hbs`);
+    const source = fs.readFileSync(templatePath, 'utf8');
+
+    hbs.registerHelper(
+      'capitalize',
+      (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
+    );
+    hbs.registerHelper('eq', (a, b) => a === b);
+
+    const compiled = hbs.compile(source);
+    return compiled(context);
+  }
   async findOne(pagerId: string, userId: string) {
     //
     const checkRecord = await this.pagerRepository.findOne({
@@ -86,6 +145,7 @@ export class OnePagerService {
         id: pagerId,
         userId,
       },
+      relations: ['pagerPage'],
     });
     if (!checkRecord) {
       throw new NotFoundException('No Pager Found');
@@ -155,13 +215,50 @@ export class OnePagerService {
     return mergedClusters;
   }
 
-  private batchChunks(chunks, size = 20) {
+  private batchChunks(chunks: PagerChunks[], size = 20) {
     const batches = [];
     for (let i = 0; i < chunks.length; i += size) {
       batches.push(chunks.slice(i, i + size));
     }
     return batches;
   }
+  private isEmptyArray(arr: any): boolean {
+    return Array.isArray(arr) && arr.length === 0;
+  }
+
+  private isEmptyObject(obj: any): boolean {
+    return obj && typeof obj === 'object' && Object.keys(obj).length === 0;
+  }
+
+  private async fetchClusterAndTopic(
+    pagerId: string,
+  ): Promise<{ topicCluster: any; topics: any }> {
+    //
+    this.logger.debug('Generating Topic Cluster & Topics out of the Content');
+    const allChunks = await this.fetchAllChunks(pagerId); // implement or inject
+    const topicClusters = await this.detectAllTopicClusters(allChunks);
+
+    const chunkById = Object.fromEntries(
+      allChunks.map((c) => [c.id, c.content]),
+    );
+    const results = [];
+
+    for (const [slug, chunkIds] of Object.entries(topicClusters)) {
+      const chunkTexts = chunkIds
+        .map((id) => chunkById[id] || '')
+        .filter(Boolean);
+
+      if (chunkTexts.join(' ').length < 200) continue;
+
+      const onePager = await this.generateOnePager(slug, chunkTexts);
+      results.push(onePager);
+    }
+    return {
+      topicCluster: topicClusters,
+      topics: results,
+    };
+  }
+
   async generateOnePager(topicSlug: string, chunkTexts: string[]) {
     const prompt = generateOnePagerSystemPrompt(chunkTexts);
     const completion = await this.openai.chat.completions.create({
@@ -184,53 +281,58 @@ export class OnePagerService {
           id: pagerId,
           userId,
         },
+        relations: ['pagerPage'],
       });
       if (!checkRecord) {
         throw new NotFoundException('No Pager Found');
       }
 
+      let topics = checkRecord.topics;
+      let topicClusters = checkRecord.topicCluster;
+
       await this.updatePagerStatus(pagerId, PagerStatus.PROCESSING);
 
-      const allChunks = await this.fetchAllChunks(pagerId); // implement or inject
-      const topicClusters = await this.detectAllTopicClusters(allChunks);
+      if (this.isEmptyArray(topics) && this.isEmptyObject(topicClusters)) {
+        const clusterAndTopic = await this.fetchClusterAndTopic(pagerId);
 
-      // Saving Topic Cluster
-      await this.pagerRepository.update(
-        { id: pagerId },
-        {
-          topicCluster: topicClusters,
-        },
-      );
+        topics = clusterAndTopic.topics;
+        topicClusters = clusterAndTopic.topicCluster;
 
-      const chunkById = Object.fromEntries(
-        allChunks.map((c) => [c.id, c.content]),
-      );
-      const results = [];
+        // Saving Topic Cluster
+        await this.pagerRepository.update(
+          { id: pagerId },
+          {
+            topicCluster: topicClusters,
+          },
+        );
 
-      for (const [slug, chunkIds] of Object.entries(topicClusters)) {
-        const chunkTexts = chunkIds
-          .map((id) => chunkById[id] || '')
-          .filter(Boolean);
-
-        if (chunkTexts.join(' ').length < 200) continue;
-
-        const onePager = await this.generateOnePager(slug, chunkTexts);
-        results.push(onePager);
+        // Saving Topic Cluster
+        await this.pagerRepository.update(
+          { id: pagerId },
+          {
+            topics,
+          },
+        );
       }
-      // Saving Topic Cluster
-      await this.pagerRepository.update(
-        { id: pagerId },
-        {
-          topics: results,
-        },
-      );
+
+      // If No Pages were created generate PDF!
+      if (checkRecord.pagerPage.length < 1) {
+        await this.generatePDF(checkRecord.id);
+      }
 
       await this.updatePagerStatus(pagerId, PagerStatus.PROCESSED);
 
+      const updatedPager = await this.pagerRepository.findOne({
+        where: {
+          id: pagerId,
+          userId,
+        },
+        relations: ['pagerPage'],
+      });
+
       return {
         message: '✅ One-Pagers generated',
-        data: results,
-        total: results.length,
+        data: updatedPager,
       };
     } catch (error) {
       this.logger.error(
@@ -243,10 +345,75 @@ export class OnePagerService {
     }
   }
 
-  private async fetchAllChunks(pagerId): Promise<PagerChunks[]> {
+  private async generatePDF(pagerId: string) {
+    this.logger.debug('Generating PDF');
+    const pager = await this.pagerRepository.findOne({
+      where: {
+        id: pagerId,
+      },
+    });
+
+    // Creating Pager Page Records
+    pager.topics.map(async ({ json, topic_slug }) => {
+      const record = this.pagerPageRepository.create({
+        name: json.title,
+        link: `${topic_slug}.pdf`,
+        pagerId,
+        pager: pager,
+      });
+      // Saving All Pages
+      await this.pagerPageRepository.save(record);
+      return record;
+    });
+
+    // Generating PDF
+    await Promise.all(
+      pager.topics.map(async ({ json, topic_slug }) => {
+        const content = await this.renderTemplate('pager-template', {
+          title: json.title,
+          problem: json.problem,
+          solution: json.solution,
+          highlights: json.highlights,
+          cta: json.cta,
+        });
+        return await this.generateAndSavePDF(content, `${topic_slug}.pdf`);
+      }),
+    );
+    this.logger.debug('Finished Generating PDF');
+  }
+
+  private async fetchAllChunks(pagerId: string): Promise<PagerChunks[]> {
     return await this.pagerChunksRepository.find({
       where: { pagerId },
       select: ['content', 'id'],
     });
+  }
+
+  private async generateAndSavePDF(
+    html: string,
+    fileName: string,
+  ): Promise<string> {
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+
+    // Create PDF buffer
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+    });
+
+    await browser.close();
+
+    // 📝 Save PDF to file
+    const outputPath = path.join(__dirname, '../../public/pagers', fileName);
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true }); // ensure folder exists
+    fs.writeFileSync(outputPath, pdfBuffer);
+
+    return fileName;
   }
 }

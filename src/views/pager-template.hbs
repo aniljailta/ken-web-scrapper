@@ -1,0 +1,148 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>{{title}}</title>
+    <script src='https://cdn.tailwindcss.com'></script>
+    <link rel='preconnect' href='https://fonts.googleapis.com' />
+    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin />
+    <link
+      href='https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap'
+      rel='stylesheet'
+    />
+  </head>
+  <body>
+    <div
+      class='w-[1200px] h-[1911px] bg-Background-Default-Default inline-flex flex-col justify-start items-center overflow-hidden'
+    >
+      <div
+        class='w-[1200px] inline-flex justify-between items-center overflow-hidden'
+      >
+        <div
+          class='w-[1200px] h-[474px] flex justify-start items-center gap-16'
+        >
+          <div
+            class='flex-1 h-[474px] px-20 py-10 inline-flex flex-col justify-center items-start gap-14'
+          >
+            <div
+              class="self-stretch justify-start text-cyan-600 text-5xl font-bold font-['Inter'] leading-[57.60px]"
+            >
+              {{title}}
+            </div>
+            {{!
+            <div
+              class="self-stretch h-11 justify-center text-black text-2xl font-normal font-['Inter'] leading-9"
+            >
+              This one-pager highlights key insights from a 45-minute webinar
+              hosted by Katalyst Security, attended by over 1,200 IT
+              professionals.
+            </div>
+            }}
+            {{!
+            <div
+              class="px-7 py-6 bg-cyan-600 rounded-[36px] inline-flex justify-center items-center gap-2.5 overflow-hidden"
+            >
+              <div
+                class="text-center justify-start text-black text-xl font-semibold font-['Inter'] leading-tight"
+              >
+                Access Full Report
+              </div>
+            </div>
+            }}
+          </div>
+        </div>
+      </div>
+      <div
+        class='w-[1050px] h-0 outline outline-1 outline-offset-[-0.50px] outline-cyan-600'
+      ></div>
+      <div
+        class='w-[1200px] px-20 py-10 inline-flex justify-center items-start gap-14'
+      >
+        <div
+          class='w-[1050px] flex justify-center items-start gap-8 flex-wrap content-start'
+        >
+          {{! Starting }}
+          {{#each highlights}}
+            <div
+              class='w-80 px-6 rounded-lg flex justify-center items-start gap-2.5'
+            >
+              <div
+                class="w-64 text-center justify-start text-black text-xl font-medium font-['Inter'] leading-7"
+              >
+                {{this}}
+              </div>
+            </div>
+          {{/each}}
+          {{! Ending }}
+        </div>
+      </div>
+      <div
+        class='w-[1050px] h-0 rotate-180 outline outline-1 outline-offset-[-0.50px] outline-cyan-600'
+      ></div>
+      <div
+        class='self-stretch px-16 py-12 flex flex-col justify-start items-center gap-2.5'
+      >
+        <div class='w-[1080px] inline-flex justify-start items-start gap-2.5'>
+          <div class='flex-1 flex justify-start items-center gap-7'>
+            <div
+              class='flex-1 px-12 py-20 bg-cyan-800 rounded-lg flex justify-center items-start gap-2.5'
+            >
+              <div
+                class='flex-1 inline-flex flex-col justify-start items-start gap-6'
+              >
+                <div
+                  class="self-stretch justify-start text-cyan-600 text-4xl font-bold font-['Inter'] leading-10"
+                >
+                  The Problem
+                </div>
+                <div
+                  class="self-stretch justify-start text-white text-xl font-normal font-['Inter'] leading-7"
+                >
+                  {{problem}}
+                </div>
+              </div>
+            </div>
+            <div
+              class='flex-1 px-12 py-20 bg-cyan-600 inline-flex flex-col justify-start items-center gap-2.5'
+            >
+              <div
+                class='self-stretch flex flex-col justify-start items-start gap-6'
+              >
+                <div
+                  class="w-96 justify-start text-black text-4xl font-bold font-['Inter'] leading-10"
+                >
+                  The Solution
+                </div>
+                <div
+                  class="w-96 justify-start text-white text-xl font-normal font-['Inter'] leading-7"
+                >
+                  {{solution}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class='w-[1200px] h-64 relative bg-cyan-800 flex items-center justify-center flex-col gap-4'
+      >
+        <div
+          class="w-[1040px] left-[80px] top-[64px] text-center justify-start text-white text-4xl font-bold font-['Inter'] leading-10"
+        >
+          {{cta}}
+        </div>
+        <div class='w-full h-16 flex items-center justify-center'>
+          <div
+            class='h-16 p-7 left-[274px] top-0 bg-cyan-600 rounded-[36px] inline-flex justify-center items-center gap-2.5 overflow-hidden'
+          >
+            <div
+              class="justify-start text-black text-xl font-semibold font-['Inter'] leading-tight"
+            >
+              Access Full Report
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

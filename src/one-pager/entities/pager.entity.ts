@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { PagerChunks } from './pager-chunks.entity';
 import { PagerStatus } from '../type';
+import { PagerPage } from './pager-page.entity';
 
 @Entity('pager')
 export class Pager {
@@ -42,6 +43,9 @@ export class Pager {
 
   @OneToMany(() => PagerChunks, (pagerChunks) => pagerChunks.pager)
   pagerChunks: PagerChunks[];
+
+  @OneToMany(() => PagerPage, (pagerPage) => pagerPage.pager)
+  pagerPage: PagerPage[];
 
   @CreateDateColumn({
     type: 'timestamp',
