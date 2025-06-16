@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -13,6 +14,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { OnePagerService } from './one-pager.service';
+import archiver from 'archiver';
 
 @Controller('one-pager')
 @UseGuards(AuthGuard('jwt'))
@@ -22,6 +24,27 @@ export class OnePagerController {
   @Get('get-all')
   getAllPagers(@Req() req) {
     return this.onePagerService.findAll(req.user.id);
+  }
+
+  @Get('download-zip/:id')
+  async downloadZip(@Req() req, @Param('id') id: string, @Res() res) {
+    const archive = archiver('zip', {
+      zlib: { level: 9 },
+    });
+
+    res.set({
+      'Content-Type': 'application/zip',
+      'Content-Disposition': 'attachment; filename=pdfs.zip',
+    });
+
+    archive.pipe(res);
+
+    const pdfs = await this.onePagerService.getPdfStreams(req.user.id, id);
+    for (const pdf of pdfs) {
+      archive.append(pdf.stream, { name: pdf.filename });
+    }
+
+    await archive.finalize();
   }
 
   @Post('upload')

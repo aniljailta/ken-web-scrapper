@@ -87,6 +87,37 @@ export class OnePagerService {
     }
   }
 
+  private async getPdfPaths(
+    userId: string,
+    pagerId: string,
+  ): Promise<string[]> {
+    const checkRecord = await this.pagerRepository.findOne({
+      where: {
+        id: pagerId,
+        userId,
+      },
+      relations: ['pagerPage'],
+    });
+    if (!checkRecord) {
+      throw new NotFoundException('No Pager Found');
+    }
+    // Example static paths, you can fetch from DB or generate dynamically
+    return checkRecord.pagerPage.map(({ link }) =>
+      path.join(__dirname, '../../public/pagers', link),
+    );
+  }
+
+  async getPdfStreams(
+    userId: string,
+    pagerId: string,
+  ): Promise<{ filename: string; stream: fs.ReadStream }[]> {
+    const filePaths = await this.getPdfPaths(userId, pagerId);
+    return filePaths.map((filePath) => ({
+      filename: path.basename(filePath),
+      stream: fs.createReadStream(filePath),
+    }));
+  }
+
   async findAll(userId: string) {
     const allUserPagers = await this.pagerRepository.find({
       where: {
