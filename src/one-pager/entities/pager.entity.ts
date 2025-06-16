@@ -31,6 +31,9 @@ export class Pager {
   @Column({ type: 'json', nullable: true, default: {} })
   topicCluster: any;
 
+  @Column({ type: 'json', nullable: true, default: {} })
+  branding: any;
+
   @Column({ type: 'json', nullable: true, default: [] })
   topics: any;
 

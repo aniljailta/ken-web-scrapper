@@ -54,8 +54,12 @@ export class OnePagerController {
   }
 
   @Post('process')
-  processPdfChunk(@Body('id') id: string, @Req() req) {
-    return this.onePagerService.generateAllOnePagers(id, req.user.id);
+  processPdfChunk(
+    @Body('id') id: string,
+    @Body('branding') branding: any,
+    @Req() req,
+  ) {
+    return this.onePagerService.generateAllOnePagers(id, branding, req.user.id);
   }
 
   @Delete(':id')

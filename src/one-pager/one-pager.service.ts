@@ -304,7 +304,7 @@ export class OnePagerService {
     };
   }
 
-  async generateAllOnePagers(pagerId: string, userId: string) {
+  async generateAllOnePagers(pagerId: string, branding: any, userId: string) {
     //
     try {
       const checkRecord = await this.pagerRepository.findOne({
@@ -329,19 +329,21 @@ export class OnePagerService {
         topics = clusterAndTopic.topics;
         topicClusters = clusterAndTopic.topicCluster;
 
-        // Saving Topic Cluster
+        // Saving Topic Cluster & Topics
         await this.pagerRepository.update(
           { id: pagerId },
           {
             topicCluster: topicClusters,
+            topics,
           },
         );
-
-        // Saving Topic Cluster
+      }
+      if (branding) {
+        // Saving Branding Config
         await this.pagerRepository.update(
           { id: pagerId },
           {
-            topics,
+            branding,
           },
         );
       }
