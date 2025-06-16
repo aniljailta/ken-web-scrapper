@@ -407,6 +407,8 @@ export class OnePagerService {
           problem: json.problem,
           solution: json.solution,
           highlights: json.highlights,
+          primaryColor: pager.branding?.primaryColor || null,
+          secondaryColor: pager.branding?.secondaryColor || null,
           cta: json.cta,
         });
         return await this.generateAndSavePDF(content, `${topic_slug}.pdf`);
