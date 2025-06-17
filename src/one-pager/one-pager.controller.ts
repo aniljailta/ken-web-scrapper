@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Req,
   Res,
   UploadedFile,
@@ -15,6 +16,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { OnePagerService } from './one-pager.service';
 import archiver from 'archiver';
+import { UpdateSystemPromptDTO } from './dto/update-system-prompt.dto';
 
 @Controller('one-pager')
 @UseGuards(AuthGuard('jwt'))
@@ -24,6 +26,16 @@ export class OnePagerController {
   @Get('get-all')
   getAllPagers(@Req() req) {
     return this.onePagerService.findAll(req.user.id);
+  }
+
+  @Get('system-prompt')
+  getSystemPrompt() {
+    return this.onePagerService.findAllSystemPrompt();
+  }
+
+  @Put('system-prompt')
+  updateSystemPrompt(@Body() payload: UpdateSystemPromptDTO) {
+    return this.onePagerService.updateSystemPrompt(payload);
   }
 
   @Get('download-zip/:id')

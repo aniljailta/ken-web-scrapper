@@ -22,6 +22,8 @@ import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 
 import * as hbs from 'handlebars';
+import { SystemPrompts } from './entities/system-prompts.entity';
+import { UpdateSystemPromptDTO } from './dto/update-system-prompt.dto';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -32,6 +34,8 @@ export class OnePagerService {
   constructor(
     @InjectRepository(Pager)
     private pagerRepository: Repository<Pager>,
+    @InjectRepository(SystemPrompts)
+    private systemPromptsRepository: Repository<SystemPrompts>,
     @InjectRepository(PagerChunks)
     private pagerChunksRepository: Repository<PagerChunks>,
     @InjectRepository(PagerPage)
@@ -131,6 +135,46 @@ export class OnePagerService {
     };
   }
 
+  async findAllSystemPrompt() {
+    const checkRecord = await this.systemPromptsRepository.findOne({
+      where: {},
+    });
+
+    if (!checkRecord) {
+      return await this.systemPromptsRepository.save({
+        pagerJsonPrompt: '',
+        topicClusterPrompt: '',
+      });
+    }
+
+    return {
+      data: checkRecord,
+      message: '',
+    };
+  }
+
+  async updateSystemPrompt(payload: UpdateSystemPromptDTO) {
+    const checkRecord = await this.systemPromptsRepository.findOne({
+      where: {},
+    });
+
+    if (!checkRecord) {
+      throw new NotFoundException('No Record Found');
+    }
+
+    await this.systemPromptsRepository.update(
+      {
+        id: checkRecord.id,
+      },
+      payload,
+    );
+
+    return {
+      data: checkRecord,
+      message: 'System Prompts Updated!',
+    };
+  }
+
   async deletePager(pagerId: string, userId: string) {
     //
     const checkRecord = await this.pagerRepository.findOne({
@@ -214,13 +258,13 @@ export class OnePagerService {
     await this.pagerRepository.save(pager);
   }
 
-  async detectTopicClusters(chunks: PagerChunks[]) {
+  async detectTopicClusters(chunks: PagerChunks[], systemPrompt: string) {
     const chunkMap = chunks.reduce((acc, chunk) => {
       acc[chunk.id] = chunk.content;
       return acc;
     }, {});
 
-    const prompt = detectTopicClusterSystemPrompt(chunkMap);
+    const prompt = detectTopicClusterSystemPrompt(chunkMap, systemPrompt);
     const completion = await this.openai.chat.completions.create({
       model: this.model,
       messages: [{ role: 'user', content: prompt }],
@@ -230,12 +274,16 @@ export class OnePagerService {
     return JSON.parse(completion.choices[0].message.content || '{}');
   }
 
-  async detectAllTopicClusters(allChunks: PagerChunks[], batchSize = 20) {
+  async detectAllTopicClusters(
+    allChunks: PagerChunks[],
+    systemPrompt: string,
+    batchSize = 20,
+  ) {
     const batches = this.batchChunks(allChunks, batchSize);
     const mergedClusters: Record<string, string[]> = {};
 
     for (const batch of batches) {
-      const result = await this.detectTopicClusters(batch);
+      const result = await this.detectTopicClusters(batch, systemPrompt);
       for (const [slug, ids] of Object.entries(result)) {
         if (!mergedClusters[slug]) mergedClusters[slug] = [];
         // @ts-ignore
@@ -261,13 +309,22 @@ export class OnePagerService {
     return obj && typeof obj === 'object' && Object.keys(obj).length === 0;
   }
 
-  private async fetchClusterAndTopic(
-    pagerId: string,
-  ): Promise<{ topicCluster: any; topics: any }> {
+  private async fetchClusterAndTopic({
+    pagerId,
+    topicClusterPrompt,
+    pagerJsonPrompt,
+  }: {
+    topicClusterPrompt: string;
+    pagerJsonPrompt: string;
+    pagerId: string;
+  }): Promise<{ topicCluster: any; topics: any }> {
     //
     this.logger.debug('Generating Topic Cluster & Topics out of the Content');
     const allChunks = await this.fetchAllChunks(pagerId); // implement or inject
-    const topicClusters = await this.detectAllTopicClusters(allChunks);
+    const topicClusters = await this.detectAllTopicClusters(
+      allChunks,
+      topicClusterPrompt,
+    );
 
     const chunkById = Object.fromEntries(
       allChunks.map((c) => [c.id, c.content]),
@@ -281,7 +338,11 @@ export class OnePagerService {
 
       if (chunkTexts.join(' ').length < 200) continue;
 
-      const onePager = await this.generateOnePager(slug, chunkTexts);
+      const onePager = await this.generateOnePager(
+        slug,
+        chunkTexts,
+        pagerJsonPrompt,
+      );
       results.push(onePager);
     }
     return {
@@ -290,8 +351,12 @@ export class OnePagerService {
     };
   }
 
-  async generateOnePager(topicSlug: string, chunkTexts: string[]) {
-    const prompt = generateOnePagerSystemPrompt(chunkTexts);
+  async generateOnePager(
+    topicSlug: string,
+    chunkTexts: string[],
+    systemPrompt: string,
+  ) {
+    const prompt = generateOnePagerSystemPrompt(chunkTexts, systemPrompt);
     const completion = await this.openai.chat.completions.create({
       model: this.model,
       messages: [{ role: 'user', content: prompt }],
@@ -324,7 +389,18 @@ export class OnePagerService {
       await this.updatePagerStatus(pagerId, PagerStatus.PROCESSING);
 
       if (this.isEmptyArray(topics) && this.isEmptyObject(topicClusters)) {
-        const clusterAndTopic = await this.fetchClusterAndTopic(pagerId);
+        const systemPrompts = await this.systemPromptsRepository.findOne({
+          where: {},
+        });
+        if (!systemPrompts) {
+          throw new NotFoundException('No System Prompts were Found!');
+        }
+
+        const clusterAndTopic = await this.fetchClusterAndTopic({
+          pagerId,
+          topicClusterPrompt: systemPrompts.topicClusterPrompt,
+          pagerJsonPrompt: systemPrompts.pagerJsonPrompt,
+        });
 
         topics = clusterAndTopic.topics;
         topicClusters = clusterAndTopic.topicCluster;
