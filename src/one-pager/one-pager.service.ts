@@ -24,7 +24,7 @@ import * as puppeteer from 'puppeteer';
 import * as hbs from 'handlebars';
 import { SystemPrompts } from './entities/system-prompts.entity';
 import { UpdateSystemPromptDTO } from './dto/update-system-prompt.dto';
-import { getContrastingTextColor } from './helper';
+import { getContrastingTextColor, sanitizePdfText } from './helper';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -55,7 +55,8 @@ export class OnePagerService {
     let pagerId: null | string = null;
     try {
       const data = await PdfParse(file.buffer);
-      const fullText = data.text;
+      const pdfText = data.text;
+      const fullText = sanitizePdfText(pdfText);
       const fileName = file.originalname;
 
       // Creating Pager Record
