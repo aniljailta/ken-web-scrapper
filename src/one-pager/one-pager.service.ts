@@ -128,6 +128,9 @@ export class OnePagerService {
         userId,
         status: PagerStatus.PROCESSED,
       },
+      order: {
+        created_date: 'DESC',
+      },
     });
     return {
       data: allUserPagers,
@@ -242,6 +245,11 @@ export class OnePagerService {
         userId,
       },
       relations: ['pagerPage'],
+      order: {
+        pagerPage: {
+          created_date: 'DESC',
+        },
+      },
     });
     if (!checkRecord) {
       throw new NotFoundException('No Pager Found');
