@@ -23,7 +23,7 @@ export class PagerPage {
 
   @ManyToOne(() => Pager, (pager) => pager.pagerPage, {
     nullable: true,
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'pagerId' })
   pager: Pager;

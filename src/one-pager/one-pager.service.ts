@@ -175,6 +175,27 @@ export class OnePagerService {
     };
   }
 
+  async deletePagerPage(pagerId: string) {
+    //
+    const checkRecord = await this.pagerPageRepository.findOne({
+      where: {
+        id: pagerId,
+      },
+    });
+    if (!checkRecord) {
+      throw new NotFoundException('No Page Found');
+    }
+
+    await this.pagerPageRepository.delete({
+      id: checkRecord.id,
+    });
+
+    return {
+      data: null,
+      message: 'Pager Deleted',
+    };
+  }
+
   async deletePager(pagerId: string, userId: string) {
     //
     const checkRecord = await this.pagerRepository.findOne({

@@ -74,6 +74,11 @@ export class OnePagerController {
     return this.onePagerService.generateAllOnePagers(id, branding, req.user.id);
   }
 
+  @Delete('pager-page/:id')
+  deletePagerPage(@Param('id') id: string) {
+    return this.onePagerService.deletePagerPage(id);
+  }
+
   @Delete(':id')
   deletePager(@Param('id') id: string, @Req() req) {
     return this.onePagerService.deletePager(id, req.user.id);
