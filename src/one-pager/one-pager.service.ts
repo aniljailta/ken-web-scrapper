@@ -24,6 +24,7 @@ import * as puppeteer from 'puppeteer';
 import * as hbs from 'handlebars';
 import { SystemPrompts } from './entities/system-prompts.entity';
 import { UpdateSystemPromptDTO } from './dto/update-system-prompt.dto';
+import { getContrastingTextColor } from './helper';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -509,11 +510,19 @@ export class OnePagerService {
       pager.topics.map(async ({ json, topic_slug }) => {
         const content = await this.renderTemplate('pager-template', {
           title: json.title,
+          subTitle: json.subTitle || '',
           problem: json.problem,
+          quote: json.quote,
           solution: json.solution,
           highlights: json.highlights,
           primaryColor: pager.branding?.primaryColor || null,
           secondaryColor: pager.branding?.secondaryColor || null,
+          primaryTextColor: getContrastingTextColor(
+            pager.branding?.primaryColor || '#E61938',
+          ),
+          secondaryTextColor: getContrastingTextColor(
+            pager.branding?.secondaryColor || '#0A5DD7',
+          ),
           cta: json.cta,
         });
         return await this.generateAndSavePDF(content, `${topic_slug}.pdf`);
@@ -545,6 +554,12 @@ export class OnePagerService {
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
+      margin: {
+        bottom: 0,
+        right: 0,
+        left: 0,
+        top: 0,
+      },
     });
 
     await browser.close();

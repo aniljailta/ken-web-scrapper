@@ -10,71 +10,75 @@
       href='https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap'
       rel='stylesheet'
     />
+
     <style>
       :root {
       {{#if primaryColor}}
         --primary:
         {{primaryColor}};
       {{else}}
-        --primary: #049ca6;
+        --primary: #E61938;
       {{/if}}
 
       {{#if secondaryColor}}
         --secondary:
         {{secondaryColor}};
       {{else}}
-        --secondary: #256170;
+        --secondary: #0A5DD7;
       {{/if}}
-
-      } .bg_primary { background-color: var(--primary); } .text_primary { color:
-      var(--primary); } .border_primary { color: var(--primary); } .bg_secondary
-      { background-color: var(--secondary); } .text_secondary { color:
-      var(--secondary); } .border_secondary { color: var(--secondary); }
+      } .primary_bg { background-color: var(--primary); } .primary_quote {
+      color: var(--primary); } .primary_text { color:
+      {{primaryTextColor}}; } .primary_outline { outline-color: var(--primary);
+      } .secondary_bg { background-color: var(--secondary); } .secondary_text {
+      color:
+      {{secondaryTextColor}}; }
     </style>
   </head>
   <body>
     <div
-      class='w-[1200px] h-[1911px] bg-Background-Default-Default inline-flex flex-col justify-start items-center overflow-hidden'
+      class='w-[1200px] bg-Background-Default-Default inline-flex flex-col justify-start items-center overflow-hidden'
     >
+      <div
+        class='self-stretch px-20 py-6 inline-flex justify-center items-center gap-12 overflow-hidden'
+      >
+        <div class='max-h-36 flex justify-start items-center gap-3'>
+          <img class='w-52 h-16' src='https://placehold.co/216x65' />
+        </div>
+      </div>
       <div
         class='w-[1200px] inline-flex justify-between items-center overflow-hidden'
       >
-        <div
-          class='w-[1200px] h-[474px] flex justify-start items-center gap-16'
-        >
+        {{! h-[475] }}
+        <div class='w-[1200px] flex justify-start items-center gap-10'>
+
+          {{! h-[474] }}
           <div
-            class='flex-1 h-[474px] px-20 py-10 inline-flex flex-col justify-center items-start gap-14'
+            class='flex-1 px-20 py-10 pt-2 inline-flex flex-col justify-center items-start gap-10'
           >
             <div
-              class="self-stretch justify-start text_primary text-5xl font-bold font-['Inter'] leading-[57.60px]"
+              class="self-stretch justify-start text-black text-5xl font-bold font-['Inter'] leading-[57.60px]"
             >
               {{title}}
             </div>
-            {{!
             <div
               class="self-stretch h-11 justify-center text-black text-2xl font-normal font-['Inter'] leading-9"
             >
-              This one-pager highlights key insights from a 45-minute webinar
-              hosted by Katalyst Security, attended by over 1,200 IT
-              professionals.
+              {{subTitle}}
             </div>
-            }}
-            {{!
             <div
-              class="px-7 py-6 bg_primary rounded-[36px] inline-flex justify-center items-center gap-2.5 overflow-hidden"
+              class='px-7 py-6 primary_bg rounded-[36px] inline-flex justify-center items-center gap-2.5 overflow-hidden'
             >
               <div
-                class="text-center justify-start text-black text-xl font-semibold font-['Inter'] leading-tight"
+                class="text-center justify-start text-white text-xl font-semibold font-['Inter'] leading-tight"
               >
                 Access Full Report
               </div>
             </div>
-            }}
           </div>
         </div>
       </div>
       <div
-        class='w-[1050px] h-0 outline outline-1 outline-offset-[-0.50px] border_primary'
+        class='w-[1050px] h-0 outline outline-1 outline-offset-[-0.50px] primary_outline'
       ></div>
       <div
         class='w-[1200px] px-20 py-10 inline-flex justify-center items-start gap-14'
@@ -82,60 +86,60 @@
         <div
           class='w-[1050px] flex justify-center items-start gap-8 flex-wrap content-start'
         >
-          {{! Starting }}
+          {{! Start }}
           {{#each highlights}}
             <div
               class='w-80 px-6 rounded-lg flex justify-center items-start gap-2.5'
             >
               <div
-                class="w-64 text-center justify-start text-black text-xl font-medium font-['Inter'] leading-7"
+                class="w-64 text-center justify-start text-Text-Color-Primary text-xl font-medium font-['Inter'] leading-7"
               >
                 {{this}}
               </div>
             </div>
           {{/each}}
-          {{! Ending }}
+          {{! End }}
         </div>
       </div>
       <div
-        class='w-[1050px] h-0 rotate-180 outline outline-1 outline-offset-[-0.50px] border_primary'
+        class='w-[1050px] h-0 rotate-180 outline outline-1 outline-offset-[-0.50px] primary_outline'
       ></div>
       <div
-        class='self-stretch px-16 py-12 flex flex-col justify-start items-center gap-2.5'
+        class='self-stretch px-16 py-8 flex flex-col justify-start items-center gap-2.5'
       >
         <div class='w-[1080px] inline-flex justify-start items-start gap-2.5'>
           <div class='flex-1 flex justify-start items-center gap-7'>
             <div
-              class='flex-1 px-12 py-20 bg_secondary rounded-lg flex justify-center items-start gap-2.5'
+              class='flex-1 px-12 py-20 primary_bg w-[525px] h-[400px] rounded-[10px] flex justify-center items-start gap-2.5'
             >
               <div
                 class='flex-1 inline-flex flex-col justify-start items-start gap-6'
               >
                 <div
-                  class="self-stretch justify-start text_primary text-4xl font-bold font-['Inter'] leading-10"
+                  class="self-stretch justify-start primary_text text-4xl font-bold font-['Inter'] leading-10"
                 >
                   The Problem
                 </div>
                 <div
-                  class="self-stretch justify-start text-white text-xl font-normal font-['Inter'] leading-7"
+                  class="self-stretch justify-start primary_text text-2xl font-normal font-['Inter'] leading-9"
                 >
                   {{problem}}
                 </div>
               </div>
             </div>
             <div
-              class='flex-1 px-12 py-20 bg_primary inline-flex flex-col justify-start items-center gap-2.5'
+              class='flex-1 px-12 py-20 secondary_bg w-[525px] h-[400px] rounded-[10px] inline-flex flex-col justify-start items-center gap-2.5'
             >
               <div
                 class='self-stretch flex flex-col justify-start items-start gap-6'
               >
                 <div
-                  class="w-96 justify-start text-black text-4xl font-bold font-['Inter'] leading-10"
+                  class="w-96 justify-start secondary_text text-4xl font-bold font-['Inter'] leading-10"
                 >
                   The Solution
                 </div>
                 <div
-                  class="w-96 justify-start text-white text-xl font-normal font-['Inter'] leading-7"
+                  class="w-96 justify-start secondary_text text-2xl font-normal font-['Inter'] leading-9"
                 >
                   {{solution}}
                 </div>
@@ -145,21 +149,46 @@
         </div>
       </div>
       <div
-        class='w-[1200px] h-64 relative bg_secondary flex items-center justify-center flex-col gap-4'
+        class='self-stretch px-20 pb-10 flex flex-col justify-start items-start gap-12'
+      >
+        <div class='self-stretch flex flex-col justify-start items-start gap-5'>
+          <div
+            class="w-[1040px] h-16 text-center justify-start primary_quote text-8xl font-bold font-['Instrument_Sans'] leading-[115.20px]"
+          >
+            “
+          </div>
+          <div
+            class="w-[1040px] h-36 text-center justify-start text-Text-Color-Primary text-4xl font-normal font-['Inter'] leading-[48px]"
+          >
+            {{quote}}
+          </div>
+        </div>
+      </div>
+      <div
+        class='w-[1200px] px-20 py-16 secondary_bg flex flex-col justify-end items-center gap-8'
       >
         <div
-          class="w-[1040px] left-[80px] top-[64px] text-center justify-start text-white text-4xl font-bold font-['Inter'] leading-10"
+          class="w-[1040px] text-center justify-start secondary_text text-4xl font-bold font-['Inter'] leading-10"
         >
           {{cta}}
         </div>
-        <div class='w-full h-16 flex items-center justify-center'>
+        <div class='px-64 inline-flex justify-start items-center gap-7'>
           <div
-            class='h-16 p-7 left-[274px] top-0 bg_primary rounded-[36px] inline-flex justify-center items-center gap-2.5 overflow-hidden'
+            class='h-16 p-7 primary_bg rounded-[36px] flex justify-center items-center gap-2.5 overflow-hidden'
+          >
+            <div
+              class="justify-start primary_text text-xl font-semibold font-['Inter'] leading-tight"
+            >
+              Access Full Report
+            </div>
+          </div>
+          <div
+            class='w-52 h-16 p-7 bg-white rounded-[36px] flex justify-center items-center gap-2.5 overflow-hidden'
           >
             <div
               class="justify-start text-black text-xl font-semibold font-['Inter'] leading-tight"
             >
-              Access Full Report
+              Book A Demo
             </div>
           </div>
         </div>
