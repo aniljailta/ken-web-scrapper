@@ -29,7 +29,7 @@ import { getContrastingTextColor, sanitizePdfText } from './helper';
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
   private readonly chunkLength = 1000;
-  private readonly model: OpenAI.Chat.ChatModel = 'gpt-3.5-turbo';
+  private readonly model: OpenAI.Chat.ChatModel = 'gpt-4';
   private openai: OpenAI;
 
   constructor(
@@ -511,7 +511,7 @@ export class OnePagerService {
       pager.topics.map(async ({ json, topic_slug }) => {
         const content = await this.renderTemplate('pager-template', {
           title: json.title,
-          subTitle: json.subTitle || '',
+          subTitle: json.subtitle || '',
           problem: json.problem,
           quote: json.quote,
           solution: json.solution,

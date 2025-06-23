@@ -12,7 +12,7 @@
     />
 
     <style>
-      :root {
+      :root { --pager-height:1600px;
       {{#if primaryColor}}
         --primary:
         {{primaryColor}};
@@ -31,7 +31,8 @@
       {{primaryTextColor}}; } .primary_outline { outline-color: var(--primary);
       } .secondary_bg { background-color: var(--secondary); } .secondary_text {
       color:
-      {{secondaryTextColor}}; }
+      {{secondaryTextColor}}; } body { min-height: var(--pager-height);
+      max-height: var(--pager-height); }
     </style>
   </head>
   <body>
