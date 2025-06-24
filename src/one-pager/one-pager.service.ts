@@ -234,6 +234,11 @@ export class OnePagerService {
       'capitalize',
       (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
     );
+    hbs.registerHelper('limit', function (arr, limit) {
+      if (!Array.isArray(arr)) return [];
+      return arr.slice(0, limit);
+    });
+
     hbs.registerHelper('eq', (a, b) => a === b);
 
     const compiled = hbs.compile(source);
