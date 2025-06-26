@@ -17,6 +17,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { OnePagerService } from './one-pager.service';
 import archiver from 'archiver';
 import { UpdateSystemPromptDTO } from './dto/update-system-prompt.dto';
+import { extname } from 'path';
+import { diskStorage } from 'multer';
 
 @Controller('one-pager')
 @UseGuards(AuthGuard('jwt'))
@@ -57,6 +59,24 @@ export class OnePagerController {
     }
 
     await archive.finalize();
+  }
+
+  @Post('brand-upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: 'public/pagers/brand',
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+        },
+      }),
+    }),
+  )
+  uploadBrandFile(@UploadedFile() file: Express.Multer.File) {
+    return { filename: file.filename, path: file.path };
   }
 
   @Post('upload')

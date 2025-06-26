@@ -529,6 +529,7 @@ export class OnePagerService {
           secondaryTextColor: getContrastingTextColor(
             pager.branding?.secondaryColor || '#0A5DD7',
           ),
+          logo: pager.branding.logo || '',
           cta: json.cta,
         });
         return await this.generateAndSavePDF(content, `${topic_slug}.pdf`);
