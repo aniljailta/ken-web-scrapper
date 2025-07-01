@@ -500,8 +500,8 @@ export class OnePagerService {
 
     // Creating Pager Page Records
     pager.topics.map(async ({ json, topic_slug }) => {
-      const timestamp = Date.now();
-      const fileName = `${topic_slug}-${timestamp}.pdf`;
+      const shortId = pagerId.slice(-6);
+      const fileName = `${topic_slug}-${shortId}.pdf`;
       const record = this.pagerPageRepository.create({
         name: json.title,
         link: fileName,
@@ -516,8 +516,8 @@ export class OnePagerService {
     // Generating PDF
     await Promise.all(
       pager.topics.map(async ({ json, topic_slug }) => {
-        const timestamp = Date.now();
-        const fileName = `${topic_slug}-${timestamp}.pdf`;
+        const shortId = pagerId.slice(-6);
+        const fileName = `${topic_slug}-${shortId}.pdf`;
         const content = await this.renderTemplate('pager-template', {
           title: json.title,
           subTitle: json.subtitle || '',
