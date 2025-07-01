@@ -10,10 +10,23 @@ import { RequestTracker } from 'src/request-tracker/entities/request_tracker.ent
 import { RequestTrackerService } from 'src/request-tracker/request-tracker.service';
 import { MixpanelModule } from 'src/mixpanel/mixpanel.module';
 import { SocketGateway } from 'src/gateways/socket.gateway';
+import { OnePagerService } from 'src/one-pager/one-pager.service';
+import { Pager } from 'src/one-pager/entities/pager.entity';
+import { SystemPrompts } from 'src/one-pager/entities/system-prompts.entity';
+import { PagerChunks } from 'src/one-pager/entities/pager-chunks.entity';
+import { PagerPage } from 'src/one-pager/entities/pager-page.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Conversation, Message, RequestTracker]),
+    TypeOrmModule.forFeature([
+      Conversation,
+      Message,
+      RequestTracker,
+      Pager,
+      SystemPrompts,
+      PagerChunks,
+      PagerPage,
+    ]),
     UsersModule,
     ProductsModule,
     MixpanelModule,
@@ -21,6 +34,7 @@ import { SocketGateway } from 'src/gateways/socket.gateway';
   controllers: [ConversationController],
   providers: [
     ConversationService,
+    OnePagerService,
     ProductsModule,
     RequestTrackerService,
     SocketGateway,

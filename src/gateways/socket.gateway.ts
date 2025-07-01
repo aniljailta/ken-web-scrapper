@@ -4,9 +4,11 @@ import {
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
 } from '@nestjs/websockets';
 import { ChatCompletionChunk } from 'openai/resources/chat/completions';
 import { Server, Socket } from 'socket.io';
+import { OnePagerService } from 'src/one-pager/one-pager.service';
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -15,6 +17,8 @@ import { Server, Socket } from 'socket.io';
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private connectedClients = new Map<string, string>();
+
+  constructor(private readonly onePagerService: OnePagerService) {}
 
   private readonly logger = new Logger(SocketGateway.name);
 
@@ -59,6 +63,35 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (socket) {
         socket.emit('stream-chat', { message });
       }
+    }
+  }
+
+  @SubscribeMessage('one-pager/process')
+  async processOnePager(
+    client: Socket,
+    {
+      id,
+      branding = {},
+      userId,
+    }: { id: string; branding: any; userId: string },
+  ) {
+    const socketID = this.connectedClients.get(userId);
+    const socket = this.server.sockets.sockets.get(socketID);
+
+    try {
+      const { data: response } =
+        await this.onePagerService.generateAllOnePagers(id, branding, userId);
+
+      this.logger.debug('Emitting processed content back to user');
+
+      socket.emit('one-pager/processed', { data: response });
+    } catch (error) {
+      this.logger.error('❌ Error processing one pager:', error);
+
+      socket.emit('one-pager/processed', {
+        data: null,
+        error: error.message,
+      });
     }
   }
 }
