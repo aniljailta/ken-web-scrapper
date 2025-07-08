@@ -91,7 +91,11 @@ export class OnePagerController {
     @Body('branding') branding: any,
     @Req() req,
   ) {
-    return this.onePagerService.generateAllOnePagers(id, branding, req.user.id);
+    return this.onePagerService.generateAllOnePagers({
+      pagerId: id,
+      branding,
+      userId: req.user.id,
+    });
   }
 
   @Delete('pager-page/:id')

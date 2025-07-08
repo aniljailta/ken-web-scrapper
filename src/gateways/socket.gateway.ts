@@ -72,15 +72,32 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     {
       id,
       branding = {},
+      isTesting = false,
       userId,
-    }: { id: string; branding: any; userId: string },
+      pagerJsonPrompt = null,
+      topicClusterPrompt = null,
+    }: {
+      id: string;
+      branding: any;
+      userId: string;
+      isTesting?: boolean;
+      topicClusterPrompt?: string;
+      pagerJsonPrompt?: string;
+    },
   ) {
     const socketID = this.connectedClients.get(userId);
     const socket = this.server.sockets.sockets.get(socketID);
 
     try {
       const { data: response } =
-        await this.onePagerService.generateAllOnePagers(id, branding, userId);
+        await this.onePagerService.generateAllOnePagers({
+          pagerId: id,
+          branding,
+          userId,
+          isTesting,
+          pagerJsonPrompt,
+          topicClusterPrompt,
+        });
 
       this.logger.debug('Emitting processed content back to user');
 
