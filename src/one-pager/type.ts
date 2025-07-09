@@ -4,3 +4,12 @@ export enum PagerStatus {
   PROCESSED = 'processed',
   FAILED = 'failed',
 }
+
+export type TopicSlug = string;
+
+export type TopicContentMap = {
+  [slug in TopicSlug]: {
+    rank_index: number;
+    chunk_ids: string[];
+  };
+};

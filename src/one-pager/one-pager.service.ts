@@ -9,7 +9,7 @@ import { Pager } from './entities/pager.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PagerChunks } from './entities/pager-chunks.entity';
-import { PagerStatus } from './type';
+import { PagerStatus, TopicContentMap } from './type';
 import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -296,7 +296,10 @@ export class OnePagerService {
     await this.pagerRepository.save(pager);
   }
 
-  async detectTopicClusters(chunks: PagerChunks[], systemPrompt: string) {
+  async detectTopicClusters(
+    chunks: PagerChunks[],
+    systemPrompt: string,
+  ): Promise<TopicContentMap> {
     const chunkMap = chunks.reduce((acc, chunk) => {
       acc[chunk.id] = chunk.content;
       return acc;
@@ -318,17 +321,23 @@ export class OnePagerService {
     batchSize = 20,
   ) {
     const batches = this.batchChunks(allChunks, batchSize);
-    const mergedClusters: Record<string, string[]> = {};
+    const mergedClusters: Record<
+      string,
+      Array<{ content: string; rank_index: number }>
+    > = {};
 
     for (const batch of batches) {
       const result = await this.detectTopicClusters(batch, systemPrompt);
-      for (const [slug, ids] of Object.entries(result)) {
+      for (const [slug, content] of Object.entries(result)) {
         if (!mergedClusters[slug]) mergedClusters[slug] = [];
-        // @ts-ignore
-        mergedClusters[slug].push(...ids);
+        content.chunk_ids.forEach((item) => {
+          mergedClusters[slug].push({
+            content: item,
+            rank_index: content.rank_index,
+          });
+        });
       }
     }
-
     return mergedClusters;
   }
 
@@ -371,7 +380,7 @@ export class OnePagerService {
 
     for (const [slug, chunkIds] of Object.entries(topicClusters)) {
       const chunkTexts = chunkIds
-        .map((id) => chunkById[id] || '')
+        .map(({ content: id }) => chunkById[id] || '')
         .filter(Boolean);
 
       if (chunkTexts.join(' ').length < 200) continue;
@@ -381,7 +390,10 @@ export class OnePagerService {
         chunkTexts,
         pagerJsonPrompt,
       );
-      results.push(onePager);
+      results.push({
+        ...onePager,
+        rank_index: chunkIds[0]?.rank_index || 1,
+      });
     }
     return {
       topicCluster: topicClusters,
@@ -530,13 +542,16 @@ export class OnePagerService {
     });
 
     // Creating Pager Page Records
-    pager.topics.map(async ({ json, topic_slug }) => {
+    pager.topics.map(async ({ json, topic_slug }, index: number) => {
+      const rank_index =
+        pager.topicCluster[topic_slug][0]?.rank_index || index + 1;
       const shortId = pagerId.slice(-6);
       const fileName = `${topic_slug}-${shortId}.pdf`;
       const record = this.pagerPageRepository.create({
         name: json.title,
         link: fileName,
         pagerId,
+        index: rank_index,
         pager: pager,
       });
       // Saving All Pages

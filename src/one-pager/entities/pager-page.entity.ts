@@ -19,6 +19,9 @@ export class PagerPage {
   @Column({ type: 'text', nullable: false })
   link: string;
 
+  @Column({ type: 'int', nullable: true })
+  index: number;
+
   @Column({ type: 'uuid', nullable: true })
   pagerId: string;
 
