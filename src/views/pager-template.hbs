@@ -12,7 +12,7 @@
     />
 
     <style>
-      :root { --pager-height:1600px;
+      :root {
       {{#if primaryColor}}
         --primary:
         {{primaryColor}};
@@ -31,174 +31,106 @@
       {{primaryTextColor}}; } .primary_outline { outline-color: var(--primary);
       } .secondary_bg { background-color: var(--secondary); } .secondary_text {
       color:
-      {{secondaryTextColor}}; } body { min-height: var(--pager-height);
-      max-height: var(--pager-height); }
+      {{secondaryTextColor}}; } .secondary_border { border-color:
+      var(--secondary); } .secondary_highlight { color: var(--secondary); }
     </style>
   </head>
-  <body>
-    <div
-      class='w-[1200px] bg-Background-Default-Default inline-flex flex-col justify-start items-center overflow-hidden'
-    >
-      <div
-        class='self-stretch px-20 py-6 inline-flex justify-center items-center gap-12 overflow-hidden'
+  <body class='h-full w-full'>
+    <header
+      class='w-full bg-white h-9 py-2.5 flex items-center justify-center'
+    ></header>
+    <main class='w-full h-auto'>
+      <section
+        class='py-5 w-full flex items-center justify-center flex-col gap-3.5 px-10'
       >
-        {{#if logo}}
-          <div class='max-h-36 flex justify-start items-center gap-3'>
-            <img class='w-52 h-16 object-contain' src='{{logo}}' />
-          </div>
-        {{/if}}
-      </div>
-      <div
-        class='w-[1200px] inline-flex justify-between items-center overflow-hidden'
-      >
-        {{! h-[475] }}
-        <div
-          class='w-[1200px] max-h-[475px] flex justify-start items-center gap-10'
+        <!-- Main Heading -->
+        <h2
+          class='text-black text-2xl font-normal font-[Inter] leading-7 max-w-[476px] text-center'
         >
-
-          {{! h-[474] }}
-          <div
-            class='flex-1 px-20 py-10 pt-2 inline-flex flex-col justify-center items-start gap-10'
-          >
-            <div
-              class="self-stretch justify-start text-black text-5xl font-bold font-['Inter'] leading-[57.60px]"
-            >
-              {{title}}
-            </div>
-            <div
-              class="self-stretch h-11 justify-center text-black text-2xl font-normal font-['Inter'] leading-9"
-            >
-              {{subTitle}}
-            </div>
-            <div
-              class='px-7 py-6 primary_bg rounded-[36px] inline-flex justify-center items-center gap-2.5 overflow-hidden'
-            >
-              <div
-                class="text-center justify-start text-white text-xl font-semibold font-['Inter'] leading-tight"
-              >
-                Access Full Report
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        class='w-[1050px] max-w-[1050px] h-0 outline outline-1 outline-offset-[-0.50px] primary_outline'
-      ></div>
-      <div
-        class='w-[1200px] max-w-[1200px] px-20 py-10 inline-flex justify-center items-start gap-14'
-      >
-        <div
-          class='w-[1050px] max-w-[1050px] flex justify-center items-start gap-8 flex-wrap content-start'
+          {{title}}
+        </h2>
+        <!-- Sub Heading -->
+        <p
+          class='text-center text-xs font-light font-[Inter] leading-[18px] max-w-[440px]'
         >
-          {{! Start }}
-          {{#each (limit highlights 3)}}
-            <div
-              class='w-80 px-6 rounded-lg flex justify-center items-start gap-2.5 max-h-[168px]'
-            >
-              <div
-                class="w-64 text-center justify-start text-Text-Color-Primary text-xl font-medium font-['Inter'] leading-7"
-              >
-                {{this}}
-              </div>
-            </div>
-          {{/each}}
-
-          {{! End }}
-        </div>
-      </div>
-      <div
-        class='w-[1050px] h-0 rotate-180 outline outline-1 outline-offset-[-0.50px] primary_outline'
-      ></div>
-      <div
-        class='self-stretch px-16 py-8 flex flex-col justify-start items-center gap-2.5'
+          {{subTitle}}
+        </p>
+        <!-- CTA Button -->
+        <a class='primary_bg rounded-[36px] primary_text py-1.5 px-4' href='#'>
+          Access Full Report
+        </a>
+      </section>
+      <!-- The Problem / Solution Section -->
+      <section
+        class='w-full flex items-center justify-between gap-[40px] px-6 mt-10'
       >
-        <div class='w-[1080px] inline-flex justify-start items-start gap-2.5'>
-          <div class='flex-1 flex justify-start items-center gap-7'>
-            <div
-              class='flex-1 px-12 py-20 primary_bg w-[525px] max-h-[400px] h-[400px] rounded-[10px] flex justify-center items-start gap-2.5'
-            >
-              <div
-                class='flex-1 inline-flex flex-col justify-start items-start gap-6'
-              >
-                <div
-                  class="self-stretch justify-start primary_text text-4xl font-bold font-['Inter'] leading-10"
-                >
-                  The Problem
-                </div>
-                <div
-                  class="self-stretch justify-start primary_text text-2xl font-normal font-['Inter'] leading-9"
-                >
-                  {{problem}}
-                </div>
-              </div>
-            </div>
-            <div
-              class='flex-1 px-12 py-20 secondary_bg w-[525px] h-[400px] max-h-[400px] rounded-[10px] inline-flex flex-col justify-start items-center gap-2.5'
-            >
-              <div
-                class='self-stretch flex flex-col justify-start items-start gap-6'
-              >
-                <div
-                  class="w-96 justify-start secondary_text text-4xl font-bold font-['Inter'] leading-10"
-                >
-                  The Solution
-                </div>
-                <div
-                  class="w-96 justify-start secondary_text text-2xl font-normal font-['Inter'] leading-9"
-                >
-                  {{solution}}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        class='self-stretch px-20 flex flex-col justify-start items-start gap-12'
-      >
-        <div class='self-stretch flex flex-col justify-start items-start gap-5'>
-          <div
-            class="w-[1040px] h-16 text-center justify-start primary_quote text-8xl font-bold font-['Instrument_Sans'] leading-[115.20px]"
-          >
-            “
-          </div>
-          <div
-            class="w-[1040px] h-36 text-center justify-start text-Text-Color-Primary text-4xl font-normal font-['Inter'] leading-[48px]"
-          >
-            {{quote}}
-          </div>
-        </div>
-      </div>
-      <div
-        class='w-[1200px] px-20 py-14 secondary_bg fixed bottom-0 mt-8 flex flex-col justify-end items-center gap-8'
-      >
+        <!-- The Problem Card -->
         <div
-          class="w-[1040px] text-center justify-start secondary_text text-4xl font-bold font-['Inter'] leading-10"
+          class='flex flex-col items-center justify-center gap-[11px] h-[130px] flex-1'
+        >
+          <span
+            class='font-[Inter] text-base text-black leading-5 font-light'
+          >The Problem</span>
+          <div
+            class='p-5 rounded-sm flex items-center justify-center border border-[#808080]'
+          >
+            <p class='text-left text-xs font-light leading-[18px] font-[Inter]'>
+              {{problem}}
+            </p>
+          </div>
+        </div>
+
+        <!-- The Solution Card -->
+        <div
+          class='flex flex-col items-center justify-center gap-[11px] h-[130px] flex-1'
+        >
+          <span
+            class='font-[Inter] text-base text-black leading-5 font-light'
+          >The Solution</span>
+          <div
+            class='p-5 rounded-sm flex items-center justify-center border border-[#808080]'
+          >
+            <p class='text-left text-xs font-light leading-[18px] font-[Inter]'>
+              {{solution}}
+            </p>
+          </div>
+        </div>
+      </section>
+      <!-- Highlights -->
+
+      <section
+        class='w-full flex items-start justify-center gap-[40px] px-6 mt-10 mb-10'
+      >
+        {{#each (limit highlights 3)}}
+          <!-- Highlight Card -->
+          <div
+            class='flex flex-col justify-center items-center h-[162px] flex-1 gap-2.5'
+          >
+            <!-- Count -->
+            <div
+              class='rounded-full border secondary_border secondary_highlight font-[Inter] text-base font-light leading-tight w-6 h-6 text-center flex items-center justify-center'
+            >
+              {{inc @index}}
+            </div>
+            <!-- Description -->
+            <p class='font-[Inter] text-xs font-light text-center'>
+              {{this}}
+            </p>
+          </div>
+        {{/each}}
+      </section>
+      <footer
+        class='px-10 py-6 secondary_bg flex flex-col items-center justify-center gap-5 fixed bottom-0 w-full'
+      >
+        <p
+          class='text-base font-light secondary_text font-[Inter] leading-tight text-center'
         >
           {{cta}}
-        </div>
-        <div class='px-64 inline-flex justify-start items-center gap-7'>
-          <div
-            class='h-16 p-7 primary_bg rounded-[36px] flex justify-center items-center gap-2.5 overflow-hidden'
-          >
-            <div
-              class="justify-start primary_text text-xl font-semibold font-['Inter'] leading-tight"
-            >
-              Access Full Report
-            </div>
-          </div>
-          <div
-            class='w-52 h-16 p-7 bg-white rounded-[36px] flex justify-center items-center gap-2.5 overflow-hidden'
-          >
-            <div
-              class="justify-start text-black text-xl font-semibold font-['Inter'] leading-tight"
-            >
-              Book A Demo
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        </p>
+        <a class='primary_bg rounded-[36px] primary_text py-1.5 px-4' href='#'>
+          Access Full Report
+        </a>
+      </footer>
+    </main>
   </body>
 </html>

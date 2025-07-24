@@ -236,6 +236,9 @@ export class OnePagerService {
       'capitalize',
       (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
     );
+    hbs.registerHelper('inc', function (value) {
+      return parseInt(value) + 1;
+    });
     hbs.registerHelper('limit', function (arr, limit) {
       if (!Array.isArray(arr)) return [];
       return arr.slice(0, limit);
@@ -609,8 +612,9 @@ export class OnePagerService {
 
     // Create PDF buffer
     const pdfBuffer = await page.pdf({
-      format: 'A4',
       printBackground: true,
+      width: '612px',
+      height: '792px',
       margin: {
         bottom: 0,
         right: 0,
