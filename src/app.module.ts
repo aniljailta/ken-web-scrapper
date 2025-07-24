@@ -1,21 +1,17 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ScraperModule } from './scraper/scraper.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 
 import { RequestTrackerService } from './request-tracker/request-tracker.service';
 import { RequestTracker } from './request-tracker/entities/request_tracker.entity';
 import { LifetimeRequestGuard } from './guards/lifetime-request.guard';
-import { ConversationModule } from './conversation/conversation.module';
 import { MixpanelModule } from './mixpanel/mixpanel.module';
-import { ChatWidgetModule } from './chatwidget/chatWidget.module';
 import { OnePagerModule } from './one-pager/one-pager.module';
 
 @Module({
@@ -35,19 +31,15 @@ import { OnePagerModule } from './one-pager/one-pager.module';
         url: configService.get<string>('DATABASE_URL'), // Use DATABASE_URL directly
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
         synchronize: true, // Use only for development
-        ssl: {
-          rejectUnauthorized: false,
-        },
+        // ssl: {
+        //   rejectUnauthorized: false,
+        // },
       }),
     }),
-    ScraperModule,
-    ProductsModule,
     UsersModule,
     AuthModule,
     TypeOrmModule.forFeature([RequestTracker]),
-    ConversationModule,
     MixpanelModule,
-    ChatWidgetModule,
     OnePagerModule,
   ],
   controllers: [AppController],

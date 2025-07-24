@@ -132,6 +132,7 @@ export class OnePagerService {
         userId,
         status: PagerStatus.PROCESSED,
       },
+      relations: ['pagerPage'],
       order: {
         created_date: 'DESC',
       },
