@@ -23,7 +23,7 @@ export class PagerPage {
   @Column({ type: 'int', nullable: true })
   index: number;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', default: '' })
   source_type: string;
 
   @Column({

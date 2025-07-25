@@ -31,9 +31,9 @@ import { OnePagerModule } from './one-pager/one-pager.module';
         url: configService.get<string>('DATABASE_URL'), // Use DATABASE_URL directly
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
         synchronize: true, // Use only for development
-        // ssl: {
-        //   rejectUnauthorized: false,
-        // },
+        ssl: {
+          rejectUnauthorized: false,
+        },
       }),
     }),
     UsersModule,
