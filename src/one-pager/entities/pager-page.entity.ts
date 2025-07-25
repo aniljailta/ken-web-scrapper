@@ -5,6 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Pager } from './pager.entity';
 
@@ -21,6 +22,16 @@ export class PagerPage {
 
   @Column({ type: 'int', nullable: true })
   index: number;
+
+  @Column({ type: 'text' })
+  source_type: string;
+
+  @Column({
+    type: 'jsonb',
+    nullable: false,
+    default: () => "'[]'::jsonb",
+  })
+  tags: string[];
 
   @Column({ type: 'uuid', nullable: true })
   pagerId: string;
@@ -52,4 +63,6 @@ export class PagerPage {
     },
   })
   created_date: Date;
+  @UpdateDateColumn({ name: 'last_modified_at', type: 'timestamp' })
+  lastModifiedAt: Date;
 }

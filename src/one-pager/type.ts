@@ -11,5 +11,7 @@ export type TopicContentMap = {
   [slug in TopicSlug]: {
     rank_index: number;
     chunk_ids: string[];
+    source_type: string;
+    tags: string[];
   };
 };

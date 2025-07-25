@@ -135,6 +135,9 @@ export class OnePagerService {
       relations: ['pagerPage'],
       order: {
         created_date: 'DESC',
+        pagerPage: {
+          index: 'DESC',
+        },
       },
     });
     return {
@@ -260,7 +263,7 @@ export class OnePagerService {
       relations: ['pagerPage'],
       order: {
         pagerPage: {
-          created_date: 'DESC',
+          index: 'DESC',
         },
       },
     });
@@ -327,7 +330,12 @@ export class OnePagerService {
     const batches = this.batchChunks(allChunks, batchSize);
     const mergedClusters: Record<
       string,
-      Array<{ content: string; rank_index: number }>
+      Array<{
+        content: string;
+        rank_index: number;
+        source_type: string;
+        tags: string[];
+      }>
     > = {};
 
     for (const batch of batches) {
@@ -338,6 +346,8 @@ export class OnePagerService {
           mergedClusters[slug].push({
             content: item,
             rank_index: content.rank_index,
+            source_type: content.source_type,
+            tags: content.tags,
           });
         });
       }
@@ -500,6 +510,7 @@ export class OnePagerService {
           { id: pagerId },
           {
             branding,
+            name: branding && branding.name ? branding.name : checkRecord.name,
           },
         );
       }
@@ -549,6 +560,8 @@ export class OnePagerService {
     pager.topics.map(async ({ json, topic_slug }, index: number) => {
       const rank_index =
         pager.topicCluster[topic_slug][0]?.rank_index || index + 1;
+      const source_type = pager.topicCluster[topic_slug][0]?.source_type || '';
+      const tags = pager.topicCluster[topic_slug][0]?.tags || [];
       const shortId = pagerId.slice(-6);
       const fileName = `${topic_slug}-${shortId}.pdf`;
       const record = this.pagerPageRepository.create({
@@ -556,6 +569,8 @@ export class OnePagerService {
         link: fileName,
         pagerId,
         index: rank_index,
+        source_type,
+        tags,
         pager: pager,
       });
       // Saving All Pages
