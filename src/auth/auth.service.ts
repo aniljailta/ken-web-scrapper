@@ -168,4 +168,24 @@ export class AuthService {
     return await this.login(user);
     //
   }
+
+  async checkUserWithEmail(email: string) {
+    //
+    const checkUser = await this.userRepository.findOne({
+      where: {
+        email,
+      },
+    });
+    return checkUser;
+  }
+
+  async createNewUser(user: User) {
+    //
+    const newUser = await this.userRepository.save({
+      email: user.email,
+      name: user.name,
+      password: '',
+    });
+    return newUser;
+  }
 }

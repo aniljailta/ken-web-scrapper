@@ -11,6 +11,7 @@ import { UserValues } from 'src/users/entities/values.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Conversation } from 'src/conversation/entities/conversation.entity';
 import { Message } from 'src/conversation/entities/message.entity';
+import { GoogleStrategy } from 'src/strategy/google.strategy';
 
 @Module({
   imports: [
@@ -26,6 +27,6 @@ import { Message } from 'src/conversation/entities/message.entity';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, UsersService],
+  providers: [AuthService, JwtStrategy, UsersService, GoogleStrategy],
 })
 export class AuthModule {}
