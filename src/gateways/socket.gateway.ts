@@ -150,4 +150,41 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
     }
   }
+  @SubscribeMessage('one-pager/text-enhance')
+  async triggerEnhancements(
+    client: Socket,
+    {
+      initialValue,
+      sectionType,
+    }: {
+      sectionType: string;
+      initialValue: string;
+    },
+  ) {
+    try {
+      this.logger.debug('Triggering Fragment Enhancement!');
+
+      const response = await this.onePagerService.enhanceTextSection({
+        initialValue,
+        sectionType,
+      });
+
+      if (!response) {
+        return {
+          data: null,
+          error: 'Failed to Generate Variation Try After sometime!',
+        };
+      }
+
+      return {
+        data: response,
+      };
+    } catch (error) {
+      this.logger.error('❌ Error Failed to generate Variation!:', error);
+      return {
+        data: null,
+        error: error.message,
+      };
+    }
+  }
 }

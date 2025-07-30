@@ -42,3 +42,19 @@ ${chunkTexts.join('\n\n')}
 
 Respond with valid JSON only.
     `.trim();
+
+export const generateEnhancementSectionSystemPrompt = (
+  sectionType: string,
+  initialValue: string,
+) => `
+You are an expert copywriting assistant specialized in enhancing marketing one-pagers.  
+Rewrite the provided text to make it more confident, persuasive, and impactful.  
+Do not include any explanation or extra text — only return the improved value.
+
+
+Section Type: ${sectionType}  
+Original Value: ${initialValue}  
+
+Your task: Rewrite the given text into a better version while keeping its meaning intact but elevating its tone and appeal.
+
+  `;

@@ -14,6 +14,7 @@ import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
 import {
   detectTopicClusterSystemPrompt,
+  generateEnhancementSectionSystemPrompt,
   generateOnePagerSystemPrompt,
 } from './constants';
 import { PagerPage } from './entities/pager-page.entity';
@@ -737,5 +738,34 @@ export class OnePagerService {
     fs.writeFileSync(outputPath, pdfBuffer);
 
     return fileName;
+  }
+
+  async enhanceTextSection({
+    initialValue,
+    sectionType,
+  }: {
+    initialValue: string;
+    sectionType: string;
+  }) {
+    try {
+      this.logger.debug({
+        initialValue,
+        sectionType,
+      });
+      const prompt = generateEnhancementSectionSystemPrompt(
+        sectionType,
+        initialValue,
+      );
+      const completion = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+      });
+
+      return completion.choices[0].message.content || '';
+    } catch (error) {
+      this.logger.error('Failed To Generate Enhancement!', error);
+      return '';
+    }
   }
 }
