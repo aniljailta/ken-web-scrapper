@@ -15,3 +15,16 @@ export type TopicContentMap = {
     tags: string[];
   };
 };
+
+export interface TopicJSON {
+  title: string;
+  subtitle: string;
+  quote: string;
+  index: number;
+  problem: string;
+  solution: string;
+  highlights: string[];
+  cta: string;
+  ctaText: string;
+  ctaLink: string;
+}

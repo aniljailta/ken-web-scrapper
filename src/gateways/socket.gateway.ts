@@ -9,6 +9,7 @@ import {
 import { ChatCompletionChunk } from 'openai/resources/chat/completions';
 import { Server, Socket } from 'socket.io';
 import { OnePagerService } from 'src/one-pager/one-pager.service';
+import { TopicJSON } from 'src/one-pager/type';
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -104,6 +105,44 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       socket.emit('one-pager/processed', { data: response });
     } catch (error) {
       this.logger.error('❌ Error processing one pager:', error);
+
+      socket.emit('one-pager/processed', {
+        data: null,
+        error: error.message,
+      });
+    }
+  }
+
+  @SubscribeMessage('one-pager/edit')
+  async triggerPagerEdit(
+    client: Socket,
+    {
+      id,
+      userId,
+      content,
+      topicIndex,
+    }: {
+      id: string;
+      userId: string;
+      topicIndex: number;
+      content: TopicJSON;
+    },
+  ) {
+    const socketID = this.connectedClients.get(userId);
+    const socket = this.server.sockets.sockets.get(socketID);
+
+    try {
+      const response = await this.onePagerService.editPagerContent({
+        id,
+        userId,
+        content,
+        topicIndex,
+      });
+
+      this.logger.debug('Triggering Pager Page Update!');
+      socket?.emit('one-pager/processed', { data: response });
+    } catch (error) {
+      this.logger.error('❌ Error Editing one pager:', error);
 
       socket.emit('one-pager/processed', {
         data: null,

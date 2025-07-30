@@ -48,3 +48,18 @@ export function sanitizePdfText(input: string) {
     .replace(/[^a-zA-Z0-9\s.,:;!?()'"%$@\-]/g, '') // Remove weird punctuation/symbols
     .trim(); // Remove leading/trailing spaces
 }
+
+export function ensureHttps(url: string) {
+  if (!url) return '';
+
+  // Trim spaces
+  const trimmed = url.trim();
+
+  // If already has http/https, return as is
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Otherwise prepend https://
+  return `https://${trimmed}`;
+}

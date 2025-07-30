@@ -9,7 +9,7 @@ import { Pager } from './entities/pager.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PagerChunks } from './entities/pager-chunks.entity';
-import { PagerStatus, TopicContentMap } from './type';
+import { PagerStatus, TopicContentMap, TopicJSON } from './type';
 import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -24,7 +24,11 @@ import * as puppeteer from 'puppeteer';
 import * as hbs from 'handlebars';
 import { SystemPrompts } from './entities/system-prompts.entity';
 import { UpdateSystemPromptDTO } from './dto/update-system-prompt.dto';
-import { getContrastingTextColor, sanitizePdfText } from './helper';
+import {
+  ensureHttps,
+  getContrastingTextColor,
+  sanitizePdfText,
+} from './helper';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -583,28 +587,114 @@ export class OnePagerService {
       pager.topics.map(async ({ json, topic_slug }) => {
         const shortId = pagerId.slice(-6);
         const fileName = `${topic_slug}-${shortId}.pdf`;
-        const content = await this.renderTemplate('pager-template', {
-          title: json.title,
-          subTitle: json.subtitle || '',
-          problem: json.problem,
-          quote: json.quote,
-          solution: json.solution,
-          highlights: json.highlights,
-          primaryColor: pager.branding?.primaryColor || null,
-          secondaryColor: pager.branding?.secondaryColor || null,
-          primaryTextColor: getContrastingTextColor(
-            pager.branding?.primaryColor || '#E61938',
-          ),
-          secondaryTextColor: getContrastingTextColor(
-            pager.branding?.secondaryColor || '#0A5DD7',
-          ),
-          logo: pager.branding.logo || '',
-          cta: json.cta,
+        return await this.generateContent({
+          branding: pager.branding,
+          fileName,
+          json,
         });
-        return await this.generateAndSavePDF(content, fileName);
       }),
     );
     this.logger.debug('Finished Generating PDF');
+  }
+
+  private async generateContent({
+    json,
+    branding,
+    fileName,
+  }: {
+    json: TopicJSON;
+    branding: any;
+    fileName: string;
+  }) {
+    const content = await this.renderTemplate('pager-template', {
+      title: json.title,
+      subTitle: json.subtitle || '',
+      problem: json.problem,
+      quote: json.quote,
+      solution: json.solution,
+      highlights: json.highlights,
+      primaryColor: branding?.primaryColor || null,
+      secondaryColor: branding?.secondaryColor || null,
+      primaryTextColor: getContrastingTextColor(
+        branding?.primaryColor || '#E61938',
+      ),
+      secondaryTextColor: getContrastingTextColor(
+        branding?.secondaryColor || '#0A5DD7',
+      ),
+      logo: branding.logo || '',
+      cta: json.cta,
+      ctaText: json?.ctaText || 'Access Full Report',
+      ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '#',
+    });
+    return await this.generateAndSavePDF(content, fileName);
+  }
+
+  async editPagerContent({
+    id,
+    userId,
+    content,
+    topicIndex,
+  }: {
+    id: string;
+    userId: string;
+    topicIndex: number;
+    content: TopicJSON;
+  }) {
+    const checkPagerPage = await this.pagerPageRepository.findOne({
+      where: {
+        id,
+        pager: {
+          userId,
+        },
+      },
+    });
+
+    const checkPager = await this.pagerRepository.findOne({
+      where: {
+        id: checkPagerPage.pagerId,
+        userId,
+      },
+    });
+
+    if (!checkPager) {
+      throw new NotFoundException('No Pager Found!');
+    }
+
+    if (!checkPagerPage) {
+      throw new NotFoundException('No Page Found!');
+    }
+
+    // Generating New PDF Out of the Changed Content!
+    await this.generateContent({
+      json: content,
+      branding: checkPager.branding,
+      fileName: checkPagerPage.link,
+    });
+
+    // Updating Topic Content
+    await this.pagerRepository.update(
+      {
+        id: checkPager.id,
+      },
+      {
+        topics: checkPager.topics.map((item, index) =>
+          index === topicIndex ? { ...item, json: content } : item,
+        ),
+      },
+    );
+
+    // Updating Name
+    await this.pagerPageRepository.update(
+      {
+        id: checkPagerPage.id,
+      },
+      {
+        name: content.title,
+      },
+    );
+
+    return checkPagerPage;
+    //
   }
 
   private async fetchAllChunks(pagerId: string): Promise<PagerChunks[]> {
