@@ -16,6 +16,9 @@ import {
   detectTopicClusterSystemPrompt,
   generateEnhancementSectionSystemPrompt,
   generateOnePagerSystemPrompt,
+  PagerDefaultLogo,
+  PagerDefaultPrimaryColor,
+  PagerDefaultSecondaryColor,
 } from './constants';
 import { PagerPage } from './entities/pager-page.entity';
 import path, { join } from 'path';
@@ -614,15 +617,15 @@ export class OnePagerService {
       quote: json.quote,
       solution: json.solution,
       highlights: json.highlights,
-      primaryColor: branding?.primaryColor || null,
-      secondaryColor: branding?.secondaryColor || null,
+      primaryColor: branding?.primaryColor || PagerDefaultPrimaryColor,
+      secondaryColor: branding?.secondaryColor || PagerDefaultSecondaryColor,
       primaryTextColor: getContrastingTextColor(
-        branding?.primaryColor || '#E61938',
+        branding?.primaryColor || PagerDefaultPrimaryColor,
       ),
       secondaryTextColor: getContrastingTextColor(
-        branding?.secondaryColor || '#0A5DD7',
+        branding?.secondaryColor || PagerDefaultSecondaryColor,
       ),
-      logo: branding.logo || '',
+      logo: branding?.logo || PagerDefaultLogo,
       cta: json.cta,
       ctaText: json?.ctaText || 'Access Full Report',
       ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '#',

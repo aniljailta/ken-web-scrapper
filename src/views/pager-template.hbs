@@ -17,14 +17,14 @@
         --primary:
         {{primaryColor}};
       {{else}}
-        --primary: #E61938;
+        --primary: #4976FF;
       {{/if}}
 
       {{#if secondaryColor}}
         --secondary:
         {{secondaryColor}};
       {{else}}
-        --secondary: #0A5DD7;
+        --secondary: #22559F;
       {{/if}}
       } .primary_bg { background-color: var(--primary); } .primary_quote {
       color: var(--primary); } .primary_text { color:
@@ -63,7 +63,7 @@
         </p>
         <!-- CTA Button -->
         <a
-          class='primary_bg rounded-[36px] primary_text py-1.5 px-4'
+          class='primary_bg rounded-[36px] primary_text w-auto h-auto py-1 px-4 flex items-center justify-center'
           role='link'
           target='_blank'
           href='{{ctaLink}}'
@@ -83,7 +83,7 @@
             class='font-[Inter] text-base text-black leading-5 font-light'
           >The Problem</span>
           <div
-            class='p-5 rounded-sm flex items-center justify-center border border-[#808080]'
+            class='p-5 rounded flex items-start justify-center min-h-full border border-[#808080]'
           >
             <p class='text-left text-xs font-light leading-[18px] font-[Inter]'>
               {{problem}}
@@ -99,7 +99,7 @@
             class='font-[Inter] text-base text-black leading-5 font-light'
           >The Solution</span>
           <div
-            class='p-5 rounded-sm flex items-center justify-center border border-[#808080]'
+            class='p-5 rounded flex items-start justify-center min-h-full border border-[#808080]'
           >
             <p class='text-left text-xs font-light leading-[18px] font-[Inter]'>
               {{solution}}
@@ -115,16 +115,16 @@
         {{#each (limit highlights 3)}}
           <!-- Highlight Card -->
           <div
-            class='flex flex-col justify-center items-center h-[162px] flex-1 gap-2.5'
+            class='flex flex-col justify-start items-center h-[162px] flex-1 gap-2.5'
           >
             <!-- Count -->
             <div
-              class='rounded-full border secondary_border secondary_highlight font-[Inter] text-base font-light leading-tight w-6 h-6 text-center flex items-center justify-center'
+              class='rounded-full border border-[1px] secondary_border secondary_highlight font-[Inter] text-base font-light leading-tight w-6 h-6 text-center flex items-center justify-center'
             >
               {{inc @index}}
             </div>
             <!-- Description -->
-            <p class='font-[Inter] text-xs font-light text-center'>
+            <p class='font-[Inter] text-xs font-normal text-center'>
               {{this}}
             </p>
           </div>
@@ -134,12 +134,12 @@
         class='px-10 py-6 secondary_bg flex flex-col items-center justify-center gap-5 fixed bottom-0 w-full'
       >
         <p
-          class='text-base font-light secondary_text font-[Inter] leading-tight text-center'
+          class='text-base font-normal secondary_text font-[Inter] leading-tight text-center'
         >
           {{cta}}
         </p>
         <a
-          class='primary_bg rounded-[36px] primary_text py-1.5 px-4'
+          class='primary_bg rounded-[36px] primary_text w-auto h-auto py-1 flex items-center justify-center px-4'
           role='link'
           target='_blank'
           href='{{ctaLink}}'

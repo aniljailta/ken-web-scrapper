@@ -58,3 +58,8 @@ Original Value: ${initialValue}
 Your task: Rewrite the given text into a better version while keeping its meaning intact but elevating its tone and appeal.
 
   `;
+
+export const PagerDefaultPrimaryColor = '#4976FF';
+export const PagerDefaultSecondaryColor = '#22559F';
+export const PagerDefaultLogo =
+  'https://greatmigration.io/pagers/brand/multi-pages-logo.png';
