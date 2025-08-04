@@ -14,9 +14,9 @@ import {
 } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 import { LifetimeRequestGuard } from 'src/guards/lifetime-request.guard';
-import { AuthGuard } from '@nestjs/passport';
 import { Conversation } from './entities/conversation.entity';
 import { Message } from './entities/message.entity';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('conversation')
 export class ConversationController {
@@ -80,7 +80,7 @@ export class ConversationController {
   }
 
   @Get('messages')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async getConversationMessage(
     @Req() req,
     @Query('conversationId') conversationId: string,
@@ -104,7 +104,7 @@ export class ConversationController {
   }
 
   @Get('all-chat')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async getAllConversationChat(@Req() req): Promise<Conversation[]> {
     const userId = req.user?.id;
 
@@ -124,7 +124,7 @@ export class ConversationController {
   }
 
   @Post('message/reaction')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async updateMessageReaction(
     @Body('messageId') messageId: string,
     @Body('reactionStatus') reactionStatus: boolean | null,
@@ -155,7 +155,7 @@ export class ConversationController {
   }
 
   @Post('flag/message/:id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async markMessageAsFlagged(
     @Param('id') messageId: string,
   ): Promise<{ message: string }> {
@@ -169,7 +169,7 @@ export class ConversationController {
   }
 
   @Get('flag/messages')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async fetchAllFlagMessages(): Promise<{ message: string; data: Message[] }> {
     const data = await this.conversationService.fetchFlaggedMessages();
 
@@ -177,7 +177,7 @@ export class ConversationController {
   }
 
   @Delete('chat/:id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async deleteConversationChat(
     @Param('id') chatId: string,
   ): Promise<{ message: string }> {
@@ -191,7 +191,7 @@ export class ConversationController {
   }
 
   @Get('chat/:id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async getConversationById(
     @Param('id') chatId: string,
     @Req() req,
@@ -206,7 +206,7 @@ export class ConversationController {
   }
 
   @Delete('all-chats')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async deleteAllUserChats(@Req() req): Promise<{ message: string }> {
     const userId = req.user.id;
     if (!userId) {

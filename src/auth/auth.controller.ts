@@ -11,10 +11,10 @@ import {
 import { AuthService } from './auth.service';
 import { LoginDTO } from './dto/login.dto';
 import { RegisterDTO } from './dto/register.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { GoogleOauthGuard } from 'src/guards/google-oauth.guard';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -51,7 +51,7 @@ export class AuthController {
   }
 
   @Get('refresh-token')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async refreshToken(@Req() req: any) {
     return this.authService.refreshToken(req?.user || null);
   }

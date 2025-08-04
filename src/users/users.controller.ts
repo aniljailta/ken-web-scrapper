@@ -11,15 +11,15 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
-import { AuthGuard } from '@nestjs/passport';
 import { UserValues } from './entities/values.entity';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('admin-reports')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async getAdminReports(
     @Req() req,
     @Query('sortBy') sortBy?: string,
@@ -35,7 +35,7 @@ export class UsersController {
   }
 
   @Get('conversation-by-user-id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async getAdminReportsByUserId(@Req() req, @Query('userId') userId: string) {
     const user = req.user;
     if (user.role === 'admin') {
@@ -47,7 +47,7 @@ export class UsersController {
   }
 
   @Get('conversation-by-product-name')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async getConversationByProductName(
     @Req() req,
     @Query('productName') productName: string,
@@ -107,7 +107,7 @@ export class UsersController {
   }
 
   @Post('user-values')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async createUserValue(
     @Body('name') name: string,
     @Body('text') text: string,
@@ -116,7 +116,7 @@ export class UsersController {
   }
 
   @Post('user-values-by-name')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async getUserValuesByName(
     @Req() req,
     @Body('name') name: string,
@@ -129,7 +129,7 @@ export class UsersController {
   }
 
   @Post('update-user-value')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async updateUserValue(
     @Req() req,
     @Body('name') name: string,

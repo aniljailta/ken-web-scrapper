@@ -59,7 +59,7 @@ export class OnePagerService {
     });
   }
 
-  async upload(file: Express.Multer.File, userId: string) {
+  async upload(file: Express.Multer.File, userId?: string) {
     if (!file || file.mimetype !== 'application/pdf') {
       throw new Error('Invalid file format. Only PDF is supported.');
     }
@@ -110,7 +110,6 @@ export class OnePagerService {
     const checkPager = await this.pagerRepository.findOne({
       where: {
         id: pagerId,
-        userId,
       },
     });
     if (!checkPager) {
@@ -258,7 +257,6 @@ export class OnePagerService {
     const checkRecord = await this.pagerRepository.findOne({
       where: {
         id: pagerId,
-        userId,
       },
       relations: ['pagerPage'],
       order: {
@@ -288,11 +286,17 @@ export class OnePagerService {
     return chunks;
   }
 
-  private async createPagerRecord(fileName: string, userId: string) {
-    return await this.pagerRepository.save({
-      userId,
-      name: fileName,
-    });
+  private async createPagerRecord(fileName: string, userId?: string) {
+    return await this.pagerRepository.save(
+      userId
+        ? {
+            userId,
+            name: fileName,
+          }
+        : {
+            name: fileName,
+          },
+    );
   }
 
   private async updatePagerStatus(pagerId: string, status: PagerStatus) {
@@ -453,7 +457,6 @@ export class OnePagerService {
       const checkRecord = await this.pagerRepository.findOne({
         where: {
           id: pagerId,
-          userId,
         },
         relations: ['pagerPage'],
       });
@@ -528,7 +531,6 @@ export class OnePagerService {
       const updatedPager = await this.pagerRepository.findOne({
         where: {
           id: pagerId,
-          userId,
         },
         relations: ['pagerPage'],
       });
@@ -639,16 +641,12 @@ export class OnePagerService {
     const checkPagerPage = await this.pagerPageRepository.findOne({
       where: {
         id,
-        pager: {
-          userId,
-        },
       },
     });
 
     const checkPager = await this.pagerRepository.findOne({
       where: {
         id: checkPagerPage.pagerId,
-        userId,
       },
     });
 

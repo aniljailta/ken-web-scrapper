@@ -6,21 +6,23 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { OnePagerService } from './one-pager.service';
 import archiver from 'archiver';
 import { UpdateSystemPromptDTO } from './dto/update-system-prompt.dto';
 import { S3Service } from 'src/s3/s3.service';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { Public } from 'src/guards/public.decorator';
 
 @Controller('one-pager')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard)
 export class OnePagerController {
   constructor(
     private readonly onePagerService: OnePagerService,
@@ -43,6 +45,7 @@ export class OnePagerController {
   }
 
   @Get('download-zip/:id')
+  @Public()
   async downloadZip(@Req() req, @Param('id') id: string, @Res() res) {
     const archive = archiver('zip', {
       zlib: { level: 9 },
@@ -66,6 +69,7 @@ export class OnePagerController {
   }
 
   @Post('brand-upload')
+  @Public()
   @UseInterceptors(FileInterceptor('file'))
   async uploadBrandFile(@UploadedFile() file: Express.Multer.File) {
     const response = await this.s3Service.uploadFile(file, 'brands');
@@ -73,12 +77,17 @@ export class OnePagerController {
   }
 
   @Post('upload')
+  @Public()
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req) {
-    return this.onePagerService.upload(file, req.user.id);
+  uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('userId') userId: string,
+  ) {
+    return this.onePagerService.upload(file, userId);
   }
 
   @Post('process')
+  @Public()
   processPdfChunk(
     @Body('id') id: string,
     @Body('branding') branding: any,
@@ -87,7 +96,7 @@ export class OnePagerController {
     return this.onePagerService.generateAllOnePagers({
       pagerId: id,
       branding,
-      userId: req.user.id,
+      userId: req?.user?.id,
     });
   }
 
@@ -102,7 +111,8 @@ export class OnePagerController {
   }
 
   @Get(':id')
+  @Public()
   getSinglePager(@Param('id') id: string, @Req() req) {
-    return this.onePagerService.findOne(id, req.user.id);
+    return this.onePagerService.findOne(id, req?.user?.id);
   }
 }
