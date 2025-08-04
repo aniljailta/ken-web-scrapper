@@ -35,6 +35,7 @@ import {
   sanitizePdfText,
 } from './helper';
 import { S3Service } from 'src/s3/s3.service';
+import { User } from 'src/users/entities/user.entity';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -45,6 +46,8 @@ export class OnePagerService {
   constructor(
     @InjectRepository(Pager)
     private pagerRepository: Repository<Pager>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     @InjectRepository(SystemPrompts)
     private systemPromptsRepository: Repository<SystemPrompts>,
     @InjectRepository(PagerChunks)
@@ -69,9 +72,21 @@ export class OnePagerService {
       const pdfText = data.text;
       const fullText = sanitizePdfText(pdfText);
       const fileName = file.originalname;
+      let checkUser: User = null;
+
+      if (userId) {
+        checkUser = await this.userRepository.findOne({
+          where: {
+            id: userId,
+          },
+        });
+      }
 
       // Creating Pager Record
-      const pager = await this.createPagerRecord(fileName, userId);
+      const pager = await this.createPagerRecord(
+        fileName,
+        checkUser ? checkUser.id : undefined,
+      );
 
       pagerId = pager.id;
 
