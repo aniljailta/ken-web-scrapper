@@ -62,4 +62,4 @@ Your task: Rewrite the given text into a better version while keeping its meanin
 export const PagerDefaultPrimaryColor = '#4976FF';
 export const PagerDefaultSecondaryColor = '#22559F';
 export const PagerDefaultLogo =
-  'https://greatmigration.io/pagers/brand/multi-pages-logo.png';
+  'https://one-pager-base-bucket.s3.eu-north-1.amazonaws.com/brands/1754286534979-multi-pages-logo.svg';

@@ -213,7 +213,7 @@ export class OnePagerService {
 
     return {
       data: null,
-      message: 'Pager Deleted',
+      message: 'Pager Page Deleted',
     };
   }
 
