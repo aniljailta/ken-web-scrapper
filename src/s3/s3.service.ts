@@ -1,0 +1,67 @@
+import { Injectable } from '@nestjs/common';
+
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { ConfigService } from '@nestjs/config';
+import { Upload } from '@aws-sdk/lib-storage';
+import { folderTypes } from 'src/one-pager/type';
+
+@Injectable()
+export class S3Service {
+  private s3: S3Client;
+  private bucket = '';
+
+  constructor(private readonly configService: ConfigService) {
+    this.s3 = new S3Client({
+      region: this.configService.getOrThrow('AWS_REGION'),
+      credentials: {
+        accessKeyId: this.configService.getOrThrow('AWS_ACCESS_KEY_ID'),
+        secretAccessKey: this.configService.getOrThrow('AWS_SECRET_ACCESS_KEY'),
+      },
+    });
+    this.bucket = this.configService.getOrThrow('AWS_S3_BUCKET');
+  }
+
+  async uploadFile(file: Express.Multer.File, folder: folderTypes = 'uploads') {
+    const key = `${folder}/${Date.now()}-${file.originalname}`;
+
+    const upload = new Upload({
+      client: this.s3,
+      params: {
+        Bucket: this.configService.getOrThrow('AWS_S3_BUCKET'),
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      },
+    });
+
+    await upload.done();
+
+    return `https://${this.configService.getOrThrow('AWS_S3_BUCKET')}.s3.${this.configService.getOrThrow('AWS_REGION')}.amazonaws.com/${key}`;
+  }
+
+  async uploadPdfBuffer(buffer: Buffer, key: string) {
+    const upload = new Upload({
+      client: this.s3,
+      params: {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: key,
+        Body: buffer,
+        ContentType: 'application/pdf',
+      },
+    });
+
+    await upload.done();
+
+    return `https://${this.configService.getOrThrow('AWS_S3_BUCKET')}.s3.${this.configService.getOrThrow('AWS_REGION')}.amazonaws.com/${key}`;
+  }
+
+  async getSignedUrl(key: string) {
+    const command = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+    });
+
+    return await getSignedUrl(this.s3, command, { expiresIn: 3600 }); // 1 hour
+  }
+}

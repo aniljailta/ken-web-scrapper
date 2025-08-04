@@ -33,6 +33,7 @@ import {
   getContrastingTextColor,
   sanitizePdfText,
 } from './helper';
+import { S3Service } from 'src/s3/s3.service';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -50,6 +51,7 @@ export class OnePagerService {
     @InjectRepository(PagerPage)
     private pagerPageRepository: Repository<PagerPage>,
     private readonly config: ConfigService,
+    private readonly s3Service: S3Service,
   ) {
     this.openai = new OpenAI({
       apiKey: this.config.get<string>('OPENAI_API_KEY'),
@@ -735,12 +737,23 @@ export class OnePagerService {
 
     await browser.close();
 
-    // 📝 Save PDF to file
-    const outputPath = path.join(__dirname, '../../public/pagers', fileName);
-    fs.mkdirSync(path.dirname(outputPath), { recursive: true }); // ensure folder exists
-    fs.writeFileSync(outputPath, pdfBuffer);
+    const link = await this.s3Service.uploadPdfBuffer(
+      // @ts-ignore
+      pdfBuffer,
+      `pagers/${fileName}`,
+    );
 
-    return fileName;
+    // Updating Links
+    await this.pagerPageRepository.update(
+      {
+        link: fileName,
+      },
+      {
+        link,
+      },
+    );
+
+    return link;
   }
 
   async enhanceTextSection({

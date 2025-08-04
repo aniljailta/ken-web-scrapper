@@ -17,13 +17,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { OnePagerService } from './one-pager.service';
 import archiver from 'archiver';
 import { UpdateSystemPromptDTO } from './dto/update-system-prompt.dto';
-import { extname } from 'path';
-import { diskStorage } from 'multer';
+import { S3Service } from 'src/s3/s3.service';
 
 @Controller('one-pager')
 @UseGuards(AuthGuard('jwt'))
 export class OnePagerController {
-  constructor(private readonly onePagerService: OnePagerService) {}
+  constructor(
+    private readonly onePagerService: OnePagerService,
+    private readonly s3Service: S3Service,
+  ) {}
 
   @Get('get-all')
   getAllPagers(@Req() req) {
@@ -62,21 +64,10 @@ export class OnePagerController {
   }
 
   @Post('brand-upload')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: 'public/pagers/brand',
-        filename: (req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-        },
-      }),
-    }),
-  )
-  uploadBrandFile(@UploadedFile() file: Express.Multer.File) {
-    return { filename: file.filename, path: file.path };
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadBrandFile(@UploadedFile() file: Express.Multer.File) {
+    const response = await this.s3Service.uploadFile(file, 'brands');
+    return { link: response };
   }
 
   @Post('upload')

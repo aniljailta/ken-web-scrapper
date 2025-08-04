@@ -7,12 +7,13 @@ import { PagerChunks } from './entities/pager-chunks.entity';
 import { PagerPage } from './entities/pager-page.entity';
 import { SystemPrompts } from './entities/system-prompts.entity';
 import { SocketGateway } from 'src/gateways/socket.gateway';
+import { S3Service } from 'src/s3/s3.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Pager, PagerChunks, PagerPage, SystemPrompts]),
   ],
   controllers: [OnePagerController],
-  providers: [OnePagerService, SocketGateway],
+  providers: [OnePagerService, SocketGateway, S3Service],
 })
 export class OnePagerModule {}

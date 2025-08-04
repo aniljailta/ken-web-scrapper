@@ -13,6 +13,7 @@ import { RequestTracker } from './request-tracker/entities/request_tracker.entit
 import { LifetimeRequestGuard } from './guards/lifetime-request.guard';
 import { MixpanelModule } from './mixpanel/mixpanel.module';
 import { OnePagerModule } from './one-pager/one-pager.module';
+import { S3Service } from './s3/s3.service';
 
 @Module({
   imports: [
@@ -43,6 +44,11 @@ import { OnePagerModule } from './one-pager/one-pager.module';
     OnePagerModule,
   ],
   controllers: [AppController],
-  providers: [AppService, RequestTrackerService, LifetimeRequestGuard],
+  providers: [
+    AppService,
+    RequestTrackerService,
+    LifetimeRequestGuard,
+    S3Service,
+  ],
 })
 export class AppModule {}

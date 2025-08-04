@@ -28,3 +28,5 @@ export interface TopicJSON {
   ctaText: string;
   ctaLink: string;
 }
+
+export type folderTypes = 'uploads' | 'brands' | 'pagers';
