@@ -63,3 +63,15 @@ export function ensureHttps(url: string) {
   // Otherwise prepend https://
   return `https://${trimmed}`;
 }
+
+export function extractS3KeyFromUrl(url: string): string {
+  try {
+    const parsedUrl = new URL(url);
+    // Remove leading slash
+    return parsedUrl.pathname.startsWith('/')
+      ? parsedUrl.pathname.slice(1)
+      : parsedUrl.pathname;
+  } catch {
+    throw new Error(`Invalid S3 URL: ${url}`);
+  }
+}

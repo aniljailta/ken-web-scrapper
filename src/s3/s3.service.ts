@@ -44,7 +44,7 @@ export class S3Service {
     const upload = new Upload({
       client: this.s3,
       params: {
-        Bucket: process.env.AWS_S3_BUCKET,
+        Bucket: this.configService.getOrThrow('AWS_S3_BUCKET'),
         Key: key,
         Body: buffer,
         ContentType: 'application/pdf',
@@ -63,5 +63,15 @@ export class S3Service {
     });
 
     return await getSignedUrl(this.s3, command, { expiresIn: 3600 }); // 1 hour
+  }
+
+  async getFileStream(key: string) {
+    const command = new GetObjectCommand({
+      Bucket: this.configService.getOrThrow('AWS_S3_BUCKET'),
+      Key: key,
+    });
+
+    const response = await this.s3.send(command);
+    return response.Body as NodeJS.ReadableStream; // stream of the file
   }
 }

@@ -21,7 +21,7 @@ import {
   PagerDefaultSecondaryColor,
 } from './constants';
 import { PagerPage } from './entities/pager-page.entity';
-import path, { join } from 'path';
+import { join } from 'path';
 import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 
@@ -30,6 +30,7 @@ import { SystemPrompts } from './entities/system-prompts.entity';
 import { UpdateSystemPromptDTO } from './dto/update-system-prompt.dto';
 import {
   ensureHttps,
+  extractS3KeyFromUrl,
   getContrastingTextColor,
   sanitizePdfText,
 } from './helper';
@@ -105,35 +106,24 @@ export class OnePagerService {
     }
   }
 
-  private async getPdfPaths(
-    userId: string,
-    pagerId: string,
-  ): Promise<string[]> {
-    const checkRecord = await this.pagerRepository.findOne({
+  async getPdfStreams(userId: string, pagerId: string): Promise<string[]> {
+    const checkPager = await this.pagerRepository.findOne({
       where: {
         id: pagerId,
         userId,
       },
-      relations: ['pagerPage'],
     });
-    if (!checkRecord) {
-      throw new NotFoundException('No Pager Found');
+    if (!checkPager) {
+      throw new NotFoundException('No Pager Found!');
     }
-    // Example static paths, you can fetch from DB or generate dynamically
-    return checkRecord.pagerPage.map(({ link }) =>
-      path.join(__dirname, '../../public/pagers', link),
-    );
-  }
 
-  async getPdfStreams(
-    userId: string,
-    pagerId: string,
-  ): Promise<{ filename: string; stream: fs.ReadStream }[]> {
-    const filePaths = await this.getPdfPaths(userId, pagerId);
-    return filePaths.map((filePath) => ({
-      filename: path.basename(filePath),
-      stream: fs.createReadStream(filePath),
-    }));
+    const pages = await this.pagerPageRepository.find({
+      where: {
+        pagerId: checkPager.id,
+      },
+    });
+
+    return pages.map(({ link }) => extractS3KeyFromUrl(link));
   }
 
   async findAll(userId: string) {
