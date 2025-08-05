@@ -141,19 +141,15 @@ export class OnePagerService {
   }
 
   async findAll(userId: string) {
-    const allUserPagers = await this.pagerRepository.find({
-      where: {
-        userId,
-        status: PagerStatus.PROCESSED,
-      },
-      relations: ['pagerPage'],
-      order: {
-        created_date: 'DESC',
-        pagerPage: {
-          index: 'DESC',
-        },
-      },
-    });
+    const allUserPagers = await this.pagerRepository
+      .createQueryBuilder('pager')
+      .innerJoinAndSelect('pager.pagerPage', 'pagerPage') // INNER JOIN ensures relation exists
+      .where('pager.userId = :userId', { userId })
+      .andWhere('pager.status = :status', { status: PagerStatus.PROCESSED })
+      .orderBy('pager.created_date', 'DESC')
+      .addOrderBy('pagerPage.index', 'DESC')
+      .getMany();
+
     return {
       data: allUserPagers,
       message: '',
@@ -283,6 +279,11 @@ export class OnePagerService {
     if (!checkRecord) {
       throw new NotFoundException('No Pager Found');
     }
+
+    if (checkRecord.pagerPage.length < 1) {
+      throw new NotFoundException('No Pager Found');
+    }
+
     return {
       data: checkRecord,
       message: '',
