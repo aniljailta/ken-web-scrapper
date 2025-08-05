@@ -58,11 +58,13 @@ export class OnePagerController {
 
     archive.pipe(res);
 
-    const keys = await this.onePagerService.getPdfStreams(req.user.id, id);
+    const keys = await this.onePagerService.getPdfStreams(id);
+
     for (const key of keys) {
-      const stream = await this.s3Service.getFileStream(key);
+      const stream = await this.s3Service.getFileStream(key.link);
+
       // @ts-ignore
-      archive.append(stream, { name: key });
+      archive.append(stream, { name: `${key.fileName}.pdf` });
     }
 
     await archive.finalize();

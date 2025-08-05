@@ -121,7 +121,9 @@ export class OnePagerService {
     }
   }
 
-  async getPdfStreams(userId: string, pagerId: string): Promise<string[]> {
+  async getPdfStreams(
+    pagerId: string,
+  ): Promise<{ link: string; fileName: string }[]> {
     const checkPager = await this.pagerRepository.findOne({
       where: {
         id: pagerId,
@@ -137,7 +139,10 @@ export class OnePagerService {
       },
     });
 
-    return pages.map(({ link }) => extractS3KeyFromUrl(link));
+    return pages.map(({ link, name }) => ({
+      fileName: name,
+      link: extractS3KeyFromUrl(link),
+    }));
   }
 
   async findAll(userId: string) {
@@ -418,7 +423,7 @@ export class OnePagerService {
         .filter(Boolean);
 
       if (chunkTexts.join(' ').length < 200) continue;
-
+      // Below Method is the Second GPT call where the Actual JSON is being generated!
       const onePager = await this.generateOnePager(
         slug,
         chunkTexts,
