@@ -285,10 +285,6 @@ export class OnePagerService {
       throw new NotFoundException('No Pager Found');
     }
 
-    if (checkRecord.pagerPage.length < 1) {
-      throw new NotFoundException('No Pager Found');
-    }
-
     return {
       data: checkRecord,
       message: '',
@@ -359,6 +355,7 @@ export class OnePagerService {
         content: string;
         rank_index: number;
         source_type: string;
+        title: string;
         tags: string[];
       }>
     > = {};
@@ -371,6 +368,7 @@ export class OnePagerService {
           mergedClusters[slug].push({
             content: item,
             rank_index: content.rank_index,
+            title: content.title,
             source_type: content.source_type,
             tags: content.tags,
           });
@@ -397,20 +395,17 @@ export class OnePagerService {
 
   private async fetchClusterAndTopic({
     pagerId,
-    topicClusterPrompt,
+    topicClusters,
     pagerJsonPrompt,
   }: {
     topicClusterPrompt: string;
+    topicClusters: any;
     pagerJsonPrompt: string;
     pagerId: string;
   }): Promise<{ topicCluster: any; topics: any }> {
     //
     this.logger.debug('Generating Topic Cluster & Topics out of the Content');
     const allChunks = await this.fetchAllChunks(pagerId); // implement or inject
-    const topicClusters = await this.detectAllTopicClusters(
-      allChunks,
-      topicClusterPrompt,
-    );
 
     const chunkById = Object.fromEntries(
       allChunks.map((c) => [c.id, c.content]),
@@ -419,6 +414,7 @@ export class OnePagerService {
 
     for (const [slug, chunkIds] of Object.entries(topicClusters)) {
       const chunkTexts = chunkIds
+        // @ts-ignore
         .map(({ content: id }) => chunkById[id] || '')
         .filter(Boolean);
 
@@ -490,13 +486,14 @@ export class OnePagerService {
 
       await this.updatePagerStatus(pagerId, PagerStatus.PROCESSING);
 
-      if (this.isEmptyArray(topics) && this.isEmptyObject(topicClusters)) {
+      if (this.isEmptyArray(topics)) {
         // Using the Test prompts if provided
         if (topicClusterPrompt && pagerJsonPrompt) {
           const clusterAndTopic = await this.fetchClusterAndTopic({
             pagerId,
             topicClusterPrompt: topicClusterPrompt,
             pagerJsonPrompt: pagerJsonPrompt,
+            topicClusters,
           });
 
           topics = clusterAndTopic.topics;
@@ -513,6 +510,7 @@ export class OnePagerService {
             pagerId,
             topicClusterPrompt: systemPrompts.topicClusterPrompt,
             pagerJsonPrompt: systemPrompts.pagerJsonPrompt,
+            topicClusters,
           });
 
           topics = clusterAndTopic.topics;
@@ -523,7 +521,6 @@ export class OnePagerService {
         await this.pagerRepository.update(
           { id: pagerId },
           {
-            topicCluster: topicClusters,
             topics,
           },
         );
@@ -791,6 +788,110 @@ export class OnePagerService {
     } catch (error) {
       this.logger.error('Failed To Generate Enhancement!', error);
       return '';
+    }
+  }
+  async triggerTopicGeneration(pagerId: string) {
+    try {
+      this.logger.debug('Generating Topics List');
+      const checkRecord = await this.pagerRepository.findOne({
+        where: {
+          id: pagerId,
+        },
+        relations: ['pagerPage'],
+      });
+      if (!checkRecord) {
+        throw new NotFoundException('No Pager Found');
+      }
+
+      let topics = checkRecord.topics;
+
+      if (this.isEmptyArray(topics)) {
+        const systemPrompts = await this.systemPromptsRepository.findOne({
+          where: {},
+        });
+        if (!systemPrompts) {
+          throw new NotFoundException('No System Prompts were Found!');
+        }
+        const allChunks = await this.fetchAllChunks(pagerId); // implement or inject
+        const topicClusters = await this.detectAllTopicClusters(
+          allChunks,
+          systemPrompts.topicClusterPrompt,
+        );
+        topics = topicClusters;
+      }
+
+      return {
+        data: {
+          id: pagerId,
+          topicData: Object.keys(topics).map((item) => ({
+            title: topics[item][0].title,
+            topic_slug: item,
+          })),
+          topics,
+        },
+      };
+    } catch (error) {
+      this.logger.error('Failed To Generate Enhancement!', error);
+
+      return {
+        data: {
+          id: pagerId,
+          topicData: [],
+          topics: {},
+        },
+        error: error,
+      };
+    }
+  }
+
+  async updatePagerTopics(
+    pagerId: string,
+    allowedSlugs: string[],
+    topicClusters: any,
+  ) {
+    try {
+      this.logger.debug('Updating Pager Topics');
+      const checkRecord = await this.pagerRepository.findOne({
+        where: {
+          id: pagerId,
+        },
+        relations: ['pagerPage'],
+      });
+      if (!checkRecord) {
+        throw new NotFoundException('No Pager Found');
+      }
+
+      const updatedTopicContent = Object.keys(topicClusters)
+        .filter((key) => allowedSlugs.includes(key))
+        .reduce((acc, key) => {
+          acc[key] = topicClusters[key];
+          return acc;
+        }, {});
+
+      // Updating Topics & Keep only the User Requires
+      await this.pagerRepository.update(
+        {
+          id: pagerId,
+        },
+        {
+          topicCluster: updatedTopicContent,
+        },
+      );
+
+      return {
+        data: {
+          id: pagerId,
+        },
+      };
+    } catch (error) {
+      this.logger.error('Failed To Save Topics Content!', error);
+
+      return {
+        data: {
+          id: pagerId,
+        },
+        error: error,
+      };
     }
   }
 }

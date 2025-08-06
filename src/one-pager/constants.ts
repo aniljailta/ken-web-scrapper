@@ -10,6 +10,7 @@ example JSON Output:
 {
   "content_generation": {
     "rank_index": 1,
+    "title": "Firewall Configuration Best Practices",
     "chunk_ids": [
       "9b2fb8ad-8ca5-401b-8547-731539d27774",
       "0607aa88-ed76-4549-b53f-ffa93a3ee825"
@@ -17,6 +18,7 @@ example JSON Output:
   },
   "chatbot_development": {
     "rank_index": 2,
+    "title":"Multi-Factor Authentication Gaps",
     "chunk_ids": [
       "9b2fb8ad-8ca5-401b-8547-731539d27774",
       "0607aa88-ed76-4549-b53f-ffa93a3ee825"
@@ -25,6 +27,7 @@ example JSON Output:
 }
 
 - rank_index: A numerical value used to determine the order in which the chunk should be displayed on the front-end.
+- title: A clean, human-friendly title derived from the topic_slug, formatted for readability and suitable for display on the front-end UI.
 
 This structure is used to group content by topic and define the display order of chunks within each topic.
 

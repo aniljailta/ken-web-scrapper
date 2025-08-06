@@ -12,6 +12,7 @@ export type TopicContentMap = {
     rank_index: number;
     chunk_ids: string[];
     source_type: string;
+    title: string;
     tags: string[];
   };
 };

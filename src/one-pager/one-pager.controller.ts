@@ -20,6 +20,7 @@ import { UpdateSystemPromptDTO } from './dto/update-system-prompt.dto';
 import { S3Service } from 'src/s3/s3.service';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { Public } from 'src/guards/public.decorator';
+import { UpdatePagerTopicsDTO } from './dto/update-pager-topics.dto';
 
 @Controller('one-pager')
 @UseGuards(JwtAuthGuard)
@@ -100,6 +101,18 @@ export class OnePagerController {
       branding,
       userId: req?.user?.id,
     });
+  }
+
+  @Put('update-pager-topics/:id')
+  updatePagerTopics(
+    @Body() payload: UpdatePagerTopicsDTO,
+    @Param('id') id: string,
+  ) {
+    return this.onePagerService.updatePagerTopics(
+      id,
+      payload.topics,
+      payload.topicCluster,
+    );
   }
 
   @Delete('pager-page/:id')

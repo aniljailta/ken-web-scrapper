@@ -187,4 +187,37 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       };
     }
   }
+  @SubscribeMessage('one-pager/trigger-topic-generation')
+  async triggerTopicGeneration(
+    client: Socket,
+    {
+      id,
+      userId,
+    }: {
+      id: string;
+      userId: string;
+    },
+  ) {
+    const socketID = this.connectedClients.get(userId);
+    const socket = this.server.sockets.sockets.get(socketID);
+
+    try {
+      const { data: response } =
+        await this.onePagerService.triggerTopicGeneration(id);
+
+      this.logger.debug('Triggering Topic Generation');
+
+      socket.emit('one-pager/topic-generated', {
+        data: response,
+        from: 'topic_generation',
+      });
+    } catch (error) {
+      this.logger.error('❌ Error processing one pager:', error);
+
+      socket.emit('one-pager/processed', {
+        data: null,
+        error: error.message,
+      });
+    }
+  }
 }
