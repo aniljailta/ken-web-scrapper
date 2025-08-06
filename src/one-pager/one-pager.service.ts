@@ -805,7 +805,7 @@ export class OnePagerService {
 
       let topics = checkRecord.topicCluster;
 
-      if (this.isEmptyArray(topics)) {
+      if (this.isEmptyObject(topics)) {
         const systemPrompts = await this.systemPromptsRepository.findOne({
           where: {},
         });
