@@ -803,7 +803,7 @@ export class OnePagerService {
         throw new NotFoundException('No Pager Found');
       }
 
-      let topics = checkRecord.topics;
+      let topics = checkRecord.topicCluster;
 
       if (this.isEmptyArray(topics)) {
         const systemPrompts = await this.systemPromptsRepository.findOne({

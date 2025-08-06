@@ -104,6 +104,7 @@ export class OnePagerController {
   }
 
   @Put('update-pager-topics/:id')
+  @Public()
   updatePagerTopics(
     @Body() payload: UpdatePagerTopicsDTO,
     @Param('id') id: string,
