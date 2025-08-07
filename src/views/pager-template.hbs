@@ -59,7 +59,7 @@
         <p
           class='text-center text-xs font-light font-[Inter] leading-[18px] max-w-[440px]'
         >
-          {{subTitle}}
+          {{stripPTags subTitle}}
         </p>
         <!-- CTA Button -->
         <a
@@ -86,7 +86,7 @@
             class='p-5 rounded flex items-start justify-center min-h-full border border-[#808080]'
           >
             <p class='text-left text-xs font-light leading-[18px] font-[Inter]'>
-              {{problem}}
+              {{stripPTags problem}}
             </p>
           </div>
         </div>
@@ -102,7 +102,7 @@
             class='p-5 rounded flex items-start justify-center min-h-full border border-[#808080]'
           >
             <p class='text-left text-xs font-light leading-[18px] font-[Inter]'>
-              {{solution}}
+              {{stripPTags solution}}
             </p>
           </div>
         </div>
@@ -125,7 +125,7 @@
             </div>
             <!-- Description -->
             <p class='font-[Inter] text-xs font-normal text-center'>
-              {{this}}
+              {{stripPTags this}}
             </p>
           </div>
         {{/each}}

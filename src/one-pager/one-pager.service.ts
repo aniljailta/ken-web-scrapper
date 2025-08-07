@@ -36,6 +36,7 @@ import {
 } from './helper';
 import { S3Service } from 'src/s3/s3.service';
 import { User } from 'src/users/entities/user.entity';
+import showdown from 'showdown';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -264,6 +265,14 @@ export class OnePagerService {
     });
 
     hbs.registerHelper('eq', (a, b) => a === b);
+
+    hbs.registerHelper('stripPTags', function (htmlString) {
+      const trimmed = htmlString.trim();
+      if (trimmed.startsWith('<p>') && trimmed.endsWith('</p>')) {
+        return new hbs.SafeString(trimmed.slice(3, -4));
+      }
+      return new hbs.SafeString(htmlString);
+    });
 
     const compiled = hbs.compile(source);
     return compiled(context);
@@ -568,6 +577,13 @@ export class OnePagerService {
     }
   }
 
+  private parseMarkDown(text: string) {
+    //
+    const converter = new showdown.Converter();
+    const content = converter.makeHtml(text);
+    return content;
+  }
+
   private async generatePDF(pagerId: string) {
     this.logger.debug('Generating PDF');
     const pager = await this.pagerRepository.findOne({
@@ -624,11 +640,10 @@ export class OnePagerService {
   }) {
     const content = await this.renderTemplate('pager-template', {
       title: json.title,
-      subTitle: json.subtitle || '',
-      problem: json.problem,
-      quote: json.quote,
-      solution: json.solution,
-      highlights: json.highlights,
+      subTitle: this.parseMarkDown(json.subtitle || ''),
+      problem: this.parseMarkDown(json.problem),
+      solution: this.parseMarkDown(json.solution),
+      highlights: json.highlights.map((item) => this.parseMarkDown(item)),
       primaryColor: branding?.primaryColor || PagerDefaultPrimaryColor,
       secondaryColor: branding?.secondaryColor || PagerDefaultSecondaryColor,
       primaryTextColor: getContrastingTextColor(
