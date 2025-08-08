@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Pager } from './pager.entity';
+import { PageUserFeedBack } from '../type';
 
 @Entity('pager_page')
 export class PagerPage {
@@ -22,6 +23,9 @@ export class PagerPage {
 
   @Column({ type: 'int', nullable: true })
   index: number;
+
+  @Column({ type: 'enum', nullable: true, enum: PageUserFeedBack })
+  userResponse: PageUserFeedBack;
 
   @Column({ type: 'text', default: '' })
   source_type: string;

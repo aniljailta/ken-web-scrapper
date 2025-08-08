@@ -9,7 +9,12 @@ import { Pager } from './entities/pager.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PagerChunks } from './entities/pager-chunks.entity';
-import { PagerStatus, TopicContentMap, TopicJSON } from './type';
+import {
+  PagerStatus,
+  PageUserFeedBack,
+  TopicContentMap,
+  TopicJSON,
+} from './type';
 import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -908,5 +913,32 @@ export class OnePagerService {
         error: error,
       };
     }
+  }
+
+  async handlePageFeedback(pageId: string, response: PageUserFeedBack) {
+    //
+    const checkPagerPage = await this.pagerPageRepository.findOne({
+      where: {
+        id: pageId,
+      },
+    });
+    if (!checkPagerPage) {
+      throw new NotFoundException('No Page Found');
+    }
+
+    // Updating Feedback
+    await this.pagerPageRepository.update(
+      {
+        id: checkPagerPage.id,
+      },
+      {
+        userResponse: response,
+      },
+    );
+
+    return {
+      data: checkPagerPage,
+      message: 'Thanks for your Feedback!',
+    };
   }
 }

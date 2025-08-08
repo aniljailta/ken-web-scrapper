@@ -21,6 +21,7 @@ import { S3Service } from 'src/s3/s3.service';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { Public } from 'src/guards/public.decorator';
 import { UpdatePagerTopicsDTO } from './dto/update-pager-topics.dto';
+import { HandleUserFeedbackDTO } from './dto/handle-user-feedback.dto';
 
 @Controller('one-pager')
 @UseGuards(JwtAuthGuard)
@@ -114,6 +115,15 @@ export class OnePagerController {
       payload.topics,
       payload.topicCluster,
     );
+  }
+
+  @Put('handle-user-feedback/:id')
+  @Public()
+  handleUserFeedback(
+    @Body() payload: HandleUserFeedbackDTO,
+    @Param('id') id: string,
+  ) {
+    return this.onePagerService.handlePageFeedback(id, payload.response);
   }
 
   @Delete('pager-page/:id')

@@ -5,6 +5,11 @@ export enum PagerStatus {
   FAILED = 'failed',
 }
 
+export enum PageUserFeedBack {
+  UP_VOTED = 'UP_VOTED',
+  DOWN_VOTED = 'DOWN_VOTED',
+}
+
 export type TopicSlug = string;
 
 export type TopicContentMap = {
