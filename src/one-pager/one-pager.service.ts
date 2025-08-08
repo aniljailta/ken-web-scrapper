@@ -644,7 +644,7 @@ export class OnePagerService {
     fileName: string;
   }) {
     const content = await this.renderTemplate('pager-template', {
-      title: json.title,
+      title: this.parseMarkDown(json.title || ''),
       subTitle: this.parseMarkDown(json.subtitle || ''),
       problem: this.parseMarkDown(json.problem),
       solution: this.parseMarkDown(json.solution),
