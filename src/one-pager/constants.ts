@@ -69,4 +69,4 @@ Task: Rewrite the text into a stronger, more captivating version.
 export const PagerDefaultPrimaryColor = '#4976FF';
 export const PagerDefaultSecondaryColor = '#22559F';
 export const PagerDefaultLogo =
-  'https://one-pager-base-bucket.s3.eu-north-1.amazonaws.com/brands/1754286534979-multi-pages-logo.svg';
+  'https://one-pager-base-bucket.s3.eu-north-1.amazonaws.com/brands/1755067953632-multi-pages-logo-svg.svg';

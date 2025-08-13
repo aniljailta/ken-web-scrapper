@@ -75,3 +75,26 @@ export function extractS3KeyFromUrl(url: string): string {
     throw new Error(`Invalid S3 URL: ${url}`);
   }
 }
+
+export const stripFormatting = (input: string): string => {
+  if (!input) return '';
+
+  // 1. Remove HTML tags
+  let text = input.replace(/<\/?[^>]+(>|$)/g, '');
+
+  // 2. Remove Markdown syntax
+  text = text
+    .replace(/(\*\*|__)(.*?)\1/g, '$2') // bold
+    .replace(/(\*|_)(.*?)\1/g, '$2') // italic
+    .replace(/~~(.*?)~~/g, '$1') // strikethrough
+    .replace(/`{1,2}[^`](.*?)`{1,2}/g, '$1') // inline code
+    .replace(/^>\s?/gm, '') // blockquotes
+    .replace(/!\[.*?\]\(.*?\)/g, '') // images
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // links
+    .replace(/#+\s?(.*)/g, '$1') // headers
+    .replace(/[-*+]\s+/g, '') // unordered lists
+    .replace(/\d+\.\s+/g, '') // ordered lists
+    .replace(/\\(.)/g, '$1'); // escaped characters
+
+  return text.trim();
+};

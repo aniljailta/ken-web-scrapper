@@ -22,6 +22,7 @@ import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { Public } from 'src/guards/public.decorator';
 import { UpdatePagerTopicsDTO } from './dto/update-pager-topics.dto';
 import { HandleUserFeedbackDTO } from './dto/handle-user-feedback.dto';
+import { stripFormatting } from './helper';
 
 @Controller('one-pager')
 @UseGuards(JwtAuthGuard)
@@ -66,7 +67,7 @@ export class OnePagerController {
       const stream = await this.s3Service.getFileStream(key.link);
 
       // @ts-ignore
-      archive.append(stream, { name: `${key.fileName}.pdf` });
+      archive.append(stream, { name: `${stripFormatting(key.fileName)}.pdf` });
     }
 
     await archive.finalize();
