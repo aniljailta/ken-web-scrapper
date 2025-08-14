@@ -42,6 +42,7 @@ import {
 import { S3Service } from 'src/s3/s3.service';
 import { User } from 'src/users/entities/user.entity';
 import showdown from 'showdown';
+import { SocketService } from 'src/gateways/socket.service';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -62,6 +63,7 @@ export class OnePagerService {
     private pagerPageRepository: Repository<PagerPage>,
     private readonly config: ConfigService,
     private readonly s3Service: S3Service,
+    private readonly socketService: SocketService,
   ) {
     this.openai = new OpenAI({
       apiKey: this.config.get<string>('OPENAI_API_KEY'),
@@ -341,6 +343,7 @@ export class OnePagerService {
   async detectTopicClusters(
     chunks: PagerChunks[],
     systemPrompt: string,
+    userId: string,
   ): Promise<TopicContentMap> {
     const chunkMap = chunks.reduce((acc, chunk) => {
       acc[chunk.id] = chunk.content;
@@ -348,19 +351,51 @@ export class OnePagerService {
     }, {});
 
     const prompt = detectTopicClusterSystemPrompt(chunkMap, systemPrompt);
-    const completion = await this.openai.chat.completions.create({
+
+    // Estimated tokens (can be adjusted dynamically later)
+    let estimatedTotal = 300;
+    let receivedTokens = 0;
+    let fullResponse = '';
+
+    // Start streaming
+    const stream = await this.openai.chat.completions.create({
       model: this.model,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.2,
+      stream: true,
     });
 
-    return JSON.parse(completion.choices[0].message.content || '{}');
+    // Loop through chunks as they come in
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+
+      if (content) {
+        fullResponse += content;
+        receivedTokens += content.length;
+
+        // Dynamically adjust if needed
+        if (receivedTokens > estimatedTotal * 0.9) {
+          estimatedTotal += 100; // Add more "space" for long answers
+        }
+
+        const percent = Math.min((receivedTokens / estimatedTotal) * 100, 100);
+        // Send progress to frontend
+        await this.socketService.sendProgress({ userId, progress: percent });
+      }
+    }
+
+    // Final completion
+    await this.socketService.sendProgress({ userId, progress: 100 });
+
+    // Return parsed JSON from final response
+    return JSON.parse(fullResponse || '{}');
   }
 
   async detectAllTopicClusters(
     allChunks: PagerChunks[],
     systemPrompt: string,
     batchSize = 20,
+    userId: string,
   ) {
     const batches = this.batchChunks(allChunks, batchSize);
     const mergedClusters: Record<
@@ -375,7 +410,11 @@ export class OnePagerService {
     > = {};
 
     for (const batch of batches) {
-      const result = await this.detectTopicClusters(batch, systemPrompt);
+      const result = await this.detectTopicClusters(
+        batch,
+        systemPrompt,
+        userId,
+      );
       for (const [slug, content] of Object.entries(result)) {
         if (!mergedClusters[slug]) mergedClusters[slug] = [];
         content.chunk_ids.forEach((item) => {
@@ -411,11 +450,13 @@ export class OnePagerService {
     pagerId,
     topicClusters,
     pagerJsonPrompt,
+    userId,
   }: {
     topicClusterPrompt: string;
     topicClusters: any;
     pagerJsonPrompt: string;
     pagerId: string;
+    userId: string;
   }): Promise<{ topicCluster: any; topics: any }> {
     //
     this.logger.debug('Generating Topic Cluster & Topics out of the Content');
@@ -425,6 +466,9 @@ export class OnePagerService {
       allChunks.map((c) => [c.id, c.content]),
     );
     const results = [];
+    const totalClusters = Object.entries(topicClusters).length;
+    let progress = 0;
+    const increment = totalClusters > 0 ? 100 / totalClusters : 0;
 
     for (const [slug, chunkIds] of Object.entries(topicClusters)) {
       const chunkTexts = chunkIds
@@ -433,17 +477,28 @@ export class OnePagerService {
         .filter(Boolean);
 
       if (chunkTexts.join(' ').length < 200) continue;
-      // Below Method is the Second GPT call where the Actual JSON is being generated!
+
+      // 🚀 Second GPT call
       const onePager = await this.generateOnePager(
         slug,
         chunkTexts,
         pagerJsonPrompt,
       );
+
       results.push({
         ...onePager,
         rank_index: chunkIds[0]?.rank_index || 1,
       });
+
+      // 📡 Send progress update
+      progress += increment;
+
+      this.socketService.sendProgress({
+        progress: Math.min(Math.round(progress), 100),
+        userId,
+      });
     }
+
     return {
       topicCluster: topicClusters,
       topics: results,
@@ -508,6 +563,7 @@ export class OnePagerService {
             topicClusterPrompt: topicClusterPrompt,
             pagerJsonPrompt: pagerJsonPrompt,
             topicClusters,
+            userId,
           });
 
           topics = clusterAndTopic.topics;
@@ -525,6 +581,7 @@ export class OnePagerService {
             topicClusterPrompt: systemPrompts.topicClusterPrompt,
             pagerJsonPrompt: systemPrompts.pagerJsonPrompt,
             topicClusters,
+            userId,
           });
 
           topics = clusterAndTopic.topics;
@@ -552,7 +609,7 @@ export class OnePagerService {
 
       // If No Pages were created generate PDF!
       if (checkRecord.pagerPage.length < 1) {
-        await this.generatePDF(checkRecord.id);
+        await this.generatePDF(checkRecord.id, userId);
       }
 
       if (!isTesting) {
@@ -589,7 +646,7 @@ export class OnePagerService {
     return content;
   }
 
-  private async generatePDF(pagerId: string) {
+  private async generatePDF(pagerId: string, userId: string) {
     this.logger.debug('Generating PDF');
     const pager = await this.pagerRepository.findOne({
       where: {
@@ -631,6 +688,11 @@ export class OnePagerService {
         });
       }),
     );
+    // Sending Back Completion Progress!
+    await this.socketService.sendProgress({
+      userId,
+      progress: 100,
+    });
     this.logger.debug('Finished Generating PDF');
   }
 
@@ -810,7 +872,7 @@ export class OnePagerService {
       return '';
     }
   }
-  async triggerTopicGeneration(pagerId: string) {
+  async triggerTopicGeneration(pagerId: string, userId: string) {
     try {
       this.logger.debug('Generating Topics List');
       const checkRecord = await this.pagerRepository.findOne({
@@ -836,6 +898,8 @@ export class OnePagerService {
         const topicClusters = await this.detectAllTopicClusters(
           allChunks,
           systemPrompts.topicClusterPrompt,
+          20,
+          userId,
         );
         topics = topicClusters;
       }

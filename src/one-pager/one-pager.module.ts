@@ -9,6 +9,7 @@ import { SystemPrompts } from './entities/system-prompts.entity';
 import { SocketGateway } from 'src/gateways/socket.gateway';
 import { S3Service } from 'src/s3/s3.service';
 import { User } from 'src/users/entities/user.entity';
+import { SocketService } from 'src/gateways/socket.service';
 
 @Module({
   imports: [
@@ -21,6 +22,6 @@ import { User } from 'src/users/entities/user.entity';
     ]),
   ],
   controllers: [OnePagerController],
-  providers: [OnePagerService, SocketGateway, S3Service],
+  providers: [OnePagerService, SocketGateway, S3Service, SocketService],
 })
 export class OnePagerModule {}

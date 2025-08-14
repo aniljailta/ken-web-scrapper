@@ -10,6 +10,7 @@ import { ChatCompletionChunk } from 'openai/resources/chat/completions';
 import { Server, Socket } from 'socket.io';
 import { OnePagerService } from 'src/one-pager/one-pager.service';
 import { TopicJSON } from 'src/one-pager/type';
+import { SocketService } from './socket.service';
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -19,15 +20,24 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private connectedClients = new Map<string, string>();
 
-  constructor(private readonly onePagerService: OnePagerService) {}
+  constructor(
+    private readonly onePagerService: OnePagerService,
+    private readonly socketService: SocketService,
+  ) {}
 
   private readonly logger = new Logger(SocketGateway.name);
+
+  afterInit() {
+    this.socketService.setServer(this.server);
+  }
 
   handleConnection(client: Socket) {
     const userID = client.handshake.query.userID as string;
 
     if (userID) {
       this.connectedClients.set(userID, client.id);
+      this.socketService.registerClient(client.id, userID);
+
       this.logger.log(
         `⚡ User ${userID} connected with Socket ID: ${client.id}`,
       );
@@ -42,6 +52,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     for (const [userID, socketID] of this.connectedClients.entries()) {
       if (socketID === client.id) {
         this.connectedClients.delete(userID);
+        this.socketService.deleteClient(userID);
         break;
       }
     }
@@ -203,7 +214,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     try {
       const { data: response } =
-        await this.onePagerService.triggerTopicGeneration(id);
+        await this.onePagerService.triggerTopicGeneration(id, userId);
 
       this.logger.debug('Triggering Topic Generation');
 
