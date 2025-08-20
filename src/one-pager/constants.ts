@@ -1,8 +1,6 @@
-export const detectTopicClusterSystemPrompt = (chunkMap: any, prompt: string) =>
+export const detectTopicClusterSystemPrompt = (prompt: string) =>
   `
 ${prompt}
-
-${JSON.stringify(chunkMap, null, 2)}
 
 Respond only with valid JSON.
 
@@ -33,15 +31,9 @@ This structure is used to group content by topic and define the display order of
 
     `.trim();
 
-export const generateOnePagerSystemPrompt = (
-  chunkTexts: string[],
-  prompt: string,
-) =>
+export const generateOnePagerSystemPrompt = (prompt: string) =>
   `
 ${prompt}
-
-Content:
-${chunkTexts.join('\n\n')}
 
 Respond with valid JSON only.
     `.trim();

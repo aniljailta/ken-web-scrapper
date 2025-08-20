@@ -47,7 +47,7 @@ import { SocketService } from 'src/gateways/socket.service';
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
   private readonly chunkLength = 1000;
-  private readonly model: OpenAI.Chat.ChatModel = 'gpt-4';
+  private readonly model: OpenAI.Chat.ChatModel = 'gpt-3.5-turbo-16k';
   private openai: OpenAI;
 
   constructor(
@@ -350,7 +350,7 @@ export class OnePagerService {
       return acc;
     }, {});
 
-    const prompt = detectTopicClusterSystemPrompt(chunkMap, systemPrompt);
+    const prompt = detectTopicClusterSystemPrompt(systemPrompt);
 
     // Estimated tokens (can be adjusted dynamically later)
     let estimatedTotal = 300;
@@ -360,7 +360,13 @@ export class OnePagerService {
     // Start streaming
     const stream = await this.openai.chat.completions.create({
       model: this.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [
+        { role: 'system', content: prompt },
+        {
+          role: 'user',
+          content: JSON.stringify(chunkMap, null, 2),
+        },
+      ],
       temperature: 0.2,
       stream: true,
     });
@@ -510,10 +516,16 @@ export class OnePagerService {
     chunkTexts: string[],
     systemPrompt: string,
   ) {
-    const prompt = generateOnePagerSystemPrompt(chunkTexts, systemPrompt);
+    const prompt = generateOnePagerSystemPrompt(systemPrompt);
     const completion = await this.openai.chat.completions.create({
       model: this.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [
+        { role: 'system', content: prompt },
+        {
+          role: 'user',
+          content: chunkTexts.join('\n\n'),
+        },
+      ],
       temperature: 0.3,
     });
 
