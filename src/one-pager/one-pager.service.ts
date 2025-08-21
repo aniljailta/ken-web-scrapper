@@ -391,7 +391,11 @@ export class OnePagerService {
     }
 
     // Final completion
-    await this.socketService.sendProgress({ userId, progress: 100 });
+    await this.socketService.sendProgress({
+      userId,
+      progress: 100,
+      finished: true,
+    });
 
     // Return parsed JSON from final response
     return JSON.parse(fullResponse || '{}');
@@ -504,7 +508,6 @@ export class OnePagerService {
         userId,
       });
     }
-
     return {
       topicCluster: topicClusters,
       topics: results,
@@ -704,6 +707,7 @@ export class OnePagerService {
     await this.socketService.sendProgress({
       userId,
       progress: 100,
+      finished: true,
     });
     this.logger.debug('Finished Generating PDF');
   }

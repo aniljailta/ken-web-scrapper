@@ -22,9 +22,11 @@ export class SocketService {
   async sendProgress({
     userId,
     progress,
+    finished = false,
   }: {
     userId: string;
     progress: number;
+    finished?: boolean;
   }) {
     const normalizedUserId = String(userId);
 
@@ -41,6 +43,7 @@ export class SocketService {
         socket.emit('one-pager/progress', {
           data: {
             progress,
+            finished,
           },
         });
       }
@@ -50,6 +53,7 @@ export class SocketService {
       socket.emit('one-pager/progress', {
         data: {
           progress: 100,
+          finished: true,
         },
         error: error.message,
       });
