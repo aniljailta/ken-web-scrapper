@@ -1,5 +1,6 @@
 import {
   BadGatewayException,
+  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
@@ -79,6 +80,13 @@ export class OnePagerService {
       const data = await PdfParse(file.buffer);
       const pdfText = data.text;
       const fullText = sanitizePdfText(pdfText);
+
+      // If throwing Error if Pdf not able to parse!
+      if (!fullText) {
+        throw new BadRequestException(
+          'Unable to read PDF, please upload a valid file.',
+        );
+      }
       const fileName = file.originalname;
       let checkUser: User = null;
 
@@ -124,7 +132,7 @@ export class OnePagerService {
         await this.updatePagerStatus(pagerId, PagerStatus.FAILED);
       }
       throw new BadGatewayException(
-        `Something went wrong while processing the PDF File!`,
+        `Unable to read PDF, please upload a valid file`,
       );
     }
   }
@@ -286,7 +294,7 @@ export class OnePagerService {
   }
   async findOne(pagerId: string, userId: string) {
     //
-    const checkRecord = await this.pagerRepository.findOne({
+    let checkRecord = await this.pagerRepository.findOne({
       where: {
         id: pagerId,
       },
@@ -297,9 +305,16 @@ export class OnePagerService {
         },
       },
     });
+
     if (!checkRecord) {
       throw new NotFoundException('No Pager Found');
     }
+
+    checkRecord = await this.syncTopicCluster(
+      pagerId,
+      checkRecord.pagerPage,
+      checkRecord.topicCluster,
+    );
 
     return {
       data: checkRecord,
@@ -330,6 +345,56 @@ export class OnePagerService {
             name: fileName,
           },
     );
+  }
+
+  private async syncTopicCluster(
+    pagerId: string,
+    pagerPage: PagerPage[],
+    topicCluster: any,
+  ) {
+    const allowedSlugs = [];
+    for (let item of pagerPage) {
+      const tags = item.tags;
+      const { key } = await this.findClusterByTags(topicCluster, tags);
+      allowedSlugs.push(key);
+      //
+    }
+
+    await this.updatePagerTopics(pagerId, allowedSlugs, topicCluster);
+
+    const checkRecord = await this.pagerRepository.findOne({
+      where: {
+        id: pagerId,
+      },
+      relations: ['pagerPage'],
+      order: {
+        pagerPage: {
+          index: 'DESC',
+        },
+      },
+    });
+    return checkRecord;
+  }
+
+  private async findClusterByTags(topicCluster: any, tags: string[]) {
+    const inputSet = new Set(tags);
+
+    for (const [key, items] of Object.entries(topicCluster)) {
+      // @ts-ignore
+      for (const item of items) {
+        const tagSet = new Set(item.tags);
+
+        // Check if sets are exactly equal
+        if (
+          tagSet.size === inputSet.size &&
+          // @ts-ignore
+          [...tagSet].every((t) => inputSet.has(t))
+        ) {
+          return { key, content: item };
+        }
+      }
+    }
+    return null; // if no match found
   }
 
   private async updatePagerStatus(pagerId: string, status: PagerStatus) {
@@ -968,6 +1033,12 @@ export class OnePagerService {
           return acc;
         }, {});
 
+      // Syncing Topics JSON Array according to the Topic Cluster
+      const clusterKeys = Object.keys(topicClusters);
+      const updatedTopic = checkRecord.topics.filter(({ topic_slug }) =>
+        clusterKeys.includes(topic_slug),
+      );
+
       // Updating Topics & Keep only the User Requires
       await this.pagerRepository.update(
         {
@@ -975,6 +1046,7 @@ export class OnePagerService {
         },
         {
           topicCluster: updatedTopicContent,
+          topics: updatedTopic,
         },
       );
 
