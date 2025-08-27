@@ -169,6 +169,16 @@ export class AuthService {
     //
   }
 
+  async impersonate(email: string) {
+    const user = await this.checkUserWithEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('No User Found');
+    }
+
+    return await this.login(user);
+    //
+  }
+
   async checkUserWithEmail(email: string) {
     //
     const checkUser = await this.userRepository.findOne({

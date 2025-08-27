@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -15,6 +16,7 @@ import { GoogleOauthGuard } from 'src/guards/google-oauth.guard';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { Public } from 'src/guards/public.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -54,6 +56,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async refreshToken(@Req() req: any) {
     return this.authService.refreshToken(req?.user || null);
+  }
+
+  @Get('impersonate')
+  @Public()
+  async impersonateUser(@Query('email') email: string) {
+    return this.authService.impersonate(email);
   }
 
   @Post('set-beta-password')
