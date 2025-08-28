@@ -79,7 +79,7 @@
             class='rounded flex items-start justify-center min-h-full px-[20px]'
           >
             <p
-              class="text-left text-[12px] font-light leading-[18px] font-['Inter'] w-[230px] !my-0"
+              class="text-left text-[12px] font-light leading-[18px] font-['Inter'] w-[239px] !my-0"
             >
               {{stripPTags problem}}
             </p>
@@ -97,7 +97,7 @@
             class='rounded flex items-start justify-center min-h-full px-[20px]'
           >
             <p
-              class="text-left text-[12px] font-light leading-[18px] w-[237px] font-['Inter'] !my-0"
+              class="text-left text-[12px] font-light leading-[18px] w-[239px] font-['Inter'] !my-0"
             >
               {{stripPTags solution}}
             </p>
@@ -107,10 +107,10 @@
       <!-- Highlights -->
 
       <section
-        class='w-full flex items-center flex-col justify-center gap-0 h-[218px]'
+        class='w-full flex items-center flex-col justify-center gap-0 py-[20px]'
       >
         <div
-          class='flex flex-col items-start justify-start gap-[20px] w-full px-[44px]'
+          class='flex flex-col items-start justify-start gap-[14px] w-full pt-[5px] px-[44px]'
         >
           {{#each (limit highlights 3)}}
             <!-- Highlight Card -->
@@ -124,17 +124,19 @@
                 {{inc @index}}
               </div>
               <!-- Description -->
-              <p
-                class="font-['Inter'] text-[12px] leading-[18px] font-light text-start"
+              <div
+                class="flex items-start justify-start flex-col p-0 m-0 w-full font-['Inter'] text-[12px] leading-[18px] font-light text-start w-[474px]"
               >
-                {{stripPTags this}}
-              </p>
+                <p class='w-[474px]'>
+                  {{stripPTags this}}
+                </p>
+              </div>
             </div>
           {{/each}}
         </div>
       </section>
       <footer
-        class='px-[40px] py-6 secondary_bg flex flex-col items-center justify-center gap-5 fixed bottom-0 w-full h-[104px]'
+        class='pl-[56px] pr-[56px] py-6 secondary_bg flex flex-col items-center justify-center gap-5 fixed bottom-0 w-full h-[104px]'
       >
         <p
           class="text-[16px] font-[500] secondary_text font-['Inter'] leading-tight text-center"
