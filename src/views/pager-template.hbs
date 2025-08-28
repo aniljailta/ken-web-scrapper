@@ -32,8 +32,8 @@
       } .secondary_bg { background-color: var(--secondary); } .secondary_text {
       color:
       {{secondaryTextColor}}; } .secondary_border { border-color:
-      var(--secondary); } .secondary_highlight { color: var(--secondary); } p
-      strong { font-weight: 700 !important; }
+      var(--secondary); } .secondary_highlight { color: var(--secondary); }
+      strong { font-weight: 700 !important; position: relative; }
     </style>
   </head>
   <body class='h-full w-full'>
@@ -106,25 +106,31 @@
       <!-- Highlights -->
 
       <section
-        class='w-full flex items-start justify-center gap-[40px] px-[44px] mt-10 mb-10 h-[218px]'
+        class='w-full flex items-center flex-col justify-center gap-0 h-[218px]'
       >
-        {{#each (limit highlights 3)}}
-          <!-- Highlight Card -->
-          <div
-            class='flex flex-col justify-start items-center h-[162px] flex-1 w-[150px] gap-2.5'
-          >
-            <!-- Count -->
+        <div
+          class='flex flex-col items-start justify-start gap-[20px] w-full px-[44px]'
+        >
+          {{#each (limit highlights 3)}}
+            <!-- Highlight Card -->
             <div
-              class="rounded-full border border-[1px] secondary_border secondary_highlight font-['Inter'] text-base font-light leading-tight w-6 h-6 text-center flex items-center justify-center"
+              class='flex flex-row justify-start items-start h-auto flex-1 w-full gap-[25px]'
             >
-              {{inc @index}}
+              <!-- Count -->
+              <div
+                class="rounded-full border border-[1px] secondary_border secondary_highlight font-['Inter'] text-base font-light leading-tight min-w-[24px] min-h-[24px] text-center flex items-center justify-center"
+              >
+                {{inc @index}}
+              </div>
+              <!-- Description -->
+              <p
+                class="font-['Inter'] text-[12px] leading-[18px] font-light text-start"
+              >
+                {{stripPTags this}}
+              </p>
             </div>
-            <!-- Description -->
-            <p class="font-['Inter'] text-xs font-light text-center">
-              {{stripPTags this}}
-            </p>
-          </div>
-        {{/each}}
+          {{/each}}
+        </div>
       </section>
       <footer
         class='px-10 py-6 secondary_bg flex flex-col items-center justify-center gap-5 fixed bottom-0 w-full h-[104px]'
