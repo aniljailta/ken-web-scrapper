@@ -19,7 +19,7 @@ import { S3Service } from './s3/s3.service';
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
-      serveRoot: '/',
+      serveRoot: '/scraper-api',
     }),
     ConfigModule.forRoot({
       isGlobal: true, // Makes ConfigModule available globally
