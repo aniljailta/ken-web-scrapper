@@ -4,12 +4,14 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0' />
     <title>{{title}}</title>
     <script src='https://cdn.tailwindcss.com'></script>
-    <link
-      href='https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&display=swap'
-      rel='stylesheet'
-    />
+    <link rel='preconnect' href='https://greatmigration.io' crossorigin />
+    <link rel='stylesheet' href='https://greatmigration.io/fonts/inter.css' />
+
     <style>
-      body { font-family: "Inter", sans-serif; }
+      /* CSS */ :root { font-family: Inter, sans-serif; font-feature-settings:
+      'liga' 1, 'calt' 1; /* fix for Chrome */ } @supports
+      (font-variation-settings: normal) { :root { font-family: InterVariable,
+      sans-serif; } }
     </style>
 
     <style>
@@ -34,7 +36,8 @@
       color:
       {{secondaryTextColor}}; } .secondary_border { border-color:
       var(--secondary); } .secondary_highlight { color: var(--secondary); }
-      strong { font-weight: 700 !important; position: relative; }
+      strong { font-weight: 700 !important; position: relative; } body {
+      letter-spacing: 0; }
     </style>
   </head>
   <body class='h-full w-full'>

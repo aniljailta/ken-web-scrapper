@@ -890,7 +890,7 @@ export class OnePagerService {
 
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
-    await page.evaluateHandle('document.fonts.ready'); // ensure fonts are loaded
+    await page.evaluateHandle('document.fonts.ready');
 
     // Create PDF buffer
     const pdfBuffer = await page.pdf({
