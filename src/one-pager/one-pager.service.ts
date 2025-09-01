@@ -894,7 +894,18 @@ export class OnePagerService {
     });
 
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: 'networkidle2', timeout: 0 });
+    // Wait for all images to load
+    await page.evaluate(async () => {
+      const selectors = Array.from(document.images).map((img) => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+          img.addEventListener('load', resolve);
+          img.addEventListener('error', resolve);
+        });
+      });
+      await Promise.all(selectors);
+    });
     await page.evaluateHandle('document.fonts.ready');
 
     // Create PDF buffer
