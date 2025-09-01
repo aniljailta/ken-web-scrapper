@@ -6,9 +6,12 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { Pager } from './pager.entity';
 import { PageUserFeedBack } from '../type';
+import { PageContent } from './page-content.entity';
 
 @Entity('pager_page')
 export class PagerPage {
@@ -46,6 +49,11 @@ export class PagerPage {
   })
   @JoinColumn({ name: 'pagerId' })
   pager: Pager;
+
+  @OneToOne(() => PageContent, (pageContent) => pageContent.pagerPage, {
+    cascade: true,
+  })
+  pageContent: PageContent;
 
   @CreateDateColumn({
     type: 'timestamp',

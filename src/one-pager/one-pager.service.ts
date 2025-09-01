@@ -45,6 +45,7 @@ import { S3Service } from 'src/s3/s3.service';
 import { User } from 'src/users/entities/user.entity';
 import showdown from 'showdown';
 import { SocketService } from 'src/gateways/socket.service';
+import { PageContent } from './entities/page-content.entity';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -63,6 +64,8 @@ export class OnePagerService {
     private pagerChunksRepository: Repository<PagerChunks>,
     @InjectRepository(PagerPage)
     private pagerPageRepository: Repository<PagerPage>,
+    @InjectRepository(PageContent)
+    private pageContentRepository: Repository<PageContent>,
     private readonly config: ConfigService,
     private readonly s3Service: S3Service,
     private readonly socketService: SocketService,
@@ -295,11 +298,9 @@ export class OnePagerService {
   }
   async findOne(pagerId: string, userId: string) {
     //
-    let checkRecord = await this.pagerRepository.findOne({
-      where: {
-        id: pagerId,
-      },
-      relations: ['pagerPage'],
+    const checkRecord = await this.pagerRepository.findOne({
+      where: { id: pagerId },
+      relations: ['pagerPage', 'pagerPage.pageContent'],
       order: {
         pagerPage: {
           index: 'DESC',
@@ -310,12 +311,6 @@ export class OnePagerService {
     if (!checkRecord) {
       throw new NotFoundException('No Pager Found');
     }
-
-    checkRecord = await this.syncTopicCluster(
-      pagerId,
-      checkRecord.pagerPage,
-      checkRecord.topicCluster,
-    );
 
     return {
       data: checkRecord,
@@ -346,56 +341,6 @@ export class OnePagerService {
             name: fileName,
           },
     );
-  }
-
-  private async syncTopicCluster(
-    pagerId: string,
-    pagerPage: PagerPage[],
-    topicCluster: any,
-  ) {
-    const allowedSlugs = [];
-    for (let item of pagerPage) {
-      const tags = item.tags;
-      const { key } = await this.findClusterByTags(topicCluster, tags);
-      allowedSlugs.push(key);
-      //
-    }
-
-    await this.updatePagerTopics(pagerId, allowedSlugs, topicCluster);
-
-    const checkRecord = await this.pagerRepository.findOne({
-      where: {
-        id: pagerId,
-      },
-      relations: ['pagerPage'],
-      order: {
-        pagerPage: {
-          index: 'DESC',
-        },
-      },
-    });
-    return checkRecord;
-  }
-
-  private async findClusterByTags(topicCluster: any, tags: string[]) {
-    const inputSet = new Set(tags);
-
-    for (const [key, items] of Object.entries(topicCluster)) {
-      // @ts-ignore
-      for (const item of items) {
-        const tagSet = new Set(item.tags);
-
-        // Check if sets are exactly equal
-        if (
-          tagSet.size === inputSet.size &&
-          // @ts-ignore
-          [...tagSet].every((t) => inputSet.has(t))
-        ) {
-          return { key, content: item };
-        }
-      }
-    }
-    return null; // if no match found
   }
 
   private async updatePagerStatus(pagerId: string, status: PagerStatus) {
@@ -753,7 +698,12 @@ export class OnePagerService {
         pager: pager,
       });
       // Saving All Pages
-      await this.pagerPageRepository.save(record);
+      const pagerPage = await this.pagerPageRepository.save(record);
+      // Saving Pager Page Content
+      await this.pageContentRepository.save({
+        pagerPageId: pagerPage.id,
+        ...json,
+      });
       return record;
     });
 
@@ -815,13 +765,12 @@ export class OnePagerService {
 
   async editPagerContent({
     id,
-    userId,
     content,
-    topicIndex,
+    pageContentId,
   }: {
     id: string;
     userId: string;
-    topicIndex: number;
+    pageContentId: string;
     content: TopicJSON;
   }) {
     const checkPagerPage = await this.pagerPageRepository.findOne({
@@ -852,14 +801,12 @@ export class OnePagerService {
     });
 
     // Updating Topic Content
-    await this.pagerRepository.update(
+    await this.pageContentRepository.update(
       {
-        id: checkPager.id,
+        id: pageContentId,
       },
       {
-        topics: checkPager.topics.map((item, index) =>
-          index === topicIndex ? { ...item, json: content } : item,
-        ),
+        ...content,
       },
     );
 

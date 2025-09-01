@@ -10,6 +10,7 @@ import { SocketGateway } from 'src/gateways/socket.gateway';
 import { S3Service } from 'src/s3/s3.service';
 import { User } from 'src/users/entities/user.entity';
 import { SocketService } from 'src/gateways/socket.service';
+import { PageContent } from './entities/page-content.entity';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { SocketService } from 'src/gateways/socket.service';
       Pager,
       PagerChunks,
       PagerPage,
+      PageContent,
       SystemPrompts,
       User,
     ]),

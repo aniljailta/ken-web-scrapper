@@ -131,11 +131,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       id,
       userId,
       content,
-      topicIndex,
+      pageContentId,
     }: {
       id: string;
       userId: string;
-      topicIndex: number;
+      pageContentId: string;
       content: TopicJSON;
     },
   ) {
@@ -147,7 +147,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
         id,
         userId,
         content,
-        topicIndex,
+        pageContentId,
       });
 
       this.logger.debug('Triggering Pager Page Update!');
