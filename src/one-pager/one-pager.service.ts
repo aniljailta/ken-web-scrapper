@@ -38,6 +38,7 @@ import {
   ensureHttps,
   extractS3KeyFromUrl,
   getContrastingTextColor,
+  hexToRgba,
   sanitizePdfText,
 } from './helper';
 import { S3Service } from 'src/s3/s3.service';
@@ -794,6 +795,10 @@ export class OnePagerService {
       highlights: json.highlights.map((item) => this.parseMarkDown(item)),
       primaryColor: branding?.primaryColor || PagerDefaultPrimaryColor,
       secondaryColor: branding?.secondaryColor || PagerDefaultSecondaryColor,
+      secondaryLightBgColor: hexToRgba(
+        branding?.secondaryColor || PagerDefaultSecondaryColor,
+        0.1,
+      ),
       primaryTextColor: getContrastingTextColor(
         branding?.primaryColor || PagerDefaultPrimaryColor,
       ),

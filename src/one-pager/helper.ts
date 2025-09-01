@@ -98,3 +98,27 @@ export const stripFormatting = (input: string): string => {
 
   return text.trim();
 };
+
+/**
+ * Convert a 6-digit hex color to an rgba() string with the given opacity.
+ *
+ * @param {string} hex - The hex color code (e.g. "#f1f2f3").
+ * @param {number} opacity - The opacity value between 0 (fully transparent) and 1 (fully opaque).
+ * @returns {string} The rgba() representation of the color (e.g. "rgba(241, 242, 243, 0.1)").
+ *
+ * @example
+ * hexToRgba("#f1f2f3", 0.1); // "rgba(241, 242, 243, 0.1)"
+ * hexToRgba("#000000", 0.5); // "rgba(0, 0, 0, 0.5)"
+ * hexToRgba("#ff0000", 1);   // "rgba(255, 0, 0, 1)"
+ */
+export function hexToRgba(hex: string, opacity: number): string {
+  // Remove '#' if present
+  hex = hex.replace('#', '');
+
+  // Parse R, G, B
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}

@@ -45,11 +45,11 @@
   </head>
   <body class='h-full w-full'>
     <header
-      class='w-full bg-white max-h-[88px] h-[62px] py-3 flex items-center justify-center'
+      class='w-full bg-white max-h-[88px] h-[62px] flex items-center justify-center'
     >
       {{#if logo}}
-        <div class='max-h-36 flex justify-start items-center gap-3'>
-          <img class='w-52 h-[38px] object-contain' src='{{logo}}' />
+        <div class='max-h-[60px] h-full flex justify-start items-center gap-3'>
+          <img class='h-[60px] object-contain' src='{{logo}}' />
         </div>
       {{/if}}
     </header>
@@ -72,7 +72,8 @@
       </section>
       <!-- The Problem / Solution Section -->
       <section
-        class='w-full flex items-start justify-between gap-[21px] px-[24px] py-[24px] bg-[#E9EEF5] mt-[8px] h-[212px]'
+        style='background-color: {{secondaryLightBgColor}};'
+        class='w-full flex items-start justify-between gap-[21px] px-[24px] py-[24px] mt-[8px] h-[212px]'
       >
         <!-- The Problem Card -->
         <div
