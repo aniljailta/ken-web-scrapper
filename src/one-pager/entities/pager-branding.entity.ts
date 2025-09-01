@@ -34,7 +34,7 @@ export class PagerBranding {
   @Column({ type: 'text', nullable: true }) // storing logo URL
   logo: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   name: string;
 
   @CreateDateColumn({
