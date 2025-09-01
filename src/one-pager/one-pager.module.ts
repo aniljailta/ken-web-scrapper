@@ -11,6 +11,7 @@ import { S3Service } from 'src/s3/s3.service';
 import { User } from 'src/users/entities/user.entity';
 import { SocketService } from 'src/gateways/socket.service';
 import { PageContent } from './entities/page-content.entity';
+import { PagerBranding } from './entities/pager-branding.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PageContent } from './entities/page-content.entity';
       PagerPage,
       PageContent,
       SystemPrompts,
+      PagerBranding,
       User,
     ]),
   ],

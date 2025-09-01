@@ -5,11 +5,13 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { PagerChunks } from './pager-chunks.entity';
 import { PagerStatus } from '../type';
 import { PagerPage } from './pager-page.entity';
+import { PagerBranding } from './pager-branding.entity';
 
 @Entity('pager')
 export class Pager {
@@ -31,8 +33,10 @@ export class Pager {
   @Column({ type: 'json', nullable: true, default: {} })
   topicCluster: any;
 
-  @Column({ type: 'json', nullable: true, default: {} })
-  branding: any;
+  @OneToOne(() => PagerBranding, (pagerBranding) => pagerBranding.pager, {
+    cascade: true,
+  })
+  branding: PagerBranding;
 
   @Column({ type: 'json', nullable: true, default: [] })
   topics: any;

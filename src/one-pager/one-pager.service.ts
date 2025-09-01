@@ -46,6 +46,7 @@ import { User } from 'src/users/entities/user.entity';
 import showdown from 'showdown';
 import { SocketService } from 'src/gateways/socket.service';
 import { PageContent } from './entities/page-content.entity';
+import { PagerBranding } from './entities/pager-branding.entity';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -66,6 +67,8 @@ export class OnePagerService {
     private pagerPageRepository: Repository<PagerPage>,
     @InjectRepository(PageContent)
     private pageContentRepository: Repository<PageContent>,
+    @InjectRepository(PagerBranding)
+    private pagerBrandingRepository: Repository<PagerBranding>,
     private readonly config: ConfigService,
     private readonly s3Service: S3Service,
     private readonly socketService: SocketService,
@@ -300,7 +303,7 @@ export class OnePagerService {
     //
     const checkRecord = await this.pagerRepository.findOne({
       where: { id: pagerId },
-      relations: ['pagerPage', 'pagerPage.pageContent'],
+      relations: ['pagerPage', 'pagerPage.pageContent', 'branding'],
       order: {
         pagerPage: {
           index: 'DESC',
@@ -623,14 +626,26 @@ export class OnePagerService {
         );
       }
       if (branding) {
-        // Saving Branding Config
+        // Either Creating Or Updating
+        const existing = await this.pagerBrandingRepository.findOne({
+          where: { pagerId },
+        });
+
         await this.pagerRepository.update(
-          { id: pagerId },
           {
-            branding,
-            name: branding && branding.name ? branding.name : checkRecord.name,
+            id: pagerId,
+          },
+          {
+            name: branding?.name ?? existing?.name, // keep old name if not provided
           },
         );
+
+        await this.pagerBrandingRepository.save({
+          pagerId,
+          ...branding,
+          name: branding?.name ?? existing?.name, // keep old name if not provided
+          id: existing?.id, // ensures update instead of insert
+        });
       }
 
       // If No Pages were created generate PDF!
@@ -678,6 +693,7 @@ export class OnePagerService {
       where: {
         id: pagerId,
       },
+      relations: ['branding'],
     });
 
     // Creating Pager Page Records
@@ -841,7 +857,7 @@ export class OnePagerService {
     });
 
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: 'networkidle2', timeout: 0 });
     await page.evaluateHandle('document.fonts.ready');
 
     // Create PDF buffer
