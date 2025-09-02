@@ -111,11 +111,7 @@ export class OnePagerController {
     @Body() payload: UpdatePagerTopicsDTO,
     @Param('id') id: string,
   ) {
-    return this.onePagerService.updatePagerTopics(
-      id,
-      payload.topics,
-      payload.topicCluster,
-    );
+    return this.onePagerService.updatePagerTopics(id, payload.topics);
   }
 
   @Put('handle-user-feedback/:id')

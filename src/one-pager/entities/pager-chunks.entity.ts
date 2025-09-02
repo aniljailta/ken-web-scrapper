@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  ManyToMany,
+} from 'typeorm';
 import { Pager } from './pager.entity';
+import { TopicCluster } from './topic-cluster.entity';
 
 @Entity('pager_chunks')
 export class PagerChunks {
@@ -17,4 +24,6 @@ export class PagerChunks {
     onDelete: 'CASCADE',
   })
   pager: Pager;
+  @ManyToMany(() => TopicCluster, (cluster) => cluster.pagerChunks)
+  topicClusters: TopicCluster[];
 }

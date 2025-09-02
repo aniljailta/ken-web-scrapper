@@ -8,7 +8,7 @@ import {
 import PdfParse from 'pdf-parse';
 import { Pager } from './entities/pager.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { PagerChunks } from './entities/pager-chunks.entity';
 import {
   PagerStatus,
@@ -48,6 +48,7 @@ import { SocketService } from 'src/gateways/socket.service';
 import { PageContent } from './entities/page-content.entity';
 import { PagerBranding } from './entities/pager-branding.entity';
 import { Tag } from './entities/tag.entity';
+import { TopicCluster } from './entities/topic-cluster.entity';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -72,6 +73,10 @@ export class OnePagerService {
     private pagerBrandingRepository: Repository<PagerBranding>,
     @InjectRepository(Tag)
     private tagRepository: Repository<Tag>,
+    @InjectRepository(TopicCluster)
+    private topicClusterRepository: Repository<TopicCluster>,
+    private readonly dataSource: DataSource,
+
     private readonly config: ConfigService,
     private readonly s3Service: S3Service,
     private readonly socketService: SocketService,
@@ -250,20 +255,35 @@ export class OnePagerService {
   }
 
   async deletePager(pagerId: string, userId: string) {
-    //
+    // 🔎 Check if pager exists
     const checkRecord = await this.pagerRepository.findOne({
-      where: {
-        id: pagerId,
-        userId,
-      },
+      where: { id: pagerId, userId },
+      relations: ['topicClusters', 'topicClusters.pagerChunks'], // preload relations
     });
+
     if (!checkRecord) {
       throw new NotFoundException('No Pager Found');
     }
 
-    await this.pagerRepository.delete({
-      id: checkRecord.id,
-    });
+    // 🧹 First, remove join-table links manually (avoids FK constraint errors)
+    for (const cluster of checkRecord.topicClusters || []) {
+      if (cluster.pagerChunks?.length) {
+        await this.topicClusterRepository
+          .createQueryBuilder()
+          .relation('pagerChunks')
+          .of(cluster) // cluster ID
+          .remove(cluster.pagerChunks);
+      }
+    }
+
+    // 🗑️ Delete TopicClusters for this pager (will also clean join rows if cascade set)
+    await this.topicClusterRepository.delete({ pager: { id: pagerId } });
+
+    // 🗑️ Delete PagerChunks for this pager (if they’re independent, not reused elsewhere)
+    await this.pagerChunksRepository.delete({ pagerId });
+
+    // 🗑️ Finally, delete the Pager itself
+    await this.pagerRepository.delete(checkRecord.id);
 
     return {
       data: null,
@@ -466,45 +486,59 @@ export class OnePagerService {
     }
     return batches;
   }
-  private isEmptyArray(arr: any): boolean {
-    return Array.isArray(arr) && arr.length === 0;
+  async fetchChunksBySlug(
+    pagerId: string,
+    slug: string,
+  ): Promise<PagerChunks[]> {
+    return await this.pagerChunksRepository
+      .createQueryBuilder('chunk')
+      .innerJoin('chunk.topicClusters', 'cluster')
+      .where('cluster.pagerId = :pagerId', { pagerId })
+      .andWhere('cluster.slug = :slug', { slug })
+      .select(['chunk.id', 'chunk.content'])
+      .distinct(true)
+      .getMany();
   }
+  async fetchSlugsByPager(pagerId: string): Promise<string[]> {
+    const clusters = await this.topicClusterRepository.find({
+      where: { pagerId },
+      select: ['slug'],
+    });
 
-  private isEmptyObject(obj: any): boolean {
-    return obj && typeof obj === 'object' && Object.keys(obj).length === 0;
+    return clusters.map((c) => c.slug);
   }
 
   private async fetchClusterAndTopic({
     pagerId,
-    topicClusters,
     pagerJsonPrompt,
     userId,
   }: {
     topicClusterPrompt: string;
-    topicClusters: any;
     pagerJsonPrompt: string;
     pagerId: string;
     userId: string;
-  }): Promise<{ topicCluster: any; topics: any }> {
-    //
-    this.logger.debug('Generating Topic Cluster & Topics out of the Content');
-    const allChunks = await this.fetchAllChunks(pagerId); // implement or inject
+  }): Promise<void> {
+    this.logger.debug('Generating Actual Pager Content from the Topics');
+    const pager = await this.pagerRepository.findOne({
+      where: {
+        id: pagerId,
+      },
+    });
+    const slugs = await this.fetchSlugsByPager(pagerId);
 
-    const chunkById = Object.fromEntries(
-      allChunks.map((c) => [c.id, c.content]),
-    );
-    const results = [];
-    const totalClusters = Object.entries(topicClusters).length;
+    const totalClusters = slugs.length;
     let progress = 0;
     const increment = totalClusters > 0 ? 100 / totalClusters : 0;
 
-    for (const [slug, chunkIds] of Object.entries(topicClusters)) {
-      const chunkTexts = chunkIds
-        // @ts-ignore
-        .map(({ content: id }) => chunkById[id] || '')
+    for (const slug of slugs) {
+      const contents = await this.fetchChunksBySlug(pagerId, slug);
+      const chunkTexts = contents
+        .map(({ content }) => content || '')
         .filter(Boolean);
 
-      if (chunkTexts.join(' ').length < 200) continue;
+      if (chunkTexts.join(' ').length < 200) {
+        continue; // ✅ works fine here
+      }
 
       // 🚀 Second GPT call
       const onePager = await this.generateOnePager(
@@ -512,11 +546,14 @@ export class OnePagerService {
         chunkTexts,
         pagerJsonPrompt,
       );
-
-      results.push({
-        ...onePager,
-        rank_index: chunkIds[0]?.rank_index || 1,
-      });
+      // Saving the generated Content;
+      await this.createPagerPage(
+        pager,
+        pagerId,
+        onePager.json,
+        onePager.topic_slug,
+        1,
+      );
 
       // 📡 Send progress update
       progress += increment;
@@ -526,10 +563,6 @@ export class OnePagerService {
         userId,
       });
     }
-    return {
-      topicCluster: topicClusters,
-      topics: results,
-    };
   }
 
   async generateOnePager(
@@ -577,58 +610,38 @@ export class OnePagerService {
         where: {
           id: pagerId,
         },
-        relations: ['pagerPage'],
+        relations: ['pagerPage', 'topicClusters'],
       });
       if (!checkRecord) {
         throw new NotFoundException('No Pager Found');
       }
 
-      let topics = checkRecord.topics;
-      let topicClusters = checkRecord.topicCluster;
-
       await this.updatePagerStatus(pagerId, PagerStatus.PROCESSING);
 
-      if (this.isEmptyArray(topics)) {
-        // Using the Test prompts if provided
-        if (topicClusterPrompt && pagerJsonPrompt) {
-          const clusterAndTopic = await this.fetchClusterAndTopic({
-            pagerId,
-            topicClusterPrompt: topicClusterPrompt,
-            pagerJsonPrompt: pagerJsonPrompt,
-            topicClusters,
-            userId,
-          });
-
-          topics = clusterAndTopic.topics;
-          topicClusters = clusterAndTopic.topicCluster;
-        } else {
-          const systemPrompts = await this.systemPromptsRepository.findOne({
-            where: {},
-          });
-          if (!systemPrompts) {
-            throw new NotFoundException('No System Prompts were Found!');
-          }
-
-          const clusterAndTopic = await this.fetchClusterAndTopic({
-            pagerId,
-            topicClusterPrompt: systemPrompts.topicClusterPrompt,
-            pagerJsonPrompt: systemPrompts.pagerJsonPrompt,
-            topicClusters,
-            userId,
-          });
-
-          topics = clusterAndTopic.topics;
-          topicClusters = clusterAndTopic.topicCluster;
+      // Using the Test prompts if provided
+      if (topicClusterPrompt && pagerJsonPrompt) {
+        await this.fetchClusterAndTopic({
+          pagerId,
+          topicClusterPrompt: topicClusterPrompt,
+          pagerJsonPrompt: pagerJsonPrompt,
+          userId,
+        });
+      } else {
+        const systemPrompts = await this.systemPromptsRepository.findOne({
+          where: {},
+        });
+        if (!systemPrompts) {
+          throw new NotFoundException('No System Prompts were Found!');
         }
 
-        // Saving Topic Cluster & Topics
-        await this.pagerRepository.update(
-          { id: pagerId },
-          {
-            topics,
-          },
-        );
+        await this.fetchClusterAndTopic({
+          pagerId,
+          topicClusterPrompt: systemPrompts.topicClusterPrompt,
+          pagerJsonPrompt: systemPrompts.pagerJsonPrompt,
+          userId,
+        });
       }
+
       if (branding) {
         // Either Creating Or Updating
         const existing = await this.pagerBrandingRepository.findOne({
@@ -739,40 +752,40 @@ export class OnePagerService {
 
   private async generatePDF(pagerId: string, userId: string) {
     this.logger.debug('Generating PDF');
-    let pager = await this.pagerRepository.findOne({
+    const pager = await this.pagerRepository.findOne({
       where: {
         id: pagerId,
       },
-      relations: ['branding', 'tags'],
-    });
-
-    // Creating Pager Page Records
-    pager.topics.map(async ({ json, topic_slug }, index: number) => {
-      const rank_index =
-        pager.topicCluster[topic_slug][0]?.rank_index || index + 1;
-
-      const source_type = pager.topicCluster[topic_slug][0]?.source_type || '';
-      const tagNames: string[] = pager.topicCluster[topic_slug][0]?.tags || [];
-
-      // ✅ fetch or create tags
-      const tagEntities = await this.getOrCreateTags(tagNames);
-      pager.tags = [...(pager.tags || []), ...tagEntities];
-      pager.source_type = source_type;
-      pager = await this.pagerRepository.save(pager);
-
-      // ✅ create pager page
-      return this.createPagerPage(pager, pagerId, json, topic_slug, rank_index);
+      relations: ['branding', 'tags', 'topicClusters', 'pagerPage'],
     });
 
     // Generating PDF
     await Promise.all(
-      pager.topics.map(async ({ json, topic_slug }) => {
+      pager.pagerPage.map(async ({ id }) => {
+        const content = await this.pageContentRepository.findOne({
+          where: {
+            pagerPageId: id,
+          },
+        });
         const shortId = pagerId.slice(-6);
-        const fileName = `${topic_slug}-${shortId}.pdf`;
+        // Just keeping it Unique!
+        const fileName = `${content.id.slice(-6)}-${shortId}.pdf`;
         return await this.generateContent({
+          pagerPageId: id,
           branding: pager.branding,
           fileName,
-          json,
+          json: {
+            cta: content?.cta || '',
+            ctaLink: content?.ctaLink || '',
+            ctaText: content?.ctaText || '',
+            problem: content?.problem || '',
+            solution: content?.solution || '',
+            highlights: content?.highlights || [],
+            title: content?.title || '',
+            subtitle: content?.subtitle || '',
+            index: 1,
+            quote: '',
+          },
         });
       }),
     );
@@ -789,10 +802,12 @@ export class OnePagerService {
     json,
     branding,
     fileName,
+    pagerPageId,
   }: {
     json: TopicJSON;
     branding: any;
     fileName: string;
+    pagerPageId: string;
   }) {
     const content = await this.renderTemplate('pager-template', {
       title: this.parseMarkDown(json.title || ''),
@@ -817,7 +832,7 @@ export class OnePagerService {
       ctaText: json?.ctaText || 'Access Full Report',
       ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '#',
     });
-    return await this.generateAndSavePDF(content, fileName);
+    return await this.generateAndSavePDF(content, fileName, pagerPageId);
   }
 
   async editPagerContent({
@@ -854,6 +869,7 @@ export class OnePagerService {
     await this.generateContent({
       json: content,
       branding: checkPager.branding,
+      pagerPageId: checkPagerPage.id,
       fileName: checkPagerPage.link,
     });
 
@@ -891,6 +907,7 @@ export class OnePagerService {
   private async generateAndSavePDF(
     html: string,
     fileName: string,
+    pagerPageId: string,
   ): Promise<string> {
     const browser = await puppeteer.launch({
       headless: true,
@@ -925,7 +942,7 @@ export class OnePagerService {
     // Updating Links
     await this.pagerPageRepository.update(
       {
-        link: fileName,
+        id: pagerPageId,
       },
       {
         link,
@@ -966,7 +983,7 @@ export class OnePagerService {
   async triggerTopicGeneration(pagerId: string, userId: string) {
     try {
       this.logger.debug('Generating Topics List');
-      const checkRecord = await this.pagerRepository.findOne({
+      let checkRecord = await this.pagerRepository.findOne({
         where: {
           id: pagerId,
         },
@@ -976,25 +993,48 @@ export class OnePagerService {
         throw new NotFoundException('No Pager Found');
       }
 
-      let topics = checkRecord.topicCluster;
-
-      if (this.isEmptyObject(topics)) {
-        const systemPrompts = await this.systemPromptsRepository.findOne({
-          where: {},
-        });
-        if (!systemPrompts) {
-          throw new NotFoundException('No System Prompts were Found!');
-        }
-        const allChunks = await this.fetchAllChunks(pagerId); // implement or inject
-        const topicClusters = await this.detectAllTopicClusters(
-          allChunks,
-          systemPrompts.topicClusterPrompt,
-          20,
-          userId,
-        );
-        topics = topicClusters;
+      let topics = checkRecord.topicClusters;
+      const systemPrompts = await this.systemPromptsRepository.findOne({
+        where: {},
+      });
+      if (!systemPrompts) {
+        throw new NotFoundException('No System Prompts were Found!');
       }
+      const allChunks = await this.fetchAllChunks(pagerId); // implement or inject
+      const topicClusters = await this.detectAllTopicClusters(
+        allChunks,
+        systemPrompts.topicClusterPrompt,
+        20,
+        userId,
+      );
 
+      // Saving Pager Source_type & Tags
+      // Safely extract source_type (first available)
+      const source_type =
+        Object.entries(topicClusters)
+          .map(([_, value]) => value?.[0]?.source_type ?? null)
+          .find((s) => s !== null) || null;
+
+      // Safely extract all tags into a flat string array
+      const tagNames: string[] = Object.entries(topicClusters)
+        .map(([_, value]) => value?.[0]?.tags ?? [])
+        .flat()
+        .filter(
+          (tag): tag is string =>
+            typeof tag === 'string' && tag.trim().length > 0,
+        );
+
+      // ✅ fetch or create tags
+      const tagEntities = await this.getOrCreateTags(tagNames);
+      checkRecord.tags = [...(checkRecord.tags || []), ...tagEntities];
+      checkRecord.source_type = source_type;
+      checkRecord = await this.pagerRepository.save(checkRecord);
+
+      // 👉 delegate saving to new method
+      await this.createOrUpdateClusters(topicClusters, pagerId);
+
+      // @ts-ignore
+      topics = topicClusters;
       return {
         data: {
           id: pagerId,
@@ -1019,61 +1059,88 @@ export class OnePagerService {
     }
   }
 
-  async updatePagerTopics(
+  async createOrUpdateClusters(
+    topicClusters: Record<string, any[]>,
     pagerId: string,
-    allowedSlugs: string[],
-    topicClusters: any,
-  ) {
+  ): Promise<void> {
+    for (const [slug, items] of Object.entries(topicClusters)) {
+      // 1️⃣ Find existing cluster or create new one
+      let cluster = await this.topicClusterRepository.findOne({
+        where: { slug, pagerId },
+        relations: ['pagerChunks'],
+      });
+
+      if (!cluster) {
+        cluster = this.topicClusterRepository.create({
+          pagerId,
+          slug,
+        });
+      }
+
+      // 2️⃣ Attach chunks
+      const chunkIds = items.map((i) => i.content);
+      const chunks = await this.pagerChunksRepository.find({
+        where: { id: In(chunkIds) },
+      });
+
+      // ensure uniqueness of pagerChunks
+      const existingChunkIds = new Set(
+        (cluster.pagerChunks ?? []).map((c) => c.id),
+      );
+      const newChunks = chunks.filter((c) => !existingChunkIds.has(c.id));
+
+      cluster.pagerChunks = [...(cluster.pagerChunks ?? []), ...newChunks];
+      cluster.pagerId = pagerId;
+
+      // 3️⃣ Save cluster
+      await this.topicClusterRepository.save(cluster);
+    }
+  }
+
+  async updatePagerTopics(pagerId: string, allowedSlugs: string[]) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
       this.logger.debug('Updating Pager Topics');
-      const checkRecord = await this.pagerRepository.findOne({
-        where: {
-          id: pagerId,
-        },
+
+      const pager = await this.pagerRepository.findOne({
+        where: { id: pagerId },
         relations: ['pagerPage'],
       });
-      if (!checkRecord) {
+      if (!pager) {
         throw new NotFoundException('No Pager Found');
       }
 
-      const updatedTopicContent = Object.keys(topicClusters)
-        .filter((key) => allowedSlugs.includes(key))
-        .reduce((acc, key) => {
-          acc[key] = topicClusters[key];
-          return acc;
-        }, {});
+      // 🔹 Fetch all clusters linked to this pager
+      const allClusters = await this.topicClusterRepository.find({
+        relations: ['pagerChunks'],
+      });
 
-      // Syncing Topics JSON Array according to the Topic Cluster
-      const clusterKeys = Object.keys(topicClusters);
-      const updatedTopic = checkRecord.topics.filter(({ topic_slug }) =>
-        clusterKeys.includes(topic_slug),
+      // 🔹 Delete clusters NOT in allowedSlugs
+      const clustersToDelete = allClusters.filter(
+        (c) => !allowedSlugs.includes(c.slug),
       );
 
-      // Updating Topics & Keep only the User Requires
-      await this.pagerRepository.update(
-        {
-          id: pagerId,
-        },
-        {
-          topicCluster: updatedTopicContent,
-          topics: updatedTopic,
-        },
-      );
+      if (clustersToDelete.length > 0) {
+        await queryRunner.manager.remove(clustersToDelete);
+      }
+
+      await queryRunner.commitTransaction();
 
       return {
-        data: {
-          id: pagerId,
-        },
+        data: { id: pagerId },
       };
     } catch (error) {
-      this.logger.error('Failed To Save Topics Content!', error);
-
+      await queryRunner.rollbackTransaction();
+      this.logger.error('Failed To Update Pager Topics!', error);
       return {
-        data: {
-          id: pagerId,
-        },
-        error: error,
+        data: { id: pagerId },
+        error,
       };
+    } finally {
+      await queryRunner.release();
     }
   }
 
