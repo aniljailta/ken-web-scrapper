@@ -1,48 +1,41 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
-  JoinColumn,
   CreateDateColumn,
-  UpdateDateColumn,
+  Entity,
+  JoinColumn,
   OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
+import { PagerPage } from './pager-page.entity';
 import { Pager } from './pager.entity';
-import { PageUserFeedBack } from '../type';
-import { PageContent } from './page-content.entity';
 
-@Entity('pager_page')
-export class PagerPage {
+@Entity('pager_branding')
+export class PagerBranding {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'text', nullable: false })
-  name: string;
-
-  @Column({ type: 'text', nullable: false })
-  link: string;
-
-  @Column({ type: 'int', nullable: true })
-  index: number;
-
-  @Column({ type: 'enum', nullable: true, enum: PageUserFeedBack })
-  userResponse: PageUserFeedBack;
-
   @Column({ type: 'uuid', nullable: true })
-  pagerId: string;
+  pagerId: string | null;
 
-  @ManyToOne(() => Pager, (pager) => pager.pagerPage, {
+  @OneToOne(() => Pager, (pager) => pager.branding, {
     nullable: true,
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'pagerId' })
   pager: Pager;
 
-  @OneToOne(() => PageContent, (pageContent) => pageContent.pagerPage, {
-    cascade: true,
-  })
-  pageContent: PageContent;
+  @Column({ type: 'varchar', length: 10 }) // hex code like #4976FF
+  primaryColor: string;
+
+  @Column({ type: 'varchar', length: 10 }) // hex code like #22559F
+  secondaryColor: string;
+
+  @Column({ type: 'text', nullable: true }) // storing logo URL
+  logo: string;
+
+  @Column({ type: 'text', nullable: true })
+  name: string;
 
   @CreateDateColumn({
     type: 'timestamp',

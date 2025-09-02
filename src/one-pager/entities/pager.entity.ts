@@ -3,13 +3,19 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { PagerChunks } from './pager-chunks.entity';
 import { PagerStatus } from '../type';
 import { PagerPage } from './pager-page.entity';
+import { PagerBranding } from './pager-branding.entity';
+import { Tag } from './tag.entity';
+import { TopicCluster } from './topic-cluster.entity';
 
 @Entity('pager')
 export class Pager {
@@ -28,14 +34,13 @@ export class Pager {
   @Column({ type: 'uuid', nullable: true })
   userId: string;
 
-  @Column({ type: 'json', nullable: true, default: {} })
-  topicCluster: any;
+  @Column({ type: 'text', default: '' })
+  source_type: string;
 
-  @Column({ type: 'json', nullable: true, default: {} })
-  branding: any;
-
-  @Column({ type: 'json', nullable: true, default: [] })
-  topics: any;
+  @OneToOne(() => PagerBranding, (pagerBranding) => pagerBranding.pager, {
+    cascade: true,
+  })
+  branding: PagerBranding;
 
   @Column({
     type: 'enum',
@@ -47,8 +52,21 @@ export class Pager {
   @OneToMany(() => PagerChunks, (pagerChunks) => pagerChunks.pager)
   pagerChunks: PagerChunks[];
 
+  @OneToMany(() => TopicCluster, (topicCluster) => topicCluster.pager)
+  topicClusters: TopicCluster[];
+
   @OneToMany(() => PagerPage, (pagerPage) => pagerPage.pager)
   pagerPage: PagerPage[];
+
+  @ManyToMany(() => Tag, (tag) => tag.pagers, {
+    cascade: true,
+  })
+  @JoinTable({
+    name: 'pager_tags',
+    joinColumn: { name: 'pager_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' },
+  })
+  tags: Tag[];
 
   @CreateDateColumn({
     type: 'timestamp',
