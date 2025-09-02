@@ -48,8 +48,10 @@
       class='w-full bg-white max-h-[88px] h-[62px] flex items-center justify-center'
     >
       {{#if logo}}
-        <div class='max-h-[60px] h-full flex justify-start items-center gap-3'>
-          <img class='h-[60px] object-contain' src='{{logo}}' />
+        <div
+          class='h-[62px] max-h-[70px] h-full flex justify-start items-center pt-[15px] gap-3'
+        >
+          <img class='h-[38px] object-contain' src='{{logo}}' />
         </div>
       {{/if}}
     </header>
@@ -59,13 +61,13 @@
       >
         <!-- Main Heading -->
         <h2
-          class="text-black text-2xl font-normal font-['Inter'] leading-7 max-w-[476px] text-center"
+          class="text-black text-[24px] font-normal font-['Inter'] leading-[28.8px] max-w-[476px] text-center"
         >
           {{stripPTags title}}
         </h2>
         <!-- Sub Heading -->
         <p
-          class="text-center text-xs font-light font-['Inter'] leading-[18px] max-w-[440px]"
+          class="text-center text-[12px] font-[300] leading-[18px] font-['Inter'] leading-[18px] max-w-[440px]"
         >
           {{stripPTags subTitle}}
         </p>
