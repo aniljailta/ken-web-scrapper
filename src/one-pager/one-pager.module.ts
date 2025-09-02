@@ -12,6 +12,7 @@ import { User } from 'src/users/entities/user.entity';
 import { SocketService } from 'src/gateways/socket.service';
 import { PageContent } from './entities/page-content.entity';
 import { PagerBranding } from './entities/pager-branding.entity';
+import { Tag } from './entities/tag.entity';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PagerBranding } from './entities/pager-branding.entity';
       PageContent,
       SystemPrompts,
       PagerBranding,
+      Tag,
       User,
     ]),
   ],

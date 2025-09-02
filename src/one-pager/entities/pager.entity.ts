@@ -3,6 +3,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -12,6 +14,7 @@ import { PagerChunks } from './pager-chunks.entity';
 import { PagerStatus } from '../type';
 import { PagerPage } from './pager-page.entity';
 import { PagerBranding } from './pager-branding.entity';
+import { Tag } from './tag.entity';
 
 @Entity('pager')
 export class Pager {
@@ -29,6 +32,9 @@ export class Pager {
 
   @Column({ type: 'uuid', nullable: true })
   userId: string;
+
+  @Column({ type: 'text', default: '' })
+  source_type: string;
 
   @Column({ type: 'json', nullable: true, default: {} })
   topicCluster: any;
@@ -53,6 +59,16 @@ export class Pager {
 
   @OneToMany(() => PagerPage, (pagerPage) => pagerPage.pager)
   pagerPage: PagerPage[];
+
+  @ManyToMany(() => Tag, (tag) => tag.pagers, {
+    cascade: true,
+  })
+  @JoinTable({
+    name: 'pager_tags',
+    joinColumn: { name: 'pager_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' },
+  })
+  tags: Tag[];
 
   @CreateDateColumn({
     type: 'timestamp',

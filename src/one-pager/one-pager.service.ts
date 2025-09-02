@@ -47,6 +47,7 @@ import showdown from 'showdown';
 import { SocketService } from 'src/gateways/socket.service';
 import { PageContent } from './entities/page-content.entity';
 import { PagerBranding } from './entities/pager-branding.entity';
+import { Tag } from './entities/tag.entity';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -69,6 +70,8 @@ export class OnePagerService {
     private pageContentRepository: Repository<PageContent>,
     @InjectRepository(PagerBranding)
     private pagerBrandingRepository: Repository<PagerBranding>,
+    @InjectRepository(Tag)
+    private tagRepository: Repository<Tag>,
     private readonly config: ConfigService,
     private readonly s3Service: S3Service,
     private readonly socketService: SocketService,
@@ -171,7 +174,8 @@ export class OnePagerService {
   async findAll(userId: string) {
     const allUserPagers = await this.pagerRepository
       .createQueryBuilder('pager')
-      .innerJoinAndSelect('pager.pagerPage', 'pagerPage') // INNER JOIN ensures relation exists
+      .innerJoinAndSelect('pager.pagerPage', 'pagerPage')
+      .leftJoinAndSelect('pager.tags', 'tags')
       .where('pager.userId = :userId', { userId })
       .andWhere('pager.status = :status', { status: PagerStatus.PROCESSED })
       .orderBy('pager.created_date', 'DESC')
@@ -303,7 +307,7 @@ export class OnePagerService {
     //
     const checkRecord = await this.pagerRepository.findOne({
       where: { id: pagerId },
-      relations: ['pagerPage', 'pagerPage.pageContent', 'branding'],
+      relations: ['pagerPage', 'pagerPage.pageContent', 'branding', 'tags'],
       order: {
         pagerPage: {
           index: 'DESC',
@@ -686,41 +690,78 @@ export class OnePagerService {
     const content = converter.makeHtml(text);
     return content;
   }
+  private async getOrCreateTags(tagNames: string[]): Promise<Tag[]> {
+    return Promise.all(
+      tagNames.map(async (tagName) => {
+        const normalized = tagName.trim().toLowerCase().replace(/\s+/g, '_');
+
+        let tag = await this.tagRepository.findOne({
+          where: { name: normalized },
+        });
+
+        if (!tag) {
+          tag = this.tagRepository.create({ name: normalized });
+          tag = await this.tagRepository.save(tag);
+        }
+
+        return tag;
+      }),
+    );
+  }
+
+  private async createPagerPage(
+    pager: Pager,
+    pagerId: string,
+    json: any,
+    topic_slug: string,
+    rank_index: number,
+  ): Promise<PagerPage> {
+    const shortId = pagerId.slice(-6);
+    const fileName = `${topic_slug}-${shortId}.pdf`;
+
+    const record = this.pagerPageRepository.create({
+      name: json.title,
+      link: fileName,
+      pagerId,
+      index: rank_index,
+      pager: pager,
+    });
+
+    const pagerPage = await this.pagerPageRepository.save(record);
+
+    await this.pageContentRepository.save({
+      pagerPageId: pagerPage.id,
+      ...json,
+    });
+
+    return pagerPage;
+  }
 
   private async generatePDF(pagerId: string, userId: string) {
     this.logger.debug('Generating PDF');
-    const pager = await this.pagerRepository.findOne({
+    let pager = await this.pagerRepository.findOne({
       where: {
         id: pagerId,
       },
-      relations: ['branding'],
+      relations: ['branding', 'tags'],
     });
 
     // Creating Pager Page Records
     pager.topics.map(async ({ json, topic_slug }, index: number) => {
       const rank_index =
         pager.topicCluster[topic_slug][0]?.rank_index || index + 1;
+
       const source_type = pager.topicCluster[topic_slug][0]?.source_type || '';
-      const tags = pager.topicCluster[topic_slug][0]?.tags || [];
-      const shortId = pagerId.slice(-6);
-      const fileName = `${topic_slug}-${shortId}.pdf`;
-      const record = this.pagerPageRepository.create({
-        name: json.title,
-        link: fileName,
-        pagerId,
-        index: rank_index,
-        source_type,
-        tags,
-        pager: pager,
-      });
-      // Saving All Pages
-      const pagerPage = await this.pagerPageRepository.save(record);
-      // Saving Pager Page Content
-      await this.pageContentRepository.save({
-        pagerPageId: pagerPage.id,
-        ...json,
-      });
-      return record;
+      const tagNames: string[] = pager.topicCluster[topic_slug][0]?.tags || [];
+
+      // ✅ fetch or create tags
+      const tagEntities = await this.getOrCreateTags(tagNames);
+      pager.tags = [...(pager.tags || []), ...tagEntities];
+      pager.source_type = source_type;
+      pager = await this.pagerRepository.save(pager);
+
+      // ✅ create pager page
+      return this.createPagerPage(pager, pagerId, json, topic_slug, rank_index);
     });
 
     // Generating PDF

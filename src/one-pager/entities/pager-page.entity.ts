@@ -6,7 +6,6 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
   OneToOne,
 } from 'typeorm';
 import { Pager } from './pager.entity';
@@ -29,16 +28,6 @@ export class PagerPage {
 
   @Column({ type: 'enum', nullable: true, enum: PageUserFeedBack })
   userResponse: PageUserFeedBack;
-
-  @Column({ type: 'text', default: '' })
-  source_type: string;
-
-  @Column({
-    type: 'jsonb',
-    nullable: false,
-    default: () => "'[]'::jsonb",
-  })
-  tags: string[];
 
   @Column({ type: 'uuid', nullable: true })
   pagerId: string;
