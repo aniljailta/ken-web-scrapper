@@ -1016,7 +1016,7 @@ export class OnePagerService {
       const topicClusters = await this.detectAllTopicClusters(
         allChunks,
         systemPrompts.topicClusterPrompt,
-        20,
+        21,
         userId,
       );
 
@@ -1038,7 +1038,11 @@ export class OnePagerService {
 
       // ✅ fetch or create tags
       const tagEntities = await this.getOrCreateTags(tagNames);
-      checkRecord.tags = [...(checkRecord.tags || []), ...tagEntities];
+      // Deduplicate by tag.id
+      const uniqueTags = Array.from(
+        new Map(tagEntities.map((tag) => [tag.id, tag])).values(),
+      );
+      checkRecord.tags = uniqueTags;
       checkRecord.source_type = source_type;
       checkRecord = await this.pagerRepository.save(checkRecord);
 
@@ -1058,7 +1062,7 @@ export class OnePagerService {
         },
       };
     } catch (error) {
-      this.logger.error('Failed To Generate Enhancement!', error);
+      this.logger.error('Failed to Generate Topics', error);
 
       return {
         data: {

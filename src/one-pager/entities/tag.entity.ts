@@ -12,7 +12,7 @@ export class Tag {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'text', unique: true })
+  @Column({ type: 'text', unique: false })
   name: string;
 
   @ManyToMany(() => Pager, (pager) => pager.tags)
