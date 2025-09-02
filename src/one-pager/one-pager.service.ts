@@ -855,6 +855,7 @@ export class OnePagerService {
       where: {
         id: checkPagerPage.pagerId,
       },
+      relations: ['pagerPage', 'pagerPage.pageContent', 'branding', 'tags'],
     });
 
     if (!checkPager) {
