@@ -183,8 +183,7 @@ export class OnePagerService {
       .leftJoinAndSelect('pager.tags', 'tags')
       .where('pager.userId = :userId', { userId })
       .andWhere('pager.status = :status', { status: PagerStatus.PROCESSED })
-      .orderBy('pager.created_date', 'DESC')
-      .addOrderBy('pagerPage.index', 'DESC')
+      .orderBy('pagerPage.created_date', 'DESC')
       .getMany();
 
     return {
@@ -325,15 +324,15 @@ export class OnePagerService {
   }
   async findOne(pagerId: string, userId: string) {
     //
-    const checkRecord = await this.pagerRepository.findOne({
-      where: { id: pagerId },
-      relations: ['pagerPage', 'pagerPage.pageContent', 'branding', 'tags'],
-      order: {
-        pagerPage: {
-          index: 'DESC',
-        },
-      },
-    });
+    const checkRecord = await this.pagerRepository
+      .createQueryBuilder('pager')
+      .leftJoinAndSelect('pager.pagerPage', 'pagerPage')
+      .leftJoinAndSelect('pagerPage.pageContent', 'pageContent')
+      .leftJoinAndSelect('pager.branding', 'branding')
+      .leftJoinAndSelect('pager.tags', 'tags')
+      .where('pager.id = :pagerId', { pagerId })
+      .orderBy('pagerPage.created_date', 'DESC')
+      .getOne();
 
     if (!checkRecord) {
       throw new NotFoundException('No Pager Found');
