@@ -49,6 +49,7 @@ import { PageContent } from './entities/page-content.entity';
 import { PagerBranding } from './entities/pager-branding.entity';
 import { Tag } from './entities/tag.entity';
 import { TopicCluster } from './entities/topic-cluster.entity';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -188,6 +189,51 @@ export class OnePagerService {
 
     return {
       data: allUserPagers,
+      message: '',
+    };
+  }
+
+  async getUserActivities(
+    userId: string,
+    { pageSize, current }: PaginationDto,
+  ) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (user.role !== 'admin') {
+      throw new BadRequestException('Not Allowed!');
+    }
+    const [allUserPagers, total] = await this.pagerRepository.findAndCount({
+      where: {
+        status: PagerStatus.PROCESSED,
+        user: {
+          role: 'user',
+        },
+      },
+      relations: {
+        user: true,
+        pagerPage: true,
+      },
+      order: {
+        created_date: 'DESC',
+      },
+      skip: (current - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return {
+      data: {
+        pagers: allUserPagers,
+        pagination: {
+          current,
+          pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      },
       message: '',
     };
   }

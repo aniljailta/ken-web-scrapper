@@ -23,6 +23,7 @@ import { Public } from 'src/guards/public.decorator';
 import { UpdatePagerTopicsDTO } from './dto/update-pager-topics.dto';
 import { HandleUserFeedbackDTO } from './dto/handle-user-feedback.dto';
 import { stripFormatting } from './helper';
+import { UserActivitiesDto } from './dto/user-activites.dto';
 
 @Controller('one-pager')
 @UseGuards(JwtAuthGuard)
@@ -35,6 +36,14 @@ export class OnePagerController {
   @Get('get-all')
   getAllPagers(@Req() req) {
     return this.onePagerService.findAll(req.user.id);
+  }
+
+  @Post('user-activities')
+  getUserActivities(@Req() req, @Body() payload: UserActivitiesDto) {
+    return this.onePagerService.getUserActivities(
+      req.user.id,
+      payload.pagination,
+    );
   }
 
   @Get('system-prompt')
