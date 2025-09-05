@@ -209,9 +209,6 @@ export class OnePagerService {
     const [allUserPagers, total] = await this.pagerRepository.findAndCount({
       where: {
         status: PagerStatus.PROCESSED,
-        user: {
-          role: 'user',
-        },
       },
       relations: {
         user: true,
