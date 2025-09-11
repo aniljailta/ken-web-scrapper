@@ -615,7 +615,7 @@ export class OnePagerService {
     const prompt = generateOnePagerSystemPrompt(systemPrompt);
     const completion = await this.openai.chat.completions.create({
       // Second GPT Modal
-      model: 'gpt-4',
+      model: 'gpt-4-turbo',
       messages: [
         { role: 'system', content: prompt },
         {
