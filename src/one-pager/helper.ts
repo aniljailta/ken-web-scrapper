@@ -5,7 +5,7 @@
  * @param {string} bgColor - The background color in hex format (e.g., "#ffffff" or "#000").
  * @returns {string} The appropriate text color hex code: "#000000" or "#ffffff"
  */
-export function getContrastingTextColor(bgColor: string) {
+export function getContrastingTextColor(bgColor: string): string {
   // Remove hash if present
   let hex = bgColor.replace('#', '');
 

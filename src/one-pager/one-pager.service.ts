@@ -871,7 +871,7 @@ export class OnePagerService {
         branding?.secondaryColor || PagerDefaultSecondaryColor,
       ),
       logo: branding?.logo || PagerDefaultLogo,
-      cta: json.cta,
+      cta: this.parseMarkDown(json.cta),
       ctaText: json?.ctaText || 'Access Full Report',
       ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '#',
     });
