@@ -22,7 +22,6 @@ import {
   detectTopicClusterSystemPrompt,
   generateEnhancementSectionSystemPrompt,
   generateOnePagerSystemPrompt,
-  PagerDefaultLogo,
   PagerDefaultPrimaryColor,
   PagerDefaultSecondaryColor,
 } from './constants';
@@ -562,50 +561,61 @@ export class OnePagerService {
     userId: string;
     brandingWebsite: string;
   }): Promise<void> {
-    this.logger.debug('Generating Actual Pager Content from the Topics');
-    const pager = await this.pagerRepository.findOne({
-      where: {
-        id: pagerId,
-      },
-    });
-    const slugs = await this.fetchSlugsByPager(pagerId);
-
-    const totalClusters = slugs.length;
-    let progress = 0;
-    const increment = totalClusters > 0 ? 100 / totalClusters : 0;
-
-    for (const slug of slugs) {
-      const contents = await this.fetchChunksBySlug(pagerId, slug);
-      const chunkTexts = contents
-        .map(({ content }) => content || '')
-        .filter(Boolean);
-
-      if (chunkTexts.join(' ').length < 200) {
-        continue; // ✅ works fine here
-      }
-
-      // 🚀 Second GPT call
-      const onePager = await this.generateOnePager(
-        slug,
-        chunkTexts,
-        pagerJsonPrompt,
-      );
-      // Saving the generated Content;
-      await this.createPagerPage(
-        pager,
-        pagerId,
-        { ...onePager.json, ctaLink: brandingWebsite },
-        onePager.topic_slug,
-        1,
-      );
-
-      // 📡 Send progress update
-      progress += increment;
-
-      this.socketService.sendProgress({
-        progress: Math.min(Math.round(progress), 100),
-        userId,
+    try {
+      this.logger.debug('Generating Actual Pager Content from the Topics');
+      const pager = await this.pagerRepository.findOne({
+        where: {
+          id: pagerId,
+        },
       });
+      const slugs = await this.fetchSlugsByPager(pagerId);
+
+      const totalClusters = slugs.length;
+      let progress = 0;
+      const increment = totalClusters > 0 ? 100 / totalClusters : 0;
+
+      for (const slug of slugs) {
+        const contents = await this.fetchChunksBySlug(pagerId, slug);
+        const chunkTexts = contents
+          .map(({ content }) => content || '')
+          .filter(Boolean);
+
+        if (chunkTexts.join(' ').length < 200) {
+          continue; // ✅ works fine here
+        }
+
+        // 🚀 Second GPT call
+        const onePager = await this.generateOnePager(
+          slug,
+          chunkTexts,
+          pagerJsonPrompt,
+        );
+        if (!onePager.json?.error) {
+          // Saving the generated Content;
+          await this.createPagerPage(
+            pager,
+            pagerId,
+            { ...onePager.json, ctaLink: brandingWebsite },
+            onePager.topic_slug,
+            1,
+          );
+
+          // 📡 Send progress update
+          progress += increment;
+
+          this.socketService.sendProgress({
+            progress: Math.min(Math.round(progress), 100),
+            userId,
+          });
+        } else {
+          throw new Error(
+            `Couldn't Generate Content! for ${onePager?.topic_slug}`,
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.error(error?.message || 'Failed to Generate Content!');
+      //
     }
   }
 
