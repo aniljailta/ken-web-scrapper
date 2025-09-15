@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { PagerPage } from './pager-page.entity';
 import { Pager } from './pager.entity';
 
 @Entity('pager_branding')
@@ -33,6 +32,12 @@ export class PagerBranding {
 
   @Column({ type: 'text', nullable: true }) // storing logo URL
   logo: string;
+
+  @Column({ type: 'text', nullable: true })
+  website: string;
+
+  @Column({ type: 'text', nullable: true })
+  company: string;
 
   @Column({ type: 'text', nullable: true })
   name: string;

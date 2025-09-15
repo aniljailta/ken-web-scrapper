@@ -554,11 +554,13 @@ export class OnePagerService {
     pagerId,
     pagerJsonPrompt,
     userId,
+    brandingWebsite,
   }: {
     topicClusterPrompt: string;
     pagerJsonPrompt: string;
     pagerId: string;
     userId: string;
+    brandingWebsite: string;
   }): Promise<void> {
     this.logger.debug('Generating Actual Pager Content from the Topics');
     const pager = await this.pagerRepository.findOne({
@@ -592,7 +594,7 @@ export class OnePagerService {
       await this.createPagerPage(
         pager,
         pagerId,
-        onePager.json,
+        { ...onePager.json, ctaLink: brandingWebsite },
         onePager.topic_slug,
         1,
       );
@@ -668,6 +670,7 @@ export class OnePagerService {
           topicClusterPrompt: topicClusterPrompt,
           pagerJsonPrompt: pagerJsonPrompt,
           userId,
+          brandingWebsite: branding?.website || '',
         });
       } else {
         const systemPrompts = await this.systemPromptsRepository.findOne({
@@ -681,6 +684,7 @@ export class OnePagerService {
           pagerId,
           topicClusterPrompt: systemPrompts.topicClusterPrompt,
           pagerJsonPrompt: systemPrompts.pagerJsonPrompt,
+          brandingWebsite: branding?.website || '',
           userId,
         });
       }
@@ -710,7 +714,10 @@ export class OnePagerService {
 
       // If No Pages were created generate PDF!
       if (checkRecord.pagerPage.length < 1) {
-        await this.generatePDF(checkRecord.id, userId);
+        await this.generatePDF({
+          pagerId: checkRecord.id,
+          userId,
+        });
       }
 
       if (!isTesting) {
@@ -793,7 +800,13 @@ export class OnePagerService {
     return pagerPage;
   }
 
-  private async generatePDF(pagerId: string, userId: string) {
+  private async generatePDF({
+    pagerId,
+    userId,
+  }: {
+    pagerId: string;
+    userId: string;
+  }) {
     this.logger.debug('Generating PDF');
     const pager = await this.pagerRepository.findOne({
       where: {
@@ -873,7 +886,7 @@ export class OnePagerService {
       logo: branding?.logo || PagerDefaultLogo,
       cta: this.parseMarkDown(json.cta),
       ctaText: json?.ctaText || 'Access Full Report',
-      ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '#',
+      ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '',
     });
     return await this.generateAndSavePDF(content, fileName, pagerPageId);
   }
