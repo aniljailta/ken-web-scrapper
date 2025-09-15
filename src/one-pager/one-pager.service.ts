@@ -883,7 +883,7 @@ export class OnePagerService {
       secondaryTextColor: getContrastingTextColor(
         branding?.secondaryColor || PagerDefaultSecondaryColor,
       ),
-      logo: branding?.logo || PagerDefaultLogo,
+      logo: branding?.logo || '',
       cta: this.parseMarkDown(json.cta),
       ctaText: json?.ctaText || 'Access Full Report',
       ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '',
