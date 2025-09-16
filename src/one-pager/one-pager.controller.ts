@@ -57,6 +57,11 @@ export class OnePagerController {
     return this.onePagerService.updateSystemPrompt(payload);
   }
 
+  @Get('topic-source/:id')
+  getTopicSource(@Param('id') id: string, @Req() req) {
+    return this.onePagerService.findTopicSource(id);
+  }
+
   // Manage Companies
   @Post('companies')
   createCompanies(@Req() req, @Body() payload: CreateCompanyDto) {

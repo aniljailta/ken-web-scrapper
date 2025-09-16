@@ -322,7 +322,7 @@ export class OnePagerService {
     }
 
     // 🗑️ Delete TopicClusters for this pager (will also clean join rows if cascade set)
-    await this.topicClusterRepository.delete({ pager: { id: pagerId } });
+    // await this.topicClusterRepository.delete({ pager: { id: pagerId } });
 
     // 🗑️ Delete PagerChunks for this pager (if they’re independent, not reused elsewhere)
     await this.pagerChunksRepository.delete({ pagerId });
@@ -386,6 +386,33 @@ export class OnePagerService {
 
     return {
       data: checkRecord,
+      message: '',
+    };
+  }
+
+  async findTopicSource(id: string) {
+    //
+    const checkRecord = await this.pagerRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!checkRecord) {
+      throw new NotFoundException('No Pager Found');
+    }
+
+    const topics = await this.topicClusterRepository.find({
+      where: {
+        pagerId: id,
+      },
+      relations: {
+        pagerChunks: true,
+      },
+    });
+
+    return {
+      data: topics,
       message: '',
     };
   }
