@@ -49,6 +49,8 @@ import { PagerBranding } from './entities/pager-branding.entity';
 import { Tag } from './entities/tag.entity';
 import { TopicCluster } from './entities/topic-cluster.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { CreateCompanyDto } from './dto/company.dto';
+import { Companies } from './entities/companies.entity';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -61,6 +63,8 @@ export class OnePagerService {
     private pagerRepository: Repository<Pager>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Companies)
+    private companiesRepository: Repository<Companies>,
     @InjectRepository(SystemPrompts)
     private systemPromptsRepository: Repository<SystemPrompts>,
     @InjectRepository(PagerChunks)
@@ -1250,6 +1254,119 @@ export class OnePagerService {
     return {
       data: checkPagerPage,
       message: 'Thanks for your Feedback!',
+    };
+  }
+
+  async deleteCompany(userId: string, companyId: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (user.role !== 'admin') {
+      throw new BadRequestException('Not Authorized!');
+    }
+    await this.companiesRepository.delete({
+      id: companyId,
+    });
+
+    return {
+      data: null,
+      message: 'Company Deleted!',
+    };
+  }
+
+  async createCompany(userId: string, payload: CreateCompanyDto) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (user.role !== 'admin') {
+      throw new BadRequestException('Not Authorized!');
+    }
+    const newCompany = await this.companiesRepository.save({
+      userId,
+      company: payload.company,
+      logo: payload.logo,
+      url: payload.url,
+    });
+
+    return {
+      data: newCompany,
+      message: 'New Company Added',
+    };
+  }
+
+  async updateCompany(companyId: string, payload: CreateCompanyDto) {
+    const checkCompany = await this.companiesRepository.findOne({
+      where: {
+        id: companyId,
+      },
+    });
+
+    if (!checkCompany) {
+      throw new NotFoundException('No Company Found');
+    }
+    const updatedCompany = await this.companiesRepository.update(
+      {
+        id: companyId,
+      },
+      {
+        company: payload.company,
+        logo: payload.logo,
+        url: payload.url,
+      },
+    );
+
+    return {
+      data: updatedCompany,
+      message: 'Company Updated',
+    };
+  }
+
+  async getCompaniesPagination(
+    userId: string,
+    { pageSize, current }: PaginationDto,
+  ) {
+    const [companies, total] = await this.companiesRepository.findAndCount({
+      where: {},
+      order: {
+        created_date: 'DESC',
+      },
+      skip: (current - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return {
+      data: {
+        companies: companies,
+        pagination: {
+          current,
+          pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      },
+      message: '',
+    };
+  }
+
+  async getCompanies() {
+    const companies = await this.companiesRepository.find({
+      where: {},
+      order: {
+        created_date: 'DESC',
+      },
+    });
+
+    return {
+      data: {
+        companies: companies,
+      },
+      message: '',
     };
   }
 }

@@ -24,6 +24,7 @@ import { UpdatePagerTopicsDTO } from './dto/update-pager-topics.dto';
 import { HandleUserFeedbackDTO } from './dto/handle-user-feedback.dto';
 import { stripFormatting } from './helper';
 import { UserActivitiesDto } from './dto/user-activites.dto';
+import { CompanyPaginationDto, CreateCompanyDto } from './dto/company.dto';
 
 @Controller('one-pager')
 @UseGuards(JwtAuthGuard)
@@ -54,6 +55,39 @@ export class OnePagerController {
   @Put('system-prompt')
   updateSystemPrompt(@Body() payload: UpdateSystemPromptDTO) {
     return this.onePagerService.updateSystemPrompt(payload);
+  }
+
+  // Manage Companies
+  @Post('companies')
+  createCompanies(@Req() req, @Body() payload: CreateCompanyDto) {
+    return this.onePagerService.createCompany(req?.user?.id, payload);
+  }
+
+  @Put('companies/:id')
+  updateCompanies(
+    @Param('id') id: string,
+    @Req() req,
+    @Body() payload: CreateCompanyDto,
+  ) {
+    return this.onePagerService.updateCompany(id, payload);
+  }
+
+  @Delete('companies/:id')
+  deleteCompany(@Param('id') id: string, @Req() req) {
+    return this.onePagerService.deleteCompany(req?.user?.id, id);
+  }
+
+  @Post('get-companies')
+  getCompaniesPagination(@Req() req, @Body() payload: CompanyPaginationDto) {
+    return this.onePagerService.getCompaniesPagination(
+      req?.user?.id,
+      payload.pagination,
+    );
+  }
+
+  @Get('get-companies')
+  getCompanies() {
+    return this.onePagerService.getCompanies();
   }
 
   @Get('download-zip/:id')
