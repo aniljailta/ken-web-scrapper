@@ -22,6 +22,7 @@ import {
   detectTopicClusterSystemPrompt,
   generateEnhancementSectionSystemPrompt,
   generateOnePagerSystemPrompt,
+  PagerDefaultLogo,
   PagerDefaultPrimaryColor,
   PagerDefaultSecondaryColor,
 } from './constants';
@@ -924,7 +925,7 @@ export class OnePagerService {
       secondaryTextColor: getContrastingTextColor(
         branding?.secondaryColor || PagerDefaultSecondaryColor,
       ),
-      logo: branding?.logo || '',
+      logo: branding?.logo || PagerDefaultLogo,
       cta: this.parseMarkDown(json.cta),
       ctaText: json?.ctaText || 'Learn More',
       ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '',
