@@ -899,7 +899,7 @@ export class OnePagerService {
       ),
       logo: branding?.logo || '',
       cta: this.parseMarkDown(json.cta),
-      ctaText: json?.ctaText || 'Access Full Report',
+      ctaText: json?.ctaText || 'Learn More',
       ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '',
     });
     return await this.generateAndSavePDF(content, fileName, pagerPageId);
