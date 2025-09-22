@@ -29,7 +29,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const stack = (exception as any)?.stack || null;
 
-    this.logger.error(`Exception thrown: ${JSON.stringify(message)}\n${stack}`);
+    this.logger.error(
+      `Exception thrown: ${JSON.stringify(message)}\n${stack}\n Route:${request.path}`,
+    );
 
     response.status(status).json({
       message,

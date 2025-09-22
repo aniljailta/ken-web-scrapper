@@ -91,6 +91,7 @@ export class OnePagerController {
   }
 
   @Get('get-companies')
+  @Public()
   getCompanies() {
     return this.onePagerService.getCompanies();
   }

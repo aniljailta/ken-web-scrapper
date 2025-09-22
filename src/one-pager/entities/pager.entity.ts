@@ -25,6 +25,9 @@ export class Pager {
   @Column({ type: 'text', nullable: true })
   name: string;
 
+  @Column({ type: 'text', nullable: true })
+  originalDocLink: string;
+
   @ManyToOne(() => User, (user) => user.pagers, {
     nullable: true,
     onDelete: 'CASCADE',

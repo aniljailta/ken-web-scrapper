@@ -100,6 +100,7 @@ export class OnePagerService {
       const data = await PdfParse(file.buffer);
       const pdfText = data.text;
       const fullText = sanitizePdfText(pdfText);
+      let originalFileLink: string = '';
 
       // If throwing Error if Pdf not able to parse!
       if (!fullText) {
@@ -118,11 +119,14 @@ export class OnePagerService {
         });
       }
 
+      originalFileLink = await this.s3Service.uploadFile(file, 'original');
+
       // Creating Pager Record
-      const pager = await this.createPagerRecord(
+      const pager = await this.createPagerRecord({
         fileName,
-        checkUser ? checkUser.id : undefined,
-      );
+        userId: checkUser ? checkUser.id : undefined,
+        originalFileLink,
+      });
 
       pagerId = pager.id;
 
@@ -430,15 +434,25 @@ export class OnePagerService {
     return chunks;
   }
 
-  private async createPagerRecord(fileName: string, userId?: string) {
+  private async createPagerRecord({
+    fileName,
+    userId,
+    originalFileLink = null,
+  }: {
+    fileName: string;
+    originalFileLink?: string;
+    userId?: string;
+  }) {
     return await this.pagerRepository.save(
       userId
         ? {
             userId,
             name: fileName,
+            originalDocLink: originalFileLink,
           }
         : {
             name: fileName,
+            originalDocLink: originalFileLink,
           },
     );
   }
