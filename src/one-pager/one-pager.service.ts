@@ -228,10 +228,21 @@ export class OnePagerService {
       skip: (current - 1) * pageSize,
       take: pageSize,
     });
+    const [totalPagers, distinctEmailCount] = await Promise.all([
+      this.pagerRepository.count({
+        where: { status: PagerStatus.PROCESSED },
+      }),
+      await this.userRepository
+        .createQueryBuilder('user')
+        .select('COUNT(DISTINCT user.email)', 'count')
+        .getRawOne(),
+    ]);
 
     return {
       data: {
         pagers: allUserPagers,
+        totalPagers,
+        distinctEmailCount: distinctEmailCount.count,
         pagination: {
           current,
           pageSize,
