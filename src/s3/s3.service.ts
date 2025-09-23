@@ -5,6 +5,8 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ConfigService } from '@nestjs/config';
 import { Upload } from '@aws-sdk/lib-storage';
 import { folderTypes } from 'src/one-pager/type';
+import path from 'path';
+import mime from 'mime';
 
 @Injectable()
 export class S3Service {
@@ -38,6 +40,37 @@ export class S3Service {
     await upload.done();
 
     return `https://${this.configService.getOrThrow('AWS_S3_BUCKET')}.s3.${this.configService.getOrThrow('AWS_REGION')}.amazonaws.com/${key}`;
+  }
+
+  async uploadLogoBuffer(
+    file: Buffer,
+    folder: folderTypes = 'brands',
+    url: string,
+  ): Promise<string> {
+    try {
+      const baseName = path.basename(new URL(url).pathname) || 'logo.png';
+      const safeName = baseName.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const key = `${folder}/${Date.now()}-${safeName}`;
+
+      const contentType = mime.lookup(baseName) || 'image/png';
+
+      const upload = new Upload({
+        client: this.s3,
+        params: {
+          Bucket: this.configService.getOrThrow('AWS_S3_BUCKET'),
+          Key: key,
+          Body: file,
+          ContentType: contentType,
+        },
+      });
+
+      await upload.done();
+
+      return `https://${this.configService.getOrThrow('AWS_S3_BUCKET')}.s3.${this.configService.getOrThrow('AWS_REGION')}.amazonaws.com/${key}`;
+    } catch (error) {
+      console.error('❌ Failed to upload logo:', error);
+      throw new Error('Logo upload failed. Please try again.');
+    }
   }
 
   async uploadPdfBuffer(buffer: Buffer, key: string) {

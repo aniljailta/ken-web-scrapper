@@ -932,6 +932,16 @@ export class OnePagerService {
     fileName: string;
     pagerPageId: string;
   }) {
+    let logo = branding?.logo || PagerDefaultLogo;
+    // Only save logos from brandfetch.io
+    if (logo && logo.includes('brandfetch.io')) {
+      try {
+        logo = await this.saveBrandLogo(logo, pagerPageId);
+      } catch {
+        logo = branding?.logo || PagerDefaultLogo;
+      }
+    }
+
     const content = await this.renderTemplate('pager-template', {
       title: this.parseMarkDown(json.title || ''),
       subTitle: this.parseMarkDown(json.subtitle || ''),
@@ -950,7 +960,7 @@ export class OnePagerService {
       secondaryTextColor: getContrastingTextColor(
         branding?.secondaryColor || PagerDefaultSecondaryColor,
       ),
-      logo: branding?.logo || PagerDefaultLogo,
+      logo: logo,
       cta: this.parseMarkDown(json.cta),
       ctaText: json?.ctaText || 'Learn More',
       ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '',
@@ -1405,6 +1415,48 @@ export class OnePagerService {
       },
       message: '',
     };
+  }
+
+  private async saveBrandLogo(url: string, pagerPageId: string) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText}`);
+      }
+
+      const buffer = await response.arrayBuffer();
+
+      const s3ImageUrl = await this.s3Service.uploadLogoBuffer(
+        Buffer.from(buffer),
+        'brands',
+        url,
+      );
+
+      const pagerPage = await this.pagerPageRepository.findOne({
+        where: {
+          id: pagerPageId,
+        },
+      });
+      // Updating the new Logo Url
+      await this.pagerBrandingRepository.update(
+        {
+          pagerId: pagerPage.pagerId,
+        },
+        {
+          logo: s3ImageUrl,
+        },
+      );
+      this.logger.debug(`Fetching Logo From BrandFetch & Saving!`);
+      return s3ImageUrl;
+    } catch {
+      return PagerDefaultLogo;
+    }
   }
 
   async getCompanies() {
