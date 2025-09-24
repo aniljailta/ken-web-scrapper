@@ -21,6 +21,7 @@ import {
   detectTopicClusterSystemPrompt,
   generateEnhancementSectionSystemPrompt,
   generateOnePagerSystemPrompt,
+  generateTagsAndSourceSystemPrompt,
   PagerDefaultLogo,
   PagerDefaultPrimaryColor,
   PagerDefaultSecondaryColor,
@@ -139,6 +140,9 @@ export class OnePagerService {
       await this.pagerChunksRepository.save(chunkEntities);
 
       const updatedPager = await this.findOne(pagerId, userId);
+
+      // Generating & Assigning Tags & Source Type
+      await this.getSourceAndTags(pagerId);
 
       return {
         message: 'PDF processed and chunks stored successfully',
@@ -503,9 +507,7 @@ export class OnePagerService {
       Array<{
         content: string;
         rank_index: number;
-        source_type: string;
         title: string;
-        tags: string[];
       }>
     > = {};
 
@@ -522,8 +524,6 @@ export class OnePagerService {
             content: item,
             rank_index: content.rank_index,
             title: content.title,
-            source_type: content.source_type,
-            tags: content.tags,
           });
         });
       }
@@ -540,7 +540,8 @@ export class OnePagerService {
       .innerJoin('chunk.topicClusters', 'cluster')
       .where('cluster.pagerId = :pagerId', { pagerId })
       .andWhere('cluster.slug = :slug', { slug })
-      .select(['chunk.id', 'chunk.content'])
+      .select(['chunk.id', 'chunk.content', 'chunk.created_date'])
+      .orderBy('chunk.created_date', 'ASC')
       .distinct(true)
       .getMany();
   }
@@ -978,6 +979,9 @@ export class OnePagerService {
     return await this.pagerChunksRepository.find({
       where: { pagerId },
       select: ['content', 'id'],
+      order: {
+        created_date: 'ASC',
+      },
     });
   }
 
@@ -1071,7 +1075,7 @@ export class OnePagerService {
   async triggerTopicGeneration(pagerId: string, userId: string) {
     try {
       this.logger.debug('Generating Topics List');
-      let checkRecord = await this.pagerRepository.findOne({
+      const checkRecord = await this.pagerRepository.findOne({
         where: {
           id: pagerId,
         },
@@ -1095,32 +1099,6 @@ export class OnePagerService {
         21,
         userId,
       );
-
-      // Saving Pager Source_type & Tags
-      // Safely extract source_type (first available)
-      const source_type =
-        Object.entries(topicClusters)
-          .map(([_, value]) => value?.[0]?.source_type ?? null)
-          .find((s) => s !== null) || null;
-
-      // Safely extract all tags into a flat string array
-      const tagNames: string[] = Object.entries(topicClusters)
-        .map(([_, value]) => value?.[0]?.tags ?? [])
-        .flat()
-        .filter(
-          (tag): tag is string =>
-            typeof tag === 'string' && tag.trim().length > 0,
-        );
-
-      // ✅ fetch or create tags
-      const tagEntities = await this.getOrCreateTags(tagNames);
-      // Deduplicate by tag.id
-      const uniqueTags = Array.from(
-        new Map(tagEntities.map((tag) => [tag.id, tag])).values(),
-      );
-      checkRecord.tags = uniqueTags;
-      checkRecord.source_type = source_type;
-      checkRecord = await this.pagerRepository.save(checkRecord);
 
       // 👉 delegate saving to new method
       await this.createOrUpdateClusters(topicClusters, pagerId);
@@ -1173,6 +1151,9 @@ export class OnePagerService {
       const chunkIds = items.map((i) => i.content);
       const chunks = await this.pagerChunksRepository.find({
         where: { id: In(chunkIds) },
+        order: {
+          created_date: 'ASC',
+        },
       });
 
       // ensure uniqueness of pagerChunks
@@ -1416,5 +1397,56 @@ export class OnePagerService {
       },
       message: '',
     };
+  }
+
+  async getSourceAndTags(pagerId: string) {
+    // Fetch initial chunks
+    const firstFewChunks = await this.pagerChunksRepository.find({
+      where: { pagerId },
+      order: { created_date: 'ASC' },
+      take: 2,
+    });
+
+    if (!firstFewChunks.length) {
+      return { tags: [], sourceType: null };
+    }
+
+    const firstFewText = firstFewChunks.map((c) => c.content).join('\n\n');
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: [
+          {
+            role: 'system',
+            content: generateTagsAndSourceSystemPrompt,
+          },
+          { role: 'user', content: firstFewText },
+        ],
+        temperature: 0.2,
+      });
+
+      const rawContent = response.choices[0]?.message?.content ?? '{}';
+      const { tags = ['general', 'report'], sourceType = 'Report' } =
+        JSON.parse(rawContent);
+
+      const tagsEntry = await this.getOrCreateTags(tags);
+
+      const pager = await this.pagerRepository.findOne({
+        where: { id: pagerId },
+        relations: ['tags'],
+      });
+
+      if (pager) {
+        pager.source_type = sourceType;
+        pager.tags = tagsEntry;
+        await this.pagerRepository.save(pager);
+      }
+
+      return { tags, sourceType };
+    } catch (error) {
+      this.logger.error('Error extracting source and tags:', error);
+      return { tags: [], sourceType: null };
+    }
   }
 }

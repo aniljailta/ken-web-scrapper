@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   ManyToMany,
+  CreateDateColumn,
 } from 'typeorm';
 import { Pager } from './pager.entity';
 import { TopicCluster } from './topic-cluster.entity';
@@ -26,4 +27,24 @@ export class PagerChunks {
   pager: Pager;
   @ManyToMany(() => TopicCluster, (cluster) => cluster.pagerChunks)
   topicClusters: TopicCluster[];
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    transformer: {
+      to: (value) => value,
+      from: (value) => {
+        if (!value) {
+          return new Date();
+        }
+        if (typeof value === 'string') {
+          return new Date(value);
+        }
+        if (value instanceof Date) {
+          return new Date(value.toISOString());
+        }
+        return value;
+      },
+    },
+  })
+  created_date: Date;
 }

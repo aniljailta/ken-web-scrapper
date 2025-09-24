@@ -70,6 +70,12 @@ Task: Rewrite the text into a stronger, more captivating version.
 
   `;
 
+export const generateTagsAndSourceSystemPrompt =
+  'You will be provided with the first few paragraphs from the document. ' +
+  'Your job is to return a JSON containing: ' +
+  '{ "tags": string[], "sourceType": string }. ' +
+  'The "tags" should be key topic keywords, and "sourceType" should describe the type of document.';
+
 export const PagerDefaultPrimaryColor = '#4976FF';
 export const PagerDefaultSecondaryColor = '#22559F';
 export const PagerDefaultLogo =
