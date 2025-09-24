@@ -31,12 +31,24 @@ This structure is used to group content by topic and define the display order of
 
     `.trim();
 
-export const generateOnePagerSystemPrompt = (prompt: string) =>
-  `
+export const generateOnePagerSystemPrompt = (
+  prompt: string,
+  topicSlug: string,
+) => {
+  // Convert "title_page_one" → "Title Page One"
+  const formattedTopic = topicSlug
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
+  return `
 ${prompt}
 
+This is the Topic Title you'll be generating JSON for: "${formattedTopic}"
+
 Respond with valid JSON only.
-    `.trim();
+  `.trim();
+};
 
 export const generateEnhancementSectionSystemPrompt = (
   sectionType: string,
