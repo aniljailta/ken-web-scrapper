@@ -15,6 +15,7 @@ import { PagerBranding } from './entities/pager-branding.entity';
 import { Tag } from './entities/tag.entity';
 import { TopicCluster } from './entities/topic-cluster.entity';
 import { Companies } from './entities/companies.entity';
+import { OnePagerHelper } from './one-pager-helper.service';
 
 @Module({
   imports: [
@@ -32,6 +33,12 @@ import { Companies } from './entities/companies.entity';
     ]),
   ],
   controllers: [OnePagerController],
-  providers: [OnePagerService, SocketGateway, S3Service, SocketService],
+  providers: [
+    OnePagerService,
+    SocketGateway,
+    S3Service,
+    SocketService,
+    OnePagerHelper,
+  ],
 })
 export class OnePagerModule {}

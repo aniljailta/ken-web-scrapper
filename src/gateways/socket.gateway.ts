@@ -38,13 +38,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.connectedClients.set(userID, client.id);
       this.socketService.registerClient(client.id, userID);
 
-      this.logger.log(
-        `⚡ User ${userID} connected with Socket ID: ${client.id}`,
-      );
+      // this.logger.log(
+      //   `⚡ User ${userID} connected with Socket ID: ${client.id}`,
+      // );
     } else {
-      this.logger.log(
-        `⚡ Anonymous user connected with Socket ID: ${client.id}`,
-      );
+      // this.logger.log(
+      //   `⚡ Anonymous user connected with Socket ID: ${client.id}`,
+      // );
     }
   }
 

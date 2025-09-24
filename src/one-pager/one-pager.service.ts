@@ -5,7 +5,6 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import PdfParse from 'pdf-parse';
 import { Pager } from './entities/pager.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
@@ -27,11 +26,8 @@ import {
   PagerDefaultSecondaryColor,
 } from './constants';
 import { PagerPage } from './entities/pager-page.entity';
-import { join } from 'path';
-import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 
-import * as hbs from 'handlebars';
 import { SystemPrompts } from './entities/system-prompts.entity';
 import { UpdateSystemPromptDTO } from './dto/update-system-prompt.dto';
 import {
@@ -39,11 +35,9 @@ import {
   extractS3KeyFromUrl,
   getContrastingTextColor,
   hexToRgba,
-  sanitizePdfText,
 } from './helper';
 import { S3Service } from 'src/s3/s3.service';
 import { User } from 'src/users/entities/user.entity';
-import showdown from 'showdown';
 import { SocketService } from 'src/gateways/socket.service';
 import { PageContent } from './entities/page-content.entity';
 import { PagerBranding } from './entities/pager-branding.entity';
@@ -52,6 +46,7 @@ import { TopicCluster } from './entities/topic-cluster.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateCompanyDto } from './dto/company.dto';
 import { Companies } from './entities/companies.entity';
+import { OnePagerHelper } from './one-pager-helper.service';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -85,6 +80,7 @@ export class OnePagerService {
     private readonly config: ConfigService,
     private readonly s3Service: S3Service,
     private readonly socketService: SocketService,
+    private readonly onePagerHelper: OnePagerHelper,
   ) {
     this.openai = new OpenAI({
       apiKey: this.config.get<string>('OPENAI_API_KEY'),
@@ -97,10 +93,9 @@ export class OnePagerService {
     }
     let pagerId: null | string = null;
     try {
-      const data = await PdfParse(file.buffer);
-      const pdfText = data.text;
-      const fullText = sanitizePdfText(pdfText);
       let originalFileLink: string = '';
+
+      const fullText = await this.onePagerHelper.readPDF(file);
 
       // If throwing Error if Pdf not able to parse!
       if (!fullText) {
@@ -130,7 +125,10 @@ export class OnePagerService {
 
       pagerId = pager.id;
 
-      const chunks = this.splitIntoChunks(fullText, this.chunkLength);
+      const chunks = this.onePagerHelper.splitIntoChunks(
+        fullText,
+        this.chunkLength,
+      );
       const chunkEntities = chunks.map((content) => {
         return this.pagerChunksRepository.create({
           pagerId: pager.id,
@@ -352,38 +350,6 @@ export class OnePagerService {
     };
   }
 
-  private async renderTemplate(
-    templateName: string,
-    context: any,
-  ): Promise<string> {
-    const templatePath = join('src', 'views', `${templateName}.hbs`);
-    const source = fs.readFileSync(templatePath, 'utf8');
-
-    hbs.registerHelper(
-      'capitalize',
-      (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
-    );
-    hbs.registerHelper('inc', function (value) {
-      return parseInt(value) + 1;
-    });
-    hbs.registerHelper('limit', function (arr, limit) {
-      if (!Array.isArray(arr)) return [];
-      return arr.slice(0, limit);
-    });
-
-    hbs.registerHelper('eq', (a, b) => a === b);
-
-    hbs.registerHelper('stripPTags', function (htmlString) {
-      const trimmed = htmlString.trim();
-      if (trimmed.startsWith('<p>') && trimmed.endsWith('</p>')) {
-        return new hbs.SafeString(trimmed.slice(3, -4));
-      }
-      return new hbs.SafeString(htmlString);
-    });
-
-    const compiled = hbs.compile(source);
-    return compiled(context);
-  }
   async findOne(pagerId: string, userId: string) {
     //
     const checkRecord = await this.pagerRepository
@@ -431,18 +397,6 @@ export class OnePagerService {
       data: topics,
       message: '',
     };
-  }
-
-  private splitIntoChunks(text: string, maxLength: number): string[] {
-    const chunks: string[] = [];
-    let start = 0;
-
-    while (start < text.length) {
-      chunks.push(text.slice(start, start + maxLength));
-      start += maxLength;
-    }
-
-    return chunks;
   }
 
   private async createPagerRecord({
@@ -543,7 +497,7 @@ export class OnePagerService {
     batchSize = 20,
     userId: string,
   ) {
-    const batches = this.batchChunks(allChunks, batchSize);
+    const batches = this.onePagerHelper.batchChunks(allChunks, batchSize);
     const mergedClusters: Record<
       string,
       Array<{
@@ -577,13 +531,6 @@ export class OnePagerService {
     return mergedClusters;
   }
 
-  private batchChunks(chunks: PagerChunks[], size = 20) {
-    const batches = [];
-    for (let i = 0; i < chunks.length; i += size) {
-      batches.push(chunks.slice(i, i + size));
-    }
-    return batches;
-  }
   async fetchChunksBySlug(
     pagerId: string,
     slug: string,
@@ -814,12 +761,6 @@ export class OnePagerService {
     }
   }
 
-  private parseMarkDown(text: string) {
-    //
-    const converter = new showdown.Converter();
-    const content = converter.makeHtml(text);
-    return content;
-  }
   private async getOrCreateTags(tagNames: string[]): Promise<Tag[]> {
     return Promise.all(
       tagNames.map(async (tagName) => {
@@ -942,12 +883,14 @@ export class OnePagerService {
       }
     }
 
-    const content = await this.renderTemplate('pager-template', {
-      title: this.parseMarkDown(json.title || ''),
-      subTitle: this.parseMarkDown(json.subtitle || ''),
-      problem: this.parseMarkDown(json.problem),
-      solution: this.parseMarkDown(json.solution),
-      highlights: json.highlights.map((item) => this.parseMarkDown(item)),
+    const content = await this.onePagerHelper.renderTemplate('pager-template', {
+      title: this.onePagerHelper.parseMarkDown(json.title || ''),
+      subTitle: this.onePagerHelper.parseMarkDown(json.subtitle || ''),
+      problem: this.onePagerHelper.parseMarkDown(json.problem),
+      solution: this.onePagerHelper.parseMarkDown(json.solution),
+      highlights: json.highlights.map((item) =>
+        this.onePagerHelper.parseMarkDown(item),
+      ),
       primaryColor: branding?.primaryColor || PagerDefaultPrimaryColor,
       secondaryColor: branding?.secondaryColor || PagerDefaultSecondaryColor,
       secondaryLightBgColor: hexToRgba(
@@ -961,7 +904,7 @@ export class OnePagerService {
         branding?.secondaryColor || PagerDefaultSecondaryColor,
       ),
       logo: logo,
-      cta: this.parseMarkDown(json.cta),
+      cta: this.onePagerHelper.parseMarkDown(json.cta),
       ctaText: json?.ctaText || 'Learn More',
       ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '',
     });
