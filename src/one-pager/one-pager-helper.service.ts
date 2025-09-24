@@ -1,58 +1,40 @@
 import { Injectable, Logger } from '@nestjs/common';
-import PdfParse from 'pdf-parse';
-import { sanitizePdfText } from './helper';
 import { join } from 'path';
 import * as fs from 'fs';
 import * as hbs from 'handlebars';
+import axios from 'axios';
+import FormData from 'form-data';
 import { PagerChunks } from './entities/pager-chunks.entity';
 import showdown from 'showdown';
-import PDFParser from 'pdf2json';
 
 @Injectable()
 export class OnePagerHelper {
   private readonly logger = new Logger(OnePagerHelper.name);
+  private readonly pythonServiceUrl = 'http://localhost:8000/extract-text'; // Python microservice URL
   constructor() {}
 
   async readPDF(file: Express.Multer.File): Promise<string> {
     try {
-      let fullText = await new Promise((resolve, reject) => {
-        const pdfParser = new PDFParser();
-
-        // When parsing is complete
-        pdfParser.on('pdfParser_dataReady', (pdfData) => {
-          try {
-            // Extract text from pages 📝
-            let fullText = '';
-            pdfData.Pages.forEach((page) => {
-              page.Texts.forEach((textObj) => {
-                // Join text fragments on the same line
-                const lineText = textObj.R.map((t) =>
-                  decodeURIComponent(t.T),
-                ).join('');
-                fullText += lineText + ' ';
-              });
-              fullText += '\n\n'; // page break
-            });
-
-            // Clean extra spaces
-            fullText = fullText.replace(/\s+/g, ' ').trim();
-
-            resolve(fullText);
-          } catch (err) {
-            reject(err);
-          }
-        });
-
-        // When there’s an error
-        pdfParser.on('pdfParser_dataError', (err) => reject(err));
-
-        // Load PDF directly from buffer
-        pdfParser.parseBuffer(file.buffer);
+      // Prepare file as FormData for Python service
+      const formData = new FormData();
+      formData.append('file', Buffer.from(file.buffer), {
+        filename: file.originalname,
+        contentType: file.mimetype,
       });
 
-      fullText = sanitizePdfText(fullText as string);
-      console.log('🚀 ~ OnePagerHelper ~ readPDF ~ fullText:', fullText);
-      return '';
+      // Call Python microservice
+      const response = await axios.post(this.pythonServiceUrl, formData, {
+        headers: formData.getHeaders(),
+        maxBodyLength: Infinity, // large PDF support
+      });
+
+      if (response.data?.text) {
+        this.logger.log(`PDF processed successfully: ${file.originalname}`);
+        return response.data.text;
+      } else {
+        this.logger.warn(`No text returned for file: ${file.originalname}`);
+        return '';
+      }
     } catch (error) {
       this.logger.error(`Error while reading the PDF: ${error.message}`);
       return '';
