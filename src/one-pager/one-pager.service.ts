@@ -719,10 +719,21 @@ export class OnePagerService {
           },
         );
 
+        let logo = branding?.logo;
+        // Only save logos from brandfetch.io
+        if (logo && logo.includes('brandfetch.io')) {
+          try {
+            logo = await this.saveBrandLogo(branding.logo);
+          } catch {
+            logo = PagerDefaultLogo;
+          }
+        }
+
         await this.pagerBrandingRepository.save({
           pagerId,
           ...branding,
           name: branding?.name ?? existing?.name, // keep old name if not provided
+          logo,
           id: existing?.id, // ensures update instead of insert
         });
       }
@@ -874,15 +885,7 @@ export class OnePagerService {
     fileName: string;
     pagerPageId: string;
   }) {
-    let logo = branding?.logo || PagerDefaultLogo;
-    // Only save logos from brandfetch.io
-    if (logo && logo.includes('brandfetch.io')) {
-      try {
-        logo = await this.saveBrandLogo(logo, pagerPageId);
-      } catch {
-        logo = branding?.logo || PagerDefaultLogo;
-      }
-    }
+    const logo = branding?.logo;
 
     const content = await this.onePagerHelper.renderTemplate('pager-template', {
       title: this.onePagerHelper.parseMarkDown(json.title || ''),
@@ -904,7 +907,7 @@ export class OnePagerService {
       secondaryTextColor: getContrastingTextColor(
         branding?.secondaryColor || PagerDefaultSecondaryColor,
       ),
-      logo: logo,
+      logo,
       cta: this.onePagerHelper.parseMarkDown(json.cta),
       ctaText: json?.ctaText || 'Learn More',
       ctaLink: json?.ctaLink ? ensureHttps(json.ctaLink) : '',
@@ -1341,7 +1344,7 @@ export class OnePagerService {
     };
   }
 
-  private async saveBrandLogo(url: string, pagerPageId: string) {
+  private async saveBrandLogo(url: string) {
     try {
       const response = await fetch(url, {
         headers: {
@@ -1360,21 +1363,6 @@ export class OnePagerService {
         Buffer.from(buffer),
         'brands',
         url,
-      );
-
-      const pagerPage = await this.pagerPageRepository.findOne({
-        where: {
-          id: pagerPageId,
-        },
-      });
-      // Updating the new Logo Url
-      await this.pagerBrandingRepository.update(
-        {
-          pagerId: pagerPage.pagerId,
-        },
-        {
-          logo: s3ImageUrl,
-        },
       );
       this.logger.debug(`Fetching Logo From BrandFetch & Saving!`);
       return s3ImageUrl;
