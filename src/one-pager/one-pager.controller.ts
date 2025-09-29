@@ -25,6 +25,7 @@ import { HandleUserFeedbackDTO } from './dto/handle-user-feedback.dto';
 import { stripFormatting } from './helper';
 import { UserActivitiesDto } from './dto/user-activites.dto';
 import { CompanyPaginationDto, CreateCompanyDto } from './dto/company.dto';
+import { PagerAssignUserDTO } from './dto/pager-assign-user.dto';
 
 @Controller('one-pager')
 @UseGuards(JwtAuthGuard)
@@ -161,6 +162,12 @@ export class OnePagerController {
     @Param('id') id: string,
   ) {
     return this.onePagerService.updatePagerTopics(id, payload.topics);
+  }
+
+  @Post('pager-assign-user')
+  @Public()
+  pagerAssignUser(@Body() { pagerId, userId }: PagerAssignUserDTO) {
+    return this.onePagerService.pagerAssignUser(userId, pagerId);
   }
 
   @Put('handle-user-feedback/:id')

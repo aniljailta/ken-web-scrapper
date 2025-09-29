@@ -1437,4 +1437,39 @@ export class OnePagerService {
       return { tags: [], sourceType: null };
     }
   }
+
+  async pagerAssignUser(userId: string, pagerId: string) {
+    const checkUser = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+    });
+    if (!checkUser) {
+      throw new NotFoundException('No User Found');
+    }
+
+    const checkPager = await this.pagerRepository.findOne({
+      where: {
+        id: pagerId,
+      },
+    });
+
+    if (!checkPager) {
+      throw new NotFoundException('No Pager Found');
+    }
+    await this.pagerRepository.update(
+      {
+        id: pagerId,
+      },
+      {
+        userId,
+      },
+    );
+
+    return {
+      data: {},
+      message: 'Pager Updated!',
+    };
+    //
+  }
 }
