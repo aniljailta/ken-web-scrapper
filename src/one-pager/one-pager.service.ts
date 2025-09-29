@@ -719,7 +719,7 @@ export class OnePagerService {
           },
         );
 
-        let logo = branding?.logo;
+        let logo = branding?.logo || PagerDefaultLogo;
         // Only save logos from brandfetch.io
         if (logo && logo.includes('brandfetch.io')) {
           try {
