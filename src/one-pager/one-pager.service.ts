@@ -971,6 +971,7 @@ export class OnePagerService {
       },
       {
         name: content.title,
+        has_edited: true,
       },
     );
 

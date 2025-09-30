@@ -29,6 +29,9 @@ export class PagerPage {
   @Column({ type: 'enum', nullable: true, enum: PageUserFeedBack })
   userResponse: PageUserFeedBack;
 
+  @Column({ type: 'boolean', nullable: false, default: false })
+  has_edited: boolean;
+
   @Column({ type: 'uuid', nullable: true })
   pagerId: string;
 
