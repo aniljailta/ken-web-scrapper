@@ -501,12 +501,16 @@ export class OnePagerService {
     batchSize = 20,
     userId: string,
   ) {
-    const batches = this.onePagerHelper.batchChunks(allChunks, batchSize);
+    const batches = this.onePagerHelper.batchChunks<PagerChunks[]>(
+      allChunks,
+      batchSize,
+    );
     const mergedClusters: Record<
       string,
       Array<{
         content: string;
         rank_index: number;
+        chunk_count: number;
         title: string;
       }>
     > = {};
@@ -520,9 +524,11 @@ export class OnePagerService {
       for (const [slug, content] of Object.entries(result)) {
         if (!mergedClusters[slug]) mergedClusters[slug] = [];
         content.chunk_ids.forEach((item) => {
+          const chunkCount = content.chunk_ids.length + 1;
           mergedClusters[slug].push({
             content: item,
             rank_index: content.rank_index,
+            chunk_count: chunkCount,
             title: content.title,
           });
         });
@@ -1005,7 +1011,7 @@ export class OnePagerService {
     await page.evaluate(async () => {
       const selectors = Array.from(document.images).map((img) => {
         if (img.complete) return Promise.resolve();
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           img.addEventListener('load', resolve);
           img.addEventListener('error', resolve);
         });
@@ -1115,6 +1121,7 @@ export class OnePagerService {
           topicData: Object.keys(topics).map((item) => ({
             title: topics[item][0].title,
             topic_slug: item,
+            chunk_count: topics[item][0].chunk_count,
           })),
           topics,
         },

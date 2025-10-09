@@ -83,7 +83,7 @@ export class OnePagerHelper {
     return chunks;
   }
 
-  batchChunks(chunks: PagerChunks[], size = 20) {
+  batchChunks<T>(chunks: PagerChunks[], size = 20): T[] {
     const batches = [];
     for (let i = 0; i < chunks.length; i += size) {
       batches.push(chunks.slice(i, i + size));
