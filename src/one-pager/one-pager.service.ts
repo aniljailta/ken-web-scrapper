@@ -191,6 +191,7 @@ export class OnePagerService {
     const allUserPagers = await this.pagerRepository
       .createQueryBuilder('pager')
       .innerJoinAndSelect('pager.pagerPage', 'pagerPage')
+      .leftJoinAndSelect('pagerPage.pageContent', 'pageContent')
       .leftJoinAndSelect('pager.tags', 'tags')
       .where('pager.userId = :userId', { userId })
       .andWhere('pager.status = :status', { status: PagerStatus.PROCESSED })
