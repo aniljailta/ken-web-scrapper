@@ -5,4 +5,6 @@ export class UpdateSystemPromptDTO {
   pagerJsonPrompt: string;
   @IsString()
   topicClusterPrompt: string;
+  @IsString()
+  textEnhancementPrompt: string;
 }

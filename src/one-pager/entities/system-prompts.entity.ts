@@ -16,6 +16,9 @@ export class SystemPrompts {
   @Column({ type: 'text', nullable: true })
   pagerJsonPrompt: string;
 
+  @Column({ type: 'text', nullable: true })
+  textEnhancementPrompt: string;
+
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',

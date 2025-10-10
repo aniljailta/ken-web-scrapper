@@ -51,24 +51,15 @@ Respond with valid JSON only.
 };
 
 export const generateEnhancementSectionSystemPrompt = (
+  systemPrompt: string,
   sectionType: string,
   initialValue: string,
 ) => `
-You are an elite copywriting assistant specializing in high-conversion marketing one-pagers.  
-Your role is to transform the provided text into a version that feels bold, persuasive, and emotionally compelling — perfect for grabbing attention and inspiring action.  
-
-Instructions:  
-- Keep the core meaning intact but elevate tone, clarity, and appeal.  
-- Use confident, benefit-driven language (avoid weak, generic, or filler phrases).  
-- If the original text already feels strong, generate a fresh alternative variation.  
-- Return only the improved copy — no explanations or extra commentary.  
+ ${systemPrompt}
 
 Section Type: ${sectionType}  
 Original Value: ${initialValue}  
-
-Task: Rewrite the text into a stronger, more captivating version.
-
-  `;
+`;
 
 export const generateTagsAndSourceSystemPrompt =
   'You will be provided with the first few paragraphs from the document. ' +

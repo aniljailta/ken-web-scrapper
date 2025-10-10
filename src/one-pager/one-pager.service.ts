@@ -256,16 +256,25 @@ export class OnePagerService {
     };
   }
 
-  async findAllSystemPrompt() {
+  async findAllSystemPrompt(): Promise<{
+    data: SystemPrompts;
+    message: string;
+  }> {
     const checkRecord = await this.systemPromptsRepository.findOne({
       where: {},
     });
 
     if (!checkRecord) {
-      return await this.systemPromptsRepository.save({
+      const newConfig = await this.systemPromptsRepository.save({
         pagerJsonPrompt: '',
         topicClusterPrompt: '',
+        textEnhancementPrompt: '',
       });
+
+      return {
+        data: newConfig,
+        message: '',
+      };
     }
 
     return {
@@ -1066,7 +1075,9 @@ export class OnePagerService {
         initialValue,
         sectionType,
       });
+      const systemPromptConfig = await this.findAllSystemPrompt();
       const prompt = generateEnhancementSectionSystemPrompt(
+        systemPromptConfig.data.textEnhancementPrompt,
         sectionType,
         initialValue,
       );
