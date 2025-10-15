@@ -190,6 +190,7 @@ export class OnePagerService {
   async findAll(userId: string) {
     const allUserPagers = await this.pagerRepository
       .createQueryBuilder('pager')
+      .leftJoinAndSelect('pager.branding', 'branding')
       .innerJoinAndSelect('pager.pagerPage', 'pagerPage')
       .leftJoinAndSelect('pagerPage.pageContent', 'pageContent')
       .leftJoinAndSelect('pager.tags', 'tags')
