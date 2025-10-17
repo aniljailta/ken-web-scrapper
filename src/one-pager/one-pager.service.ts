@@ -1381,23 +1381,26 @@ export class OnePagerService {
       }
 
       // 1️⃣ Get raw image buffer
-      const buffer = Buffer.from(await response.arrayBuffer());
+      let buffer = Buffer.from(await response.arrayBuffer());
+      const isSvg = buffer.toString('utf8', 0, 100).includes('<svg');
 
-      // 2️⃣ Use Sharp to normalize it 🧩
-      const processedImage = await sharp(buffer)
-        .trim() // remove transparent or white padding around the logo
-        .resize({
-          width: 126, // your target logo box width
-          height: 36, // your target logo box height
-          fit: 'contain', // preserve aspect ratio
-          background: { r: 255, g: 255, b: 255, alpha: 0 }, // transparent background
-        })
-        .toFormat('png') // normalize all logos into .png (optional)
-        .toBuffer();
-
+      if (!isSvg) {
+        this.logger.debug(`Logo Sharpening`);
+        // 2️⃣ Use Sharp to normalize it 🧩
+        buffer = await sharp(buffer)
+          .trim() // remove transparent or white padding around the logo
+          .resize({
+            width: 126, // your target logo box width
+            height: 36, // your target logo box height
+            fit: 'contain', // preserve aspect ratio
+            background: { r: 255, g: 255, b: 255, alpha: 0 }, // transparent background
+          })
+          .toFormat('png') // normalize all logos into .png (optional)
+          .toBuffer();
+      }
       // 3️⃣ Upload processed buffer to S3
       const s3ImageUrl = await this.s3Service.uploadLogoBuffer(
-        processedImage,
+        buffer,
         'brands',
         url,
       );

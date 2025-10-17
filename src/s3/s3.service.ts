@@ -28,21 +28,28 @@ export class S3Service {
   async uploadFile(file: Express.Multer.File, folder: folderTypes = 'uploads') {
     const key = `${folder}/${Date.now()}-${file.originalname}`;
     let buffer = file.buffer;
-    if (folder === 'brands') {
-      // 2️⃣ Use Sharp to normalize it 🧩
 
-      const processedImage = await sharp(file.buffer)
+    // 1️⃣ Detect if file is SVG
+    const isSvg =
+      file.mimetype === 'image/svg+xml' ||
+      buffer.toString('utf8', 0, 100).includes('<svg');
+
+    // 2️⃣ If not SVG and folder is 'brands', process with Sharp
+    if (isSvg === false && folder === 'brands') {
+      buffer = await sharp(buffer)
         .trim() // remove transparent or white padding around the logo
         .resize({
-          width: 126, // your target logo box width
-          height: 36, // your target logo box height
-          fit: 'contain', // preserve aspect ratio
-          background: { r: 255, g: 255, b: 255, alpha: 0 }, // transparent background
+          width: 126,
+          height: 36,
+          fit: 'contain',
+          background: { r: 255, g: 255, b: 255, alpha: 0 },
         })
-        .toFormat('png') // normalize all logos into .png (optional)
+        .png() // normalize all logos into PNG
+        .sharpen() // optional, helps crispness
         .toBuffer();
-      buffer = processedImage;
     }
+
+    // 3️⃣ Upload to S3
     const upload = new Upload({
       client: this.s3,
       params: {
