@@ -32,6 +32,9 @@ export class PagerPage {
   @Column({ type: 'boolean', nullable: false, default: false })
   has_edited: boolean;
 
+  @Column({ type: 'text', nullable: true, default: '' })
+  default_link: string;
+
   @Column({ type: 'uuid', nullable: true })
   pagerId: string;
 

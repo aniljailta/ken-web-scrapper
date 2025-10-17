@@ -7,6 +7,7 @@ import { Upload } from '@aws-sdk/lib-storage';
 import { folderTypes } from 'src/one-pager/type';
 import path from 'path';
 import mime from 'mime';
+import sharp from 'sharp';
 
 @Injectable()
 export class S3Service {
@@ -26,13 +27,28 @@ export class S3Service {
 
   async uploadFile(file: Express.Multer.File, folder: folderTypes = 'uploads') {
     const key = `${folder}/${Date.now()}-${file.originalname}`;
+    let buffer = file.buffer;
+    if (folder === 'brands') {
+      // 2️⃣ Use Sharp to normalize it 🧩
 
+      const processedImage = await sharp(file.buffer)
+        .trim() // remove transparent or white padding around the logo
+        .resize({
+          width: 126, // your target logo box width
+          height: 36, // your target logo box height
+          fit: 'contain', // preserve aspect ratio
+          background: { r: 255, g: 255, b: 255, alpha: 0 }, // transparent background
+        })
+        .toFormat('png') // normalize all logos into .png (optional)
+        .toBuffer();
+      buffer = processedImage;
+    }
     const upload = new Upload({
       client: this.s3,
       params: {
         Bucket: this.configService.getOrThrow('AWS_S3_BUCKET'),
         Key: key,
-        Body: file.buffer,
+        Body: buffer,
         ContentType: file.mimetype,
       },
     });

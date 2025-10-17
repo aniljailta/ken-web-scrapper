@@ -48,6 +48,7 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateCompanyDto } from './dto/company.dto';
 import { Companies } from './entities/companies.entity';
 import { OnePagerHelper } from './one-pager-helper.service';
+import sharp from 'sharp';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -824,6 +825,7 @@ export class OnePagerService {
       link: fileName,
       pagerId,
       index: rank_index,
+      default_link: json?.ctaLink || '',
       pager: pager,
     });
 
@@ -1378,16 +1380,31 @@ export class OnePagerService {
         throw new Error(`Failed to fetch image: ${response.statusText}`);
       }
 
-      const buffer = await response.arrayBuffer();
+      // 1️⃣ Get raw image buffer
+      const buffer = Buffer.from(await response.arrayBuffer());
 
+      // 2️⃣ Use Sharp to normalize it 🧩
+      const processedImage = await sharp(buffer)
+        .trim() // remove transparent or white padding around the logo
+        .resize({
+          width: 126, // your target logo box width
+          height: 36, // your target logo box height
+          fit: 'contain', // preserve aspect ratio
+          background: { r: 255, g: 255, b: 255, alpha: 0 }, // transparent background
+        })
+        .toFormat('png') // normalize all logos into .png (optional)
+        .toBuffer();
+
+      // 3️⃣ Upload processed buffer to S3
       const s3ImageUrl = await this.s3Service.uploadLogoBuffer(
-        Buffer.from(buffer),
+        processedImage,
         'brands',
         url,
       );
-      this.logger.debug(`Fetching Logo From BrandFetch & Saving!`);
+      this.logger.debug(`✅ Logo normalized & saved to S3!`);
       return s3ImageUrl;
-    } catch {
+    } catch (err) {
+      this.logger.error(`❌ Logo processing failed: ${err}`);
       return PagerDefaultLogo;
     }
   }
