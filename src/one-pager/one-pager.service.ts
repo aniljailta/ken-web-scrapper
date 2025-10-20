@@ -36,6 +36,7 @@ import {
   extractS3KeyFromUrl,
   getContrastingTextColor,
   hexToRgba,
+  standardizeLogoImage,
 } from './helper';
 import { S3Service } from 'src/s3/s3.service';
 import { User } from 'src/users/entities/user.entity';
@@ -48,7 +49,6 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateCompanyDto } from './dto/company.dto';
 import { Companies } from './entities/companies.entity';
 import { OnePagerHelper } from './one-pager-helper.service';
-import sharp from 'sharp';
 @Injectable()
 export class OnePagerService {
   private readonly logger = new Logger(OnePagerService.name);
@@ -1386,17 +1386,7 @@ export class OnePagerService {
 
       if (!isSvg) {
         this.logger.debug(`Logo Sharpening`);
-        // 2️⃣ Use Sharp to normalize it 🧩
-        buffer = await sharp(buffer)
-          .trim() // remove transparent or white padding around the logo
-          .resize({
-            width: 126, // your target logo box width
-            height: 36, // your target logo box height
-            fit: 'contain', // preserve aspect ratio
-            background: { r: 255, g: 255, b: 255, alpha: 0 }, // transparent background
-          })
-          .toFormat('png') // normalize all logos into .png (optional)
-          .toBuffer();
+        buffer = await standardizeLogoImage(buffer);
       }
       // 3️⃣ Upload processed buffer to S3
       const s3ImageUrl = await this.s3Service.uploadLogoBuffer(

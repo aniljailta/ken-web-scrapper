@@ -1,3 +1,5 @@
+import sharp from 'sharp';
+
 /**
  * Determines a contrasting text color (black or white) based on a background hex color
  * to ensure good readability and accessibility.
@@ -122,3 +124,20 @@ export function hexToRgba(hex: string, opacity: number): string {
 
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
+
+export const standardizeLogoImage = async (
+  buffer: ArrayBuffer | Buffer,
+  width = 105,
+  height = 30,
+): Promise<Buffer> => {
+  return sharp(buffer)
+    .trim() //  removes transparent/white padding
+    .resize({
+      width,
+      height,
+      fit: 'contain', // 🧩 keep aspect ratio intact
+      background: { r: 255, g: 255, b: 255, alpha: 0 }, //  transparent bg
+    })
+    .png() // ️ ensure uniform format
+    .toBuffer();
+};

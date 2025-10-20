@@ -7,7 +7,7 @@ import { Upload } from '@aws-sdk/lib-storage';
 import { folderTypes } from 'src/one-pager/type';
 import path from 'path';
 import mime from 'mime';
-import sharp from 'sharp';
+import { standardizeLogoImage } from 'src/one-pager/helper';
 
 @Injectable()
 export class S3Service {
@@ -36,17 +36,7 @@ export class S3Service {
 
     // 2️⃣ If not SVG and folder is 'brands', process with Sharp
     if (isSvg === false && folder === 'brands') {
-      buffer = await sharp(buffer)
-        .trim() // remove transparent or white padding around the logo
-        .resize({
-          width: 126,
-          height: 36,
-          fit: 'contain',
-          background: { r: 255, g: 255, b: 255, alpha: 0 },
-        })
-        .png() // normalize all logos into PNG
-        .sharpen() // optional, helps crispness
-        .toBuffer();
+      buffer = await standardizeLogoImage(buffer);
     }
 
     // 3️⃣ Upload to S3
